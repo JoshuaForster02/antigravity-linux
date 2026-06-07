@@ -1,20 +1,40 @@
-# Flynn OS — Swaylock (TRON lockscreen)
-color=000810
+# Flynn OS — Swaylock (ENCOM OS lockscreen)
+color=00050f
 font=JetBrains Mono
-font-size=16
-indicator-radius=80
-indicator-thickness=6
-ring-color=00e5ff
-ring-clear-color=004466
-ring-wrong-color=ff3300
-key-hl-color=00e5ff
-bs-hl-color=004466
-text-color=00e5ff
-text-clear-color=004466
-text-wrong-color=ff3300
-inside-color=000810cc
-inside-clear-color=000810cc
-inside-wrong-color=1a0000cc
+font-size=14
+letter-spacing=3
+
+# Ring
+indicator-radius=72
+indicator-thickness=4
+ring-color=00536d
+ring-clear-color=003344
+ring-ver-color=00e5ff
+ring-wrong-color=ff3322
+
+# Key highlight
+key-hl-color=00e5ffcc
+bs-hl-color=003344cc
+separator-color=00000000
+
+# Text
+text-color=00a8c8
+text-clear-color=004455
+text-ver-color=00e5ff
+text-wrong-color=ff4433
+
+# Inside
+inside-color=00050fcc
+inside-clear-color=00050fcc
+inside-ver-color=000c1acc
+inside-wrong-color=150003cc
+
+# Line
 line-uses-ring
+
+# Timing
 grace=2
-fade-in=0.3
+fade-in=0.25
+
+# Show indicator always (macOS-like, always visible)
+indicator

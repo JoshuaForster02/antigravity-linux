@@ -1,32 +1,34 @@
-# Flynn OS — Mako notification config (TRON theme)
+# Flynn OS — Mako notifications (macOS-style, top-right)
 font=JetBrains Mono 11
-background-color=#000e1a
-text-color=#00e5ff
-border-color=#00e5ff
-border-size=2
-border-radius=0
-width=360
-height=120
-margin=8
-padding=12
+background-color=#000c1cdd
+text-color=#00d8f0
+border-color=rgba(0,229,255,0.28)
+border-size=1
+border-radius=12
+width=340
+height=100
+margin=12,12,0,0
+padding=14,16
 default-timeout=5000
-anchor=bottom-right
+anchor=top-right
 layer=overlay
-max-icon-size=32
+max-icon-size=28
+icon-location=left
 
+# Progress bar for notifications that support it
 [urgency=low]
-background-color=#000810
-border-color=#002233
-text-color=#004466
+background-color=#00081299
+border-color=rgba(0,180,210,0.18)
+text-color=rgba(0,180,200,0.60)
 default-timeout=3000
 
 [urgency=normal]
-background-color=#000e1a
-border-color=#00e5ff
-text-color=#00e5ff
+background-color=#000c1cdd
+border-color=rgba(0,229,255,0.28)
+text-color=#00d8f0
 
 [urgency=critical]
-background-color=#1a0000
-border-color=#ff3300
-text-color=#ff6644
+background-color=#180006dd
+border-color=rgba(255,50,30,0.55)
+text-color=#ff6040
 default-timeout=0

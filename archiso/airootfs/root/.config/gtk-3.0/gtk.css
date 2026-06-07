@@ -1,83 +1,176 @@
-/* Flynn OS — GTK3 TRON Override */
+/* ══════════════════════════════════════════════════════════════════════════════
+   Flynn OS — GTK4  (ENCOM OS / ANTIGRAVITY aesthetic)
+   Frosted glass panels, rounded corners, soft TRON palette
+   ══════════════════════════════════════════════════════════════════════════════ */
+
 * {
-    font-family: "JetBrains Mono", monospace;
+    font-family: "JetBrains Mono", "SF Mono", monospace;
+    -gtk-icon-style: regular;
 }
 
-window, .window {
-    background-color: #000810;
-    color: #00e5ff;
+/* ── Window / panel ───────────────────────────────────────────────────────── */
+window {
+    background:    rgba(0, 10, 22, 0.94);
+    color:         rgba(0, 210, 240, 0.90);
+    border-radius: 12px;
 }
 
-headerbar, .titlebar {
-    background: #000e1a;
-    border-bottom: 1px solid #002233;
-    color: #00e5ff;
-    box-shadow: none;
+window.dialog {
+    border: 1px solid rgba(0, 229, 255, 0.22);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.70),
+                0  0  0 1px rgba(0, 229, 255, 0.08);
 }
 
+/* ── Header bar ───────────────────────────────────────────────────────────── */
+headerbar {
+    background:    rgba(0, 6, 16, 0.96);
+    border-bottom: 1px solid rgba(0, 229, 255, 0.12);
+    color:         rgba(0, 200, 230, 0.85);
+    box-shadow:    none;
+    border-radius: 12px 12px 0 0;
+    min-height:    36px;
+    padding:       0 12px;
+}
+
+headerbar .title {
+    font-weight: 600;
+    font-size:   12px;
+    color:       rgba(0, 229, 255, 0.90);
+    letter-spacing: 1px;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
 button {
-    background: #000e1a;
-    border: 1px solid #002233;
-    color: #00aacc;
-    border-radius: 0;
+    background:    rgba(0, 229, 255, 0.06);
+    border:        1px solid rgba(0, 229, 255, 0.15);
+    color:         rgba(0, 200, 230, 0.80);
+    border-radius: 8px;
+    padding:       5px 14px;
+    transition:    all 0.12s ease;
 }
-
 button:hover {
-    background: #001520;
-    border-color: #00e5ff;
+    background: rgba(0, 229, 255, 0.12);
+    border-color: rgba(0, 229, 255, 0.40);
     color: #00e5ff;
 }
-
-button:active, button:checked {
-    background: #001a2a;
-    border-color: #00e5ff;
-    color: #00e5ff;
+button:active {
+    background: rgba(0, 229, 255, 0.20);
+}
+button.suggested-action {
+    background:  rgba(0, 229, 255, 0.18);
+    border-color: rgba(0, 229, 255, 0.55);
+    color:        #00e5ff;
+}
+button.destructive-action {
+    background:  rgba(255, 60, 30, 0.12);
+    border-color: rgba(255, 60, 30, 0.40);
+    color:        #ff4422;
 }
 
+/* ── Entry / text field ───────────────────────────────────────────────────── */
 entry {
-    background: #000e1a;
-    border: 1px solid #002233;
-    color: #00e5ff;
-    border-radius: 0;
-    caret-color: #00e5ff;
+    background:    rgba(0, 8, 18, 0.80);
+    border:        1px solid rgba(0, 229, 255, 0.18);
+    color:         rgba(0, 220, 255, 0.90);
+    border-radius: 8px;
+    padding:       6px 12px;
+    caret-color:   #00e5ff;
 }
-
 entry:focus {
-    border-color: #00e5ff;
-    box-shadow: 0 0 0 1px #00e5ff;
+    border-color:  rgba(0, 229, 255, 0.60);
+    box-shadow:    0 0 0 2px rgba(0, 229, 255, 0.10);
+    outline:       none;
+}
+entry placeholder {
+    color: rgba(0, 140, 170, 0.45);
 }
 
+/* ── Lists ────────────────────────────────────────────────────────────────── */
+listview, list {
+    background: transparent;
+    color:      rgba(0, 190, 220, 0.80);
+}
+row {
+    border-radius: 6px;
+    margin:        1px 4px;
+    padding:       4px 8px;
+    transition:    background 0.10s ease;
+}
+row:hover {
+    background: rgba(0, 229, 255, 0.07);
+}
+row:selected {
+    background: rgba(0, 229, 255, 0.14);
+    color:      #00e5ff;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+scrollbar {
+    background: transparent;
+}
 scrollbar trough {
-    background: #000810;
+    background: rgba(0, 229, 255, 0.05);
+    min-width:  4px;
+    border-radius: 4px;
 }
-
 scrollbar slider {
-    background: #002233;
-    min-width: 6px;
-    min-height: 6px;
-    border-radius: 0;
+    background:    rgba(0, 160, 190, 0.35);
+    border-radius: 4px;
+    min-width:     4px;
 }
-
 scrollbar slider:hover {
-    background: #00e5ff;
+    background: rgba(0, 229, 255, 0.65);
 }
 
-menu, .menu, .context-menu {
-    background: #000e1a;
-    border: 1px solid #002233;
-    color: #00e5ff;
+/* ── Popover / menu ───────────────────────────────────────────────────────── */
+popover {
+    background:    rgba(0, 10, 24, 0.96);
+    border:        1px solid rgba(0, 229, 255, 0.18);
+    border-radius: 10px;
+    box-shadow:    0 16px 48px rgba(0,0,0,0.60);
+    padding:       6px;
 }
 
-menuitem:hover {
-    background: #001a2a;
+/* ── Tooltip ──────────────────────────────────────────────────────────────── */
+tooltip {
+    background:    rgba(0, 12, 26, 0.95);
+    color:         rgba(0, 210, 240, 0.90);
+    border:        1px solid rgba(0, 229, 255, 0.20);
+    border-radius: 6px;
+    padding:       4px 10px;
+    font-size:     10px;
 }
 
-treeview {
-    background: #000810;
-    color: #80c8d8;
+/* ── Switch ───────────────────────────────────────────────────────────────── */
+switch {
+    background:    rgba(0, 229, 255, 0.10);
+    border:        1px solid rgba(0, 229, 255, 0.25);
+    border-radius: 999px;
+}
+switch:checked {
+    background: rgba(0, 229, 255, 0.30);
+    border-color: rgba(0, 229, 255, 0.60);
+}
+switch slider {
+    background:    rgba(0, 200, 230, 0.90);
+    border-radius: 999px;
+    margin:        2px;
 }
 
-treeview:selected {
-    background: #001a2a;
-    color: #00e5ff;
+/* ── Progress bar ─────────────────────────────────────────────────────────── */
+progressbar trough {
+    background:    rgba(0, 229, 255, 0.08);
+    border-radius: 4px;
+    min-height:    4px;
+}
+progressbar progress {
+    background:    rgba(0, 229, 255, 0.75);
+    border-radius: 4px;
+}
+
+/* ── Separator ────────────────────────────────────────────────────────────── */
+separator {
+    background: rgba(0, 229, 255, 0.10);
+    min-height: 1px;
+    min-width:  1px;
 }
