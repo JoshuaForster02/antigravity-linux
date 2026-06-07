@@ -1,0 +1,15 @@
+#!/bin/sh
+# Flynn OS Linux — init script
+# This is PID 1. Runs as the very first process after kernel boot.
+
+# ── Mount essential filesystems ──────────────────────────────────────────────
+mount -t proc     none /proc
+mount -t sysfs    none /sys
+mount -t devtmpfs none /dev 2>/dev/null || mdev -s
+
+# ── Launch Flynn OS shell UI ─────────────────────────────────────────────────
+clear
+/usr/local/ui/flynn-ui.sh
+
+# Fallback: drop to ash shell
+exec /bin/sh

@@ -1,0 +1,15 @@
+#!/bin/sh
+# Flynn OS — start X11 session on tty1
+export HOME=/root
+export DISPLAY=:0
+
+# Give udev/mdev a moment to settle
+sleep 1
+
+# If Xorg is available, start the graphical session
+if command -v Xorg >/dev/null 2>&1 || command -v X >/dev/null 2>&1; then
+    exec startx /root/.xinitrc -- :0 vt1 -nolisten tcp 2>/var/log/Xorg.0.log
+else
+    # Fallback: text-mode Flynn UI
+    exec /usr/local/bin/flynn-ui
+fi

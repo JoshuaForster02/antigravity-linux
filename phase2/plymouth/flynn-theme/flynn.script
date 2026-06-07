@@ -1,0 +1,162 @@
+// ─── Flynn OS Plymouth Boot Animation ─────────────────────────────────────
+// TRON:Legacy aesthetic: dark grid builds up, logo fades in, progress bar.
+// Compatible with Plymouth script module (Debian/Ubuntu/Alpine).
+
+// ── Background ────────────────────────────────────────────────────────────
+Window.SetBackgroundTopColor(0.02, 0.04, 0.10);
+Window.SetBackgroundBottomColor(0.00, 0.01, 0.05);
+
+W := Window.GetWidth();
+H := Window.GetHeight();
+CX := W / 2;
+CY := H / 2;
+
+// ── State ─────────────────────────────────────────────────────────────────
+tick         := 0;
+grid_alpha   := 0.0;
+logo_alpha   := 0.0;
+progress_val := 0.0;
+
+// ── Grid lines (drawn once, then faded in) ─────────────────────────────────
+GRID_STEP := 48;
+grid_sprites := [];
+idx := 0;
+
+// Vertical lines
+x := 0;
+while (x <= W) {
+    img := Image.CreateRectangle(1, H, 1.0, 1.0, 1.0, 0.0);
+    spr := Sprite(img);
+    spr.SetPosition(x, 0, 0);
+    spr.SetOpacity(0.0);
+    grid_sprites[idx] := spr;
+    idx := idx + 1;
+    x := x + GRID_STEP;
+}
+
+// Horizontal lines
+y := 0;
+while (y <= H) {
+    img := Image.CreateRectangle(W, 1, 1.0, 1.0, 1.0, 0.0);
+    spr := Sprite(img);
+    spr.SetPosition(0, y, 0);
+    spr.SetOpacity(0.0);
+    grid_sprites[idx] := spr;
+    idx := idx + 1;
+    y := y + GRID_STEP;
+}
+
+// ── Logo text ──────────────────────────────────────────────────────────────
+logo_img := Image.Text("FLYNN OS",
+    0.20, 0.87, 1.00,   // R, G, B  (bright cyan)
+    1,                   // bold
+    "Sans Bold 38");
+
+logo_spr := Sprite(logo_img);
+logo_spr.SetPosition(CX - logo_img.GetWidth() / 2,
+                     CY - logo_img.GetHeight() / 2 - 36, 2);
+logo_spr.SetOpacity(0.0);
+
+// ── Subtitle ───────────────────────────────────────────────────────────────
+sub_img := Image.Text("LINUX  1.0  —  SYSTEM INITIALIZING",
+    0.15, 0.40, 0.55,
+    0,
+    "Mono 12");
+sub_spr := Sprite(sub_img);
+sub_spr.SetPosition(CX - sub_img.GetWidth() / 2,
+                    CY + 20, 2);
+sub_spr.SetOpacity(0.0);
+
+// ── Progress bar ────────────────────────────────────────────────────────────
+BAR_W     := W * 0.5;
+BAR_H     := 3;
+BAR_X     := CX - BAR_W / 2;
+BAR_Y     := CY + 70;
+
+bar_bg_img := Image.CreateRectangle(Math.Int(BAR_W), BAR_H,
+                                     0.05, 0.15, 0.20, 1.0);
+bar_bg_spr := Sprite(bar_bg_img);
+bar_bg_spr.SetPosition(BAR_X, BAR_Y, 1);
+bar_bg_spr.SetOpacity(0.0);
+
+bar_fg_spr := 0;   // created dynamically when width > 0
+
+// ── Boot message ──────────────────────────────────────────────────────────
+msg_spr := 0;
+
+fun DisplayMessage(text) {
+    if (msg_spr != 0) {
+        msg_spr.SetOpacity(0.0);
+    }
+    msg_img := Image.Text(text,
+        0.10, 0.50, 0.60,
+        0,
+        "Mono 11");
+    msg_spr := Sprite(msg_img);
+    msg_spr.SetPosition(BAR_X, BAR_Y + 14, 2);
+    msg_spr.SetOpacity(logo_alpha * 0.6);
+}
+Plymouth.SetMessageFunction(DisplayMessage);
+
+fun ProgressCallback(duration, progress) {
+    progress_val := progress;
+}
+Plymouth.SetBootProgressFunction(ProgressCallback);
+
+// ── Refresh loop ───────────────────────────────────────────────────────────
+fun Refresh() {
+    tick := tick + 1;
+
+    // Phase 1 (ticks 0–50): grid fades in
+    if (tick <= 50) {
+        grid_alpha := Math.Min(1.0, tick / 50.0);
+        i := 0;
+        while (i < idx) {
+            grid_sprites[i].SetOpacity(grid_alpha * 0.18);
+            i := i + 1;
+        }
+    }
+
+    // Phase 2 (ticks 25–80): logo + sub fade in
+    if (tick >= 25 && tick <= 80) {
+        logo_alpha := Math.Min(1.0, (tick - 25) / 55.0);
+        logo_spr.SetOpacity(logo_alpha);
+        sub_spr.SetOpacity(logo_alpha * 0.65);
+    }
+
+    // Phase 3 (ticks 50+): progress bar
+    if (tick >= 50) {
+        bar_bg_spr.SetOpacity(logo_alpha * 0.5);
+
+        filled_w := Math.Int(BAR_W * progress_val);
+        if (filled_w > 2) {
+            fg_img := Image.CreateRectangle(filled_w, BAR_H,
+                                             0.20, 0.87, 1.00, 1.0);
+            if (bar_fg_spr != 0) {
+                bar_fg_spr.SetOpacity(0.0);
+            }
+            bar_fg_spr := Sprite(fg_img);
+            bar_fg_spr.SetPosition(BAR_X, BAR_Y, 3);
+            bar_fg_spr.SetOpacity(logo_alpha);
+        }
+    }
+}
+Plymouth.SetRefreshFunction(Refresh);
+
+// ── Quit (fade out) ────────────────────────────────────────────────────────
+fun QuitCallback() {
+    i := 0;
+    while (i < 20) {
+        logo_alpha := Math.Max(0.0, logo_alpha - 0.05);
+        grid_alpha := Math.Max(0.0, grid_alpha - 0.05);
+        logo_spr.SetOpacity(logo_alpha);
+        sub_spr.SetOpacity(logo_alpha * 0.65);
+        j := 0;
+        while (j < idx) {
+            grid_sprites[j].SetOpacity(grid_alpha * 0.18);
+            j := j + 1;
+        }
+        i := i + 1;
+    }
+}
+Plymouth.SetQuitFunction(QuitCallback);

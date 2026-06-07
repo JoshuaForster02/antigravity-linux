@@ -1,0 +1,126 @@
+# Flynn OS — tint2 panel config
+# TRON aesthetic: dark background, cyan accents, monospace font
+
+# ── Behaviour ─────────────────────────────────────────────────────────────────
+wm_menu = 0
+tint2_config_file = ~/.config/tint2/tint2rc
+mouse_middle = none
+
+# ── Panel ─────────────────────────────────────────────────────────────────────
+panel_items = LTSC
+panel_size = 100% 36
+panel_margin = 0 0
+panel_padding = 6 0 6
+panel_dock = 0
+panel_position = bottom center horizontal
+panel_layer = top
+panel_background_id = 1
+wm_menu = 0
+panel_shrink = 0
+panel_window_name = tint2
+disable_transparency = 0
+mouse_effects = 1
+font_shadow = 0
+panel_monitor = all
+primary_monitor_first = 0
+
+# ── Taskbar ───────────────────────────────────────────────────────────────────
+taskbar_mode = single_desktop
+taskbar_hide_if_empty = 0
+taskbar_padding = 2 3 2
+taskbar_background_id = 1
+taskbar_active_background_id = 1
+taskbar_sort_order = none
+taskbar_name = 0
+taskbar_name_padding = 4 2
+taskbar_name_background_id = 0
+taskbar_name_active_background_id = 0
+
+# ── Tasks ─────────────────────────────────────────────────────────────────────
+task_text = 1
+task_icon = 1
+task_centered = 1
+urgent_nb_of_blink = 8
+task_maximum_size = 180 36
+task_padding = 6 3 6
+task_font = JetBrains Mono 9
+task_font_color = #004455 100
+task_active_font_color = #00E5FF 100
+task_urgent_font_color = #FF4444 100
+task_iconified_font_color = #003344 100
+task_background_id = 2
+task_active_background_id = 3
+task_urgent_background_id = 4
+task_iconified_background_id = 2
+
+# ── Systray ───────────────────────────────────────────────────────────────────
+systray_padding = 0 4 4
+systray_background_id = 1
+systray_sort = ascending
+systray_icon_size = 20
+systray_icon_asb = 100 0 0
+systray_monitor = primary
+systray_name_filter =
+
+# ── Launcher ──────────────────────────────────────────────────────────────────
+launcher_padding = 2 4 2
+launcher_background_id = 2
+launcher_icon_background_id = 0
+launcher_icon_size = 24
+launcher_icon_asb = 100 0 0
+launcher_tooltip = 1
+launcher_item_app = /usr/share/applications/xterm.desktop
+startup_notifications = 1
+
+# ── Clock ─────────────────────────────────────────────────────────────────────
+time1_format = %H:%M
+time2_format = %a %d %b
+time1_font = JetBrains Mono Bold 11
+time2_font = JetBrains Mono 9
+time1_font_color = #00E5FF 100
+time2_font_color = #004455 100
+clock_padding = 6 0
+clock_background_id = 1
+clock_tooltip = %Y-%m-%d
+clock_lclick_command =
+clock_rclick_command =
+clock_mclick_command =
+clock_uwheel_command =
+clock_dwheel_command =
+
+# ── Backgrounds ───────────────────────────────────────────────────────────────
+
+# 1 = panel background
+rounded = 0
+border_width = 0
+border_sides = T
+background_color = #000810 98
+border_color = #00E5FF 60
+
+# 2 = inactive task
+rounded = 4
+border_width = 1
+border_sides = TBLR
+background_color = #001020 0
+border_color = #002233 80
+
+# 3 = active task
+rounded = 4
+border_width = 1
+border_sides = TBLR
+background_color = #001828 85
+border_color = #00E5FF 90
+
+# 4 = urgent task
+rounded = 4
+border_width = 1
+border_sides = TBLR
+background_color = #1A0505 85
+border_color = #FF4444 90
+
+# ── Mouse ─────────────────────────────────────────────────────────────────────
+mouse_left = toggle_iconify
+mouse_middle = none
+mouse_right = close
+mouse_scroll_up = toggle
+mouse_scroll_down = iconify

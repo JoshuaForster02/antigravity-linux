@@ -1,0 +1,40 @@
+! Flynn OS — XTerm TRON config
+XTerm*background:           #000810
+XTerm*foreground:           #00E5FF
+XTerm*cursorColor:          #00E5FF
+XTerm*pointerColor:         #00E5FF
+XTerm*selectBackground:     #001828
+XTerm*selectForeground:     #00E5FF
+XTerm*highlightColor:       #003344
+XTerm*borderColor:          #00E5FF
+XTerm*borderWidth:          1
+XTerm*faceName:             JetBrains Mono
+XTerm*faceSize:             12
+XTerm*renderFont:           true
+XTerm*antialias:            true
+XTerm*scrollBar:            false
+XTerm*saveLines:            5000
+XTerm*charClass:            33:48,36-47:48,58-59:48,61:48,63-64:48,95:48,126:48
+XTerm*on2Clicks:            word
+XTerm*on3Clicks:            line
+XTerm*VT100*translations: #override \n\
+    Ctrl <Key>C: copy-selection(CLIPBOARD) \n\
+    Ctrl <Key>V: insert-selection(CLIPBOARD)
+
+! Colour palette — TRON-inspired 16 colours
+XTerm*color0:  #000810
+XTerm*color1:  #FF3333
+XTerm*color2:  #00AA55
+XTerm*color3:  #AA7700
+XTerm*color4:  #0055AA
+XTerm*color5:  #AA00AA
+XTerm*color6:  #00AAAA
+XTerm*color7:  #AAAAAA
+XTerm*color8:  #003344
+XTerm*color9:  #FF6666
+XTerm*color10: #00FF88
+XTerm*color11: #FFCC00
+XTerm*color12: #00E5FF
+XTerm*color13: #FF66FF
+XTerm*color14: #00FFFF
+XTerm*color15: #FFFFFF

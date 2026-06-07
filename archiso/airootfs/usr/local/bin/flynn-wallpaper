@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+"""
+Flynn OS — TRON Grid Wallpaper Generator
+Draws a live animated TRON-style grid directly on the X11 root window.
+Requires: python-xlib  (pacman -S python-xlib)
+Falls back to solid colour if python-xlib is unavailable.
+"""
+import sys, os, time, math, random
+
+def solid_fallback():
+    os.system("xsetroot -solid '#000810'")
+
+try:
+    from Xlib import display as xdisplay, X, Xatom
+    from Xlib.ext import randr
+    import Xlib.XK
+except ImportError:
+    solid_fallback()
+    sys.exit(0)
+
+# ── Config ────────────────────────────────────────────────────────────────────
+TRON_CYAN   = 0x0033AA        # grid lines
+TRON_BRIGHT = 0x00E5FF        # energy traces
+TRON_DIM    = 0x001528        # dimmer grid
+BG_COLOR    = 0x000810        # deep space black-blue
+GRID_SIZE   = 60              # pixels between grid lines
+TRACE_COUNT = 8               # number of energy traces
+
+def rgb_to_pixel(d, r, g, b):
+    """Convert RGB to X11 pixel value."""
+    try:
+        cmap = d.screen().default_colormap
+        col  = cmap.alloc_color(r * 256, g * 256, b * 256)
+        return col.pixel
+    except Exception:
+        return 0
+
+def hex_to_rgb(h):
+    return ((h >> 16) & 0xFF, (h >> 8) & 0xFF, h & 0xFF)
+
+def draw_tron_grid(d, screen, w, h, frame):
+    root   = screen.root
+    depth  = screen.root_depth
+    visual = screen.root_visual
+
+    pm = root.create_pixmap(w, h, depth)
+    gc = root.create_gc(
+        foreground=screen.black_pixel,
+        background=screen.black_pixel,
+    )
+
+    # Fill background
+    bg_r, bg_g, bg_b = hex_to_rgb(BG_COLOR)
+    bg_pixel = rgb_to_pixel(d, bg_r, bg_g, bg_b)
+    gc.change(foreground=bg_pixel)
+    pm.fill_rectangle(gc, 0, 0, w, h)
+
+    # Draw grid lines
+    dim_r, dim_g, dim_b = hex_to_rgb(TRON_DIM)
+    grid_pixel = rgb_to_pixel(d, dim_r, dim_g, dim_b)
+    gc.change(foreground=grid_pixel)
+
+    for x in range(0, w, GRID_SIZE):
+        pm.draw_line(gc, x, 0, x, h)
+    for y in range(0, h, GRID_SIZE):
+        pm.draw_line(gc, 0, y, w, y)
+
+    # Draw energy traces (moving lines that pulse along the grid)
+    bright_r, bright_g, bright_b = hex_to_rgb(TRON_BRIGHT)
+    bright_pixel = rgb_to_pixel(d, bright_r, bright_g, bright_b)
+    cyan_r, cyan_g, cyan_b = hex_to_rgb(TRON_CYAN)
+    cyan_pixel = rgb_to_pixel(d, cyan_r, cyan_g, cyan_b)
+
+    random.seed(42)  # deterministic traces
+    for i in range(TRACE_COUNT):
+        # Each trace moves at a different speed along a grid line
+        speed    = 0.3 + (i * 0.15)
+        offset   = (frame * speed + i * 137) % (w + h)
+        length   = GRID_SIZE * (2 + i % 3)
+        vertical = (i % 2 == 0)
+
+        if vertical:
+            gx  = (i * GRID_SIZE * 3) % w
+            gx  = (gx // GRID_SIZE) * GRID_SIZE
+            pos = int(offset) % (h + length)
+            y0  = pos - length
+            y1  = pos
+            gc.change(foreground=bright_pixel)
+            pm.draw_line(gc, gx, max(0, y0), gx, min(h, y1))
+            # Glow effect — adjacent lines dimmer
+            gc.change(foreground=cyan_pixel)
+            if gx > 0:      pm.draw_line(gc, gx - 1, max(0, y0), gx - 1, min(h, y1))
+            if gx < w - 1:  pm.draw_line(gc, gx + 1, max(0, y0), gx + 1, min(h, y1))
+        else:
+            gy  = (i * GRID_SIZE * 2) % h
+            gy  = (gy // GRID_SIZE) * GRID_SIZE
+            pos = int(offset) % (w + length)
+            x0  = pos - length
+            x1  = pos
+            gc.change(foreground=bright_pixel)
+            pm.draw_line(gc, max(0, x0), gy, min(w, x1), gy)
+            gc.change(foreground=cyan_pixel)
+            if gy > 0:      pm.draw_line(gc, max(0, x0), gy - 1, min(w, x1), gy - 1)
+            if gy < h - 1:  pm.draw_line(gc, max(0, x0), gy + 1, min(w, x1), gy + 1)
+
+    # Set as root window background
+    root.change_attributes(background_pixmap=pm)
+    root.clear_area(exposures=False)
+    d.flush()
+    pm.free()
+    gc.free()
+
+def main():
+    try:
+        d      = xdisplay.Display()
+        screen = d.screen()
+        w      = screen.width_in_pixels
+        h      = screen.height_in_pixels
+    except Exception:
+        solid_fallback()
+        return
+
+    # Static mode — draw once and exit (fast, no animation overhead)
+    # For animated mode: loop with sleep(0.05)
+    animate = "--animate" in sys.argv
+    frame   = 0
+
+    if animate:
+        while True:
+            try:
+                draw_tron_grid(d, screen, w, h, frame)
+                frame += 1
+                time.sleep(0.08)  # ~12 fps
+            except KeyboardInterrupt:
+                break
+            except Exception:
+                break
+    else:
+        # Single static frame with a "good-looking" offset
+        draw_tron_grid(d, screen, w, h, frame=47)
+
+if __name__ == "__main__":
+    main()

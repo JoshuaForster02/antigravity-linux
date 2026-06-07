@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_config xmlns="http://openbox.org/3.4/rc">
+  <theme>
+    <name>Flynn</name>
+    <titleLayout>NL</titleLayout>
+    <keepBorder>no</keepBorder>
+    <animateIconify>no</animateIconify>
+    <font place="ActiveWindow"><name>Monospace</name><size>9</size><weight>Bold</weight></font>
+    <font place="InactiveWindow"><name>Monospace</name><size>9</size><weight>Normal</weight></font>
+  </theme>
+  <desktops><number>2</number><firstdesk>1</firstdesk></desktops>
+  <focus><focusNew>yes</focusNew><followMouse>no</followMouse></focus>
+  <keyboard>
+    <keybind key="Super-Return">
+      <action name="Execute"><command>xterm -bg black -fg cyan -fa Monospace -fs 11 -title "Flynn Terminal"</command></action>
+    </keybind>
+    <keybind key="Super-q"><action name="Close"/></keybind>
+    <keybind key="Super-f"><action name="ToggleMaximizeFull"/></keybind>
+    <keybind key="Super-h"><action name="MoveResizeTo"><x>0</x><y>0</y><width>50%</width><height>100%</height></action></keybind>
+    <keybind key="Super-l"><action name="MoveResizeTo"><x>50%</x><y>0</y><width>50%</width><height>100%</height></action></keybind>
+    <keybind key="Super-Tab"><action name="NextWindow"/></keybind>
+    <keybind key="Super-r"><action name="Execute"><command>/usr/local/bin/flynn-ui-x</command></action></keybind>
+  </keyboard>
+  <mouse>
+    <context name="Frame">
+      <mousebind button="Left" action="Press"><action name="Focus"/><action name="Raise"/></mousebind>
+      <mousebind button="Left" action="Drag"><action name="Move"/></mousebind>
+    </context>
+    <context name="Titlebar">
+      <mousebind button="Left" action="DoubleClick"><action name="ToggleMaximizeFull"/></mousebind>
+    </context>
+  </mouse>
+</openbox_config>

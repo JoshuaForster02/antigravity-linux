@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_menu xmlns="http://openbox.org/3.4/menu">
+
+<menu id="root-menu" label="FLYNN OS">
+    <item label="[flynn]  Terminal">
+        <action name="Execute">
+            <command>xterm -bg "#000810" -fg "#00E5FF" -fa "JetBrains Mono" -fs 12 -e /usr/local/bin/flynn-ui</command>
+        </action>
+    </item>
+    <item label="[xterm]  Raw Terminal">
+        <action name="Execute"><command>xterm -bg "#000810" -fg "#00E5FF" -fa "JetBrains Mono" -fs 12</command></action>
+    </item>
+    <separator label="LAUNCH"/>
+    <item label="[rofi]   App Launcher">
+        <action name="Execute"><command>rofi -show drun</command></action>
+    </item>
+    <item label="[files]  File Manager">
+        <action name="Execute"><command>thunar</command></action>
+    </item>
+    <item label="[steam]  Steam">
+        <action name="Execute"><command>steam</command></action>
+    </item>
+    <separator label="SYSTEM"/>
+    <item label="[status] System Status">
+        <action name="Execute">
+            <command>xterm -bg "#000810" -fg "#00E5FF" -fa "JetBrains Mono" -fs 11 -geometry 80x30 -e "bash -c '/usr/local/bin/flynn-ui; bash'"</command>
+        </action>
+    </item>
+    <item label="[bg]     Refresh Wallpaper">
+        <action name="Execute"><command>/usr/local/bin/flynn-wallpaper</command></action>
+    </item>
+    <separator label="SESSION"/>
+    <item label="[restart]  Restart Openbox">
+        <action name="Restart"/>
+    </item>
+    <item label="[reboot]   Reboot">
+        <action name="Execute"><command>reboot</command></action>
+    </item>
+    <item label="[halt]     Power Off">
+        <action name="Execute"><command>poweroff</command></action>
+    </item>
+</menu>
+
+</openbox_menu>

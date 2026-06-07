@@ -1,0 +1,24 @@
+#!/bin/sh
+# Flynn OS — Network initialisation (runs once at boot via inittab ::once)
+# Brings up eth0/eth1, runs DHCP, starts SSH
+
+# Predictable: try eth0 first, then any other ethernet
+for iface in eth0 eth1 enp0s3 enp1s0 ens3 ens33; do
+    if ip link show "$iface" &>/dev/null; then
+        ip link set "$iface" up 2>/dev/null
+        udhcpc -i "$iface" -q -t 3 -T 2 2>/dev/null &
+        echo "$iface" > /run/flynn-netif
+        break
+    fi
+done
+
+# Start Dropbear SSH server
+if command -v dropbear &>/dev/null; then
+    dropbear -R -p 22 2>/dev/null &
+fi
+
+# Start Flynn daemon if installed
+if [ -f /opt/flynn/daemon/flynn_daemon.py ] && command -v python3 &>/dev/null; then
+    nohup python3 /opt/flynn/daemon/flynn_daemon.py \
+        >/var/log/flynn-daemon.log 2>&1 &
+fi

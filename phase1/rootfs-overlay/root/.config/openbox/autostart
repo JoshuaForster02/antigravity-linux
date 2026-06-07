@@ -1,0 +1,9 @@
+#!/bin/sh
+# Flynn OS X11 autostart
+xsetroot -solid "#000810"
+/usr/local/bin/flynn-draw-bg &
+sleep 0.5
+xterm -bg "#000810" -fg "#00e5ff" -fa "Monospace" -fs 12 \
+      -title "Flynn OS Terminal" \
+      -geometry 120x35+40+80 \
+      -e /usr/local/bin/flynn-ui &

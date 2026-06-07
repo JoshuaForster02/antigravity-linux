@@ -1,0 +1,17 @@
+[Unit]
+Description=Flynn OS X11 Session
+After=systemd-user-sessions.service
+
+[Service]
+User=root
+PAMName=login
+TTYPath=/dev/tty1
+StandardInput=tty
+StandardOutput=tty
+Environment=XDG_SESSION_TYPE=x11
+ExecStart=/usr/local/bin/flynn-startx
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

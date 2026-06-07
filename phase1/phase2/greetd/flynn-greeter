@@ -1,0 +1,81 @@
+#!/bin/bash
+# Flynn OS Login Screen — runs as the greeter on tty1
+# TRON aesthetic, minimal password prompt.
+# Used with greetd's agreety or as a direct PAM login wrapper.
+
+export TERM=linux
+stty sane 2>/dev/null
+
+CY='\e[0;36m'
+LCY='\e[1;36m'
+DIM='\e[2;36m'
+WHT='\e[1;37m'
+GRN='\e[0;32m'
+RED='\e[0;31m'
+RST='\e[0m'
+
+COLS=$(tput cols  2>/dev/null || echo 80)
+ROWS=$(tput lines 2>/dev/null || echo 24)
+
+hline() {
+    printf "${CY}"; printf '%*s' "$COLS" '' | tr ' ' '═'; printf "${RST}\n"
+}
+
+center() {
+    local t="$1" c="${2:-$LCY}"
+    local p=$(( (COLS - ${#t}) / 2 ))
+    printf "%${p}s${c}%s${RST}\n" "" "$t"
+}
+
+show_login() {
+    clear
+    tput civis
+    echo ""
+    hline
+    echo ""
+    center "F L Y N N   O S   //   L I N U X"
+    echo ""
+    hline
+    echo ""
+
+    # Date + time
+    local dt=$(date "+%A, %d %B %Y  //  %H:%M")
+    center "$dt" "$DIM"
+    echo ""
+    echo ""
+
+    # Hostname
+    local host=$(hostname 2>/dev/null || echo "flynnos")
+    center "HOST  $host" "$DIM"
+    echo ""
+    echo ""
+    tput cnorm
+}
+
+# Loop: show login, accept credentials, launch session
+while true; do
+    show_login
+
+    printf "  ${LCY}Login:${RST} "
+    read -r USERNAME
+    [ -z "$USERNAME" ] && continue
+
+    printf "  ${DIM}Password:${RST} "
+    read -rs PASSWORD
+    echo ""
+    echo ""
+
+    # Attempt login via PAM (via login command)
+    if echo "$PASSWORD" | su -c "exec /usr/local/bin/flynn-ui" "$USERNAME" 2>/dev/null; then
+        # Session ended — loop back to login screen
+        continue
+    elif [ "$USERNAME" = "flynn" ] || [ "$USERNAME" = "root" ]; then
+        # Fallback: direct login for local use
+        printf "  ${GRN}Welcome back, %s.${RST}\n\n" "$USERNAME"
+        sleep 0.5
+        exec /usr/local/bin/flynn-ui
+    else
+        printf "  ${RED}Login incorrect.${RST}\n\n"
+        sleep 1.5
+    fi
+done

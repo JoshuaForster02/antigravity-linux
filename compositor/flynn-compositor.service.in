@@ -1,0 +1,14 @@
+[Unit]
+Description=Flynn OS TRON Compositor
+After=systemd-logind.service
+
+[Service]
+ExecStart=@BINDIR@/flynn-compositor
+Restart=on-failure
+RestartSec=3
+Environment=WLR_RENDERER=gles2
+Environment=LIBSEAT_BACKEND=logind
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+
+[Install]
+WantedBy=graphical-session.target

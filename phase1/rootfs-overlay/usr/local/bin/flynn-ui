@@ -1,0 +1,372 @@
+#!/bin/bash
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║   F L Y N N   O S   —   TRON Interface Shell  v2.0                     ║
+# ║   The Grid  ·  Secure Line Established  ·  All systems nominal          ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+export TERM=linux
+export HOME=/root
+export PATH=/usr/local/bin:/usr/bin:/bin:/sbin:/usr/sbin
+
+CY='\e[0;36m' LCY='\e[1;36m' WHT='\e[1;37m' DIM='\e[2;36m'
+GRN='\e[0;32m' LGN='\e[1;32m' RED='\e[0;31m' YEL='\e[0;33m'
+GRY='\e[0;37m' DRK='\e[2;37m' RST='\e[0m'
+HIDE='\e[?25l' SHOW='\e[?25h' CLS='\e[2J\e[H'
+
+get_size() { COLS=$(tput cols 2>/dev/null||echo 80); ROWS=$(tput lines 2>/dev/null||echo 24); }
+get_size
+
+hline() { local c="${1:-═}" k="${2:-$CY}"; printf "${k}"; printf '%*s' "$COLS" ''|tr ' ' "$c"; printf "${RST}\n"; }
+center() { local txt="$1" col="${2:-$LCY}" len="${#1}" pad; pad=$(( (COLS-len)/2 )); [ $pad -lt 0 ]&&pad=0; printf "%${pad}s${col}%s${RST}\n" "" "$txt"; }
+bar() { local pct=$1 w=${2:-20} fc="${3:-$LCY}" ec="${4:-$DIM}"; local f=$(( pct*w/100 )); [ $f -gt $w ]&&f=$w; local e=$((w-f)); printf "${fc}"; printf '%*s' "$f" ''|tr ' ' '█'; printf "${ec}"; printf '%*s' "$e" ''|tr ' ' '░'; printf "${RST}"; }
+color_pct() { [ "$1" -gt 85 ]&&echo "$RED"&&return; [ "$1" -gt 60 ]&&echo "$YEL"&&return; echo "$LCY"; }
+
+get_cpu_pct() {
+    local a b; read -ra a </proc/stat; sleep 0.15; read -ra b </proc/stat
+    local ia=${a[4]} ib=${b[4]} ta=0 tb=0
+    for v in "${a[@]:1:7}"; do ta=$((ta+v)); done
+    for v in "${b[@]:1:7}"; do tb=$((tb+v)); done
+    local dt=$((tb-ta)); [ $dt -eq 0 ]&&echo 0&&return
+    echo $(( (dt-(ib-ia))*100/dt ))
+}
+get_mem_pct()  { awk '/^MemTotal:/{t=$2}/^MemAvailable:/{a=$2}END{print int((t-a)*100/t)}' /proc/meminfo; }
+get_mem_str()  { awk '/^MemTotal:/{t=$2}/^MemAvailable:/{a=$2}END{printf "%dMB/%dMB",(t-a)/1024,t/1024}' /proc/meminfo; }
+uptime_str()   { local s=$(awk '{print int($1)}' /proc/uptime 2>/dev/null||echo 0); local h=$((s/3600)) m=$(((s%3600)/60)); [ $h -gt 0 ]&&printf "%dh%dm" $h $m||printf "%dm%ds" $m $((s%60)); }
+get_ip()       { ip route get 1.1.1.1 2>/dev/null|awk '/src/{print $7;exit}'; }
+get_gw()       { ip route 2>/dev/null|awk '/default/{print $3;exit}'; }
+get_iface()    { cat /run/flynn-netif 2>/dev/null || ip route 2>/dev/null|awk '/default/{print $5;exit}'||echo "eth0"; }
+get_load()     { cut -d' ' -f1 /proc/loadavg 2>/dev/null||echo "0.00"; }
+
+tron_splash() {
+    printf "${CLS}${HIDE}"; get_size
+    for ((i=1; i<=COLS; i+=3)); do printf "\r${DIM}%${i}s${LCY}▓${RST}" ""; sleep 0.002; done
+    printf "\r%${COLS}s\r\n"
+    center "███████╗██╗  ██╗   ██╗███╗   ██╗███╗   ██╗" "$LCY"
+    center "██╔════╝██║  ╚██╗ ██╔╝████╗  ██║████╗  ██║" "$LCY"
+    center "█████╗  ██║   ╚████╔╝ ██╔██╗ ██║██╔██╗ ██║" "$LCY"
+    center "██╔══╝  ██║    ╚██╔╝  ██║╚██╗██║██║╚██╗██║" "$CY"
+    center "██║     ███████╗██║   ██║ ╚████║██║ ╚████║" "$CY"
+    center "╚═╝     ╚══════╝╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═══╝" "$DIM"
+    echo ""; center "O  S   ·   L I N U X   2 . 0   ·   T H E   G R I D" "$DIM"; echo ""
+    hline "═" "$DIM"; echo ""
+    local items=("KERNEL:Linux $(uname -r 2>/dev/null|cut -d- -f1||echo '6.x')" "ARCH:$(uname -m)  ·  $(nproc 2>/dev/null||echo 1) core(s)" "MEMORY:$(get_mem_str)  ·  load $(get_load)" "NETWORK:$(get_ip||echo 'acquiring...')  via $(get_iface)" "SSH:port 22  ·  user root  ·  pass flynn" "DAEMON:REST API  ·  port 7777" "SYSTEM:The Grid is online")
+    local n=${#items[@]}
+    for ((i=0; i<n; i++)); do
+        local k="${items[$i]%%:*}" v="${items[$i]#*:}"
+        local pct=$(( (i+1)*100/n ))
+        printf "  ${DIM}[${LCY}"; printf '%*s' "$((pct*24/100))" ''|tr ' ' '▓'
+        printf "${DIM}"; printf '%*s' "$((24-pct*24/100))" ''|tr ' ' '░'
+        printf "${DIM}]  %-10s${GRN}  ${WHT}%s${RST}\n" "$k" "$v"
+        sleep 0.05
+    done
+    echo ""; hline "═" "$DIM"; echo ""
+    printf "  ${WHT}System online.${DRK}  ${LCY}help${DRK} for commands  ·  ${LCY}matrix${DRK} for fun  ·  ${LCY}scan${DRK} for LAN\n\n"
+    printf "${SHOW}"
+}
+
+cmd_status() {
+    printf "${CLS}${HIDE}"
+    local cpu=$(get_cpu_pct) mem=$(get_mem_pct)
+    local disk_pct=$(df / 2>/dev/null|awk 'NR==2{gsub(/%/,"",$5);print $5+0}')
+    local cc=$(color_pct $cpu) mc=$(color_pct $mem) dc=$(color_pct ${disk_pct:-0})
+    local ts=$(date '+%a %d %b  %H:%M:%S')
+    hline "═" "$DIM"
+    printf "  ${LCY}SYSTEM STATUS${RST}%$(( COLS-18-${#ts} ))s${DRK}%s${RST}\n" "" "$ts"
+    hline "═" "$DIM"; echo ""
+    printf "  ${DIM}CPU   "; bar $cpu 36 "$cc" "$DIM"; printf "  ${cc}%3d%%${RST}\n" $cpu
+    printf "  ${DIM}MEM   "; bar $mem 36 "$mc" "$DIM"; printf "  ${mc}%3d%%  ${DRK}%s${RST}\n" $mem "$(get_mem_str)"
+    printf "  ${DIM}DISK  "; bar ${disk_pct:-0} 36 "$dc" "$DIM"; printf "  ${dc}%3d%%  ${DRK}%s / %s${RST}\n" ${disk_pct:-0} "$(df -h / 2>/dev/null|awk 'NR==2{print $3}')" "$(df -h / 2>/dev/null|awk 'NR==2{print $2}')"
+    echo ""; hline "─" "$DIM"; echo ""
+    printf "  ${DIM}HOSTNAME  ${WHT}%-22s${DIM}  KERNEL  ${WHT}%s${RST}\n" "$(hostname)" "$(uname -r 2>/dev/null)"
+    printf "  ${DIM}UPTIME    ${CY}%-22s${DIM}  ARCH    ${WHT}%s${RST}\n" "$(uptime_str)" "$(uname -m)"
+    printf "  ${DIM}IP ADDR   ${CY}%-22s${DIM}  GW      ${WHT}%s${RST}\n" "$(get_ip||echo none)" "$(get_gw||echo none)"
+    printf "  ${DIM}SSH       ${LGN}%-22s${DIM}  DAEMON  " "port 22 (root/flynn)"
+    pgrep -f 'flynn_daemon' &>/dev/null && printf "${LGN}running :7777${RST}\n" || printf "${YEL}offline${RST}\n"
+    echo ""; hline "─" "$DIM"; echo ""
+    printf "  ${LCY}TOP PROCESSES${RST}\n\n"
+    printf "  ${DIM}%-6s  %-22s  %-6s  %-6s${RST}\n" "PID" "NAME" "CPU%" "MEM%"
+    ps -eo pid,comm,pcpu,pmem --sort=-pcpu 2>/dev/null | tail -n+2 | head -10 | \
+      while read pid comm cpu mem; do
+        printf "  ${GRY}%-6s  ${WHT}%-22s  ${CY}%-6s  ${GRN}%-6s${RST}\n" "$pid" "$comm" "$cpu" "$mem"
+      done
+    echo ""; hline "═" "$DIM"
+    printf "  ${DRK}[any key to return]${RST}"; printf "${SHOW}"; read -r -n1; echo ""
+}
+
+cmd_matrix() {
+    get_size; printf "${CLS}${HIDE}"
+    local CHARS=(0 1 2 3 4 5 6 7 8 9 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)
+    local nc=${#CHARS[@]}
+    declare -a pos len
+    for ((c=0; c<COLS; c++)); do pos[$c]=$(( RANDOM % ROWS )); len[$c]=$(( 4+RANDOM%16 )); done
+    printf "  ${DIM}(Ctrl+C to exit)${RST}\n"
+    trap 'printf "${SHOW}${RST}"; trap - INT; echo ""; return' INT
+    local frame=0
+    while true; do
+        printf '\e[H'
+        for ((r=0; r<ROWS-1; r++)); do
+            printf '\e[%d;1H' $((r+1))
+            for ((c=0; c<COLS; c++)); do
+                local p=${pos[$c]}; local l=${len[$c]}
+                if [ $r -eq $p ]; then printf '\e[1;37m%s' "${CHARS[$((RANDOM%nc))]}";
+                elif [ $r -gt $((p-l)) ] && [ $r -lt $p ]; then
+                    local dist=$(( p-r ))
+                    [ $dist -lt 3 ] && printf '\e[1;36m' || printf '\e[0;36m'
+                    printf '%s' "${CHARS[$((RANDOM%nc))]}"
+                else printf '\e[0m '; fi
+            done
+        done
+        for ((c=0; c<COLS; c++)); do
+            pos[$c]=$(( (pos[$c]+1)%ROWS ))
+            [ ${pos[$c]} -eq 0 ] && len[$c]=$(( 4+RANDOM%16 ))
+        done
+        sleep 0.05; frame=$((frame+1)); [ $frame -gt 400 ] && break
+    done
+    printf "${SHOW}${RST}"; trap - INT; echo ""
+}
+
+cmd_scan() {
+    echo ""; hline "─" "$DIM"; printf "  ${LCY}NETWORK SCAN${RST}\n\n"
+    local target="${1:-}"
+    if [ -z "$target" ]; then
+        local ip=$(get_ip) gw=$(get_gw)
+        printf "  ${DIM}Local IP  : ${WHT}%s${RST}\n" "${ip:-unknown}"
+        printf "  ${DIM}Gateway   : ${WHT}%s${RST}\n\n" "${gw:-unknown}"
+        if command -v nmap &>/dev/null && [ -n "$gw" ]; then
+            printf "  ${CY}Scanning ${gw%.*}.0/24 ...${RST}\n\n"
+            nmap -sn "${gw%.*}.0/24" 2>/dev/null | awk '/Nmap scan report/{h=$NF;gsub(/[()]/,"",h);printf "  \033[0;36m%-18s\033[0m",h}/Host is up/{print "\033[1;32m online\033[0m"}' | head -25
+        else
+            printf "  ${DIM}Running ping sweep...${RST}\n\n"
+            local base="${gw%.*}"
+            for i in $(seq 1 30); do
+                { ping -c1 -W1 "${base}.${i}" &>/dev/null && printf "  ${LGN}%-18s online${RST}\n" "${base}.${i}"; } &
+            done; wait
+        fi
+    else
+        printf "  ${CY}Scanning %s ...${RST}\n\n" "$target"
+        if command -v nmap &>/dev/null; then
+            nmap -sV --open "$target" 2>/dev/null | grep -E "open" | \
+              awk '{printf "  \033[0;36m%-25s\033[1;37m%s\033[0m\n",$1,substr($0,index($0,$2))}'
+        else
+            for port in 22 80 443 3000 5000 7777 8080 8765; do
+                timeout 1 bash -c "echo >/dev/tcp/${target}/${port}" 2>/dev/null && \
+                    printf "  ${LGN}%-6s open${RST}\n" "$port" || true
+            done
+        fi
+    fi
+    echo ""; hline "─" "$DIM"; echo ""
+}
+
+cmd_wifi() {
+    echo ""; hline "─" "$DIM"; printf "  ${LCY}WIFI MANAGER${RST}\n\n"
+    case "${1:-}" in
+        scan|list)
+            local iface=$(ip link 2>/dev/null|awk '/wlan/{print $2;exit}'|tr -d ':')
+            [ -z "$iface" ] && printf "  ${YEL}No wireless interface detected${RST}\n" && return
+            printf "  ${CY}Scanning...${RST}\n\n"
+            iwlist "$iface" scan 2>/dev/null | awk '/ESSID:/{gsub(/"/,"",$0);gsub(/.*ESSID:/,"");printf "  \033[1;37m%s\033[0m\n",$0}' | head -15 ;;
+        connect)
+            [ -z "$2" ] && printf "  ${RED}Usage: wifi connect <SSID> <password>${RST}\n" && return
+            local iface=$(ip link 2>/dev/null|awk '/wlan/{print $2;exit}'|tr -d ':')
+            [ -z "$iface" ] && printf "  ${YEL}No wireless interface${RST}\n" && return
+            printf "  ${CY}Connecting to %s...${RST}\n" "$2"
+            wpa_passphrase "$2" "$3" > /tmp/wpa.conf 2>/dev/null
+            wpa_supplicant -B -i "$iface" -c /tmp/wpa.conf -D nl80211,wext 2>/dev/null
+            sleep 2; udhcpc -i "$iface" -q 2>/dev/null
+            printf "  ${LGN}Connected. IP: $(get_ip)${RST}\n" ;;
+        *)
+            printf "  ${DIM}wifi scan${RST}              — list nearby networks\n"
+            printf "  ${DIM}wifi connect SSID PW${RST}   — join a network\n" ;;
+    esac
+    echo ""; hline "─" "$DIM"; echo ""
+}
+
+cmd_services() {
+    echo ""; hline "─" "$DIM"; printf "  ${LCY}SERVICES${RST}\n\n"
+    printf "  ${DIM}%-28s  %-12s  %s${RST}\n" "SERVICE" "STATUS" "PORT"
+    printf "  ${DIM}%s  %s  %s${RST}\n" "───────────────────────────" "────────────" "────"
+    _svc() {
+        local proc="$1" name="$2" port="$3"
+        pgrep -f "$proc" &>/dev/null && \
+            printf "  ${WHT}%-28s  ${LGN}%-12s  ${CY}%s${RST}\n" "$name" "RUNNING" "$port" || \
+            printf "  ${GRY}%-28s  ${RED}%-12s  ${GRY}%s${RST}\n" "$name" "STOPPED" "$port"
+    }
+    _svc "flynn_daemon.py" "Flynn REST Daemon" "7777"
+    _svc "dropbear"        "SSH Server"         "22"
+    _svc "iwd"             "WiFi Manager"        "-"
+    _svc "wpa_supplicant"  "WPA Supplicant"      "-"
+    echo ""; hline "─" "$DIM"; echo ""
+    printf "  ${DIM}${LCY}daemon${DIM} to start REST API  ·  ${LCY}ssh-info${DIM} for SSH details${RST}\n\n"
+}
+
+cmd_disk() {
+    echo ""; hline "─" "$DIM"; printf "  ${LCY}DISK & STORAGE${RST}\n\n"
+    df -h 2>/dev/null | awk 'NR==1{printf "  \033[2;36m%-20s %-6s %-6s %-6s %-5s %s\033[0m\n",$1,$2,$3,$4,$5,$6;next}{printf "  \033[1;37m%-20s\033[0;36m %-6s %-6s %-6s %-5s \033[1;37m%s\033[0m\n",$1,$2,$3,$4,$5,$6}'
+    echo ""
+    command -v lsblk &>/dev/null && { printf "  ${LCY}BLOCK DEVICES${RST}\n\n"; lsblk 2>/dev/null | head -20 | awk '{printf "  \033[0;37m%s\033[0m\n",$0}'; echo ""; }
+    hline "─" "$DIM"; echo ""
+}
+
+cmd_net() {
+    echo ""; hline "─" "$DIM"; printf "  ${LCY}NETWORK${RST}\n\n"
+    ip addr 2>/dev/null | awk '/^[0-9]+: /{i=$2;gsub(/:$/,"",i);printf "  \033[2;36mIF    \033[1;37m%s\033[0m\n",i}/inet /{printf "  \033[2;36m  IP  \033[0;36m%s\033[0m\n",$2}/link\/ether/{printf "  \033[2;36m  MAC \033[2;37m%s\033[0m\n",$2}'
+    echo ""
+    local gw=$(get_gw)
+    [ -n "$gw" ] && printf "  ${DIM}Gateway  ${CY}%s${RST}\n" "$gw"
+    printf "  ${DIM}Connectivity: ${RST}"
+    ping -c1 -W2 "${gw:-8.8.8.8}" &>/dev/null && printf "${LGN}LAN OK${RST} " || printf "${RED}LAN FAIL${RST} "
+    ping -c1 -W3 1.1.1.1 &>/dev/null && printf "${LGN}WAN OK${RST}\n" || printf "${RED}WAN FAIL${RST}\n"
+    hline "─" "$DIM"; echo ""
+}
+
+cmd_pi() {
+    local pi_ip="100.74.204.71"; local action="${1:-status}"
+    echo ""; hline "─" "$DIM"; printf "  ${LCY}FLYNN PI${RST}  ${DIM}(%s)${RST}\n\n" "$pi_ip"
+    case "$action" in
+        status)
+            ping -c1 -W2 "$pi_ip" &>/dev/null && printf "  ${LGN}Pi online${RST}\n" || printf "  ${RED}Pi offline${RST}\n"
+            curl -sf "http://${pi_ip}:8765/status" 2>/dev/null && echo "" || true ;;
+        sync)
+            printf "  ${CY}Syncing to Pi...${RST}\n"
+            rsync -az /etc/flynnos/ "root@${pi_ip}:/etc/flynnos/" 2>/dev/null && printf "  ${LGN}Done${RST}\n" || printf "  ${RED}Failed${RST}\n" ;;
+        wakepc)
+            curl -sf "http://${pi_ip}:8765/wakepc" 2>/dev/null && printf "  ${LGN}WoL sent${RST}\n" || printf "  ${RED}Pi agent unreachable${RST}\n" ;;
+        *)  printf "  ${DIM}pi${DIM}         — check status\n  ${DIM}pi sync${DIM}    — sync config\n  ${DIM}pi wakepc${DIM}  — wake PC via Pi\n" ;;
+    esac
+    echo ""; hline "─" "$DIM"; echo ""
+}
+
+cmd_daemon() {
+    pgrep -f 'flynn_daemon.py' &>/dev/null && printf "  ${LGN}Daemon already running${RST}  :7777\n" && return
+    [ -f /opt/flynn/daemon/flynn_daemon.py ] || { printf "  ${YEL}Not installed${RST}\n"; return; }
+    printf "  ${CY}Starting...${RST}\n"
+    nohup python3 /opt/flynn/daemon/flynn_daemon.py >/var/log/flynn-daemon.log 2>&1 &
+    sleep 1
+    pgrep -f 'flynn_daemon.py' &>/dev/null && printf "  ${LGN}Online :7777${RST}\n" || printf "  ${RED}Failed — see /var/log/flynn-daemon.log${RST}\n"
+}
+
+cmd_ssh_info() {
+    echo ""; hline "─" "$DIM"; printf "  ${LCY}SSH ACCESS${RST}\n\n"
+    printf "  ${DIM}From LAN:        ${WHT}ssh root@%s${RST}\n" "$(get_ip||echo 'unknown')"
+    printf "  ${DIM}Password:        ${LCY}flynn${RST}\n\n"
+    printf "  ${DIM}Via Pi Tailscale: ${WHT}ssh root@100.74.204.71${DIM}  (Pi relay)${RST}\n"
+    hline "─" "$DIM"; echo ""
+}
+
+cmd_install() {
+    echo ""; hline "═" "$LCY"; center "FLYNN OS  —  INSTALL TO DISK" "$LCY"; hline "═" "$LCY"; echo ""
+    printf "  ${LCY}Detected disks:${RST}\n\n"
+    command -v lsblk &>/dev/null && lsblk -d -o NAME,SIZE,MODEL 2>/dev/null | awk 'NR==1{next}{printf "  \033[1;37m/dev/%-8s\033[0;36m %-8s \033[2;37m%s\033[0m\n",$1,$2,$3}'
+    echo ""
+    printf "  ${YEL}WARNING: This will ERASE the chosen disk entirely.${RST}\n"
+    printf "  ${DIM}Enter target disk name (e.g. sda) or [q] to cancel: ${WHT}"
+    read -r target; printf "${RST}"
+    [ "$target" = "q" ] || [ -z "$target" ] && echo "  Cancelled." && return
+    printf "  ${RED}Confirm: type YES to erase /dev/%s: ${WHT}" "$target"; read -r confirm; printf "${RST}"
+    [ "$confirm" != "YES" ] && echo "  Cancelled." && return
+    printf "\n  ${CY}Installing Flynn OS to /dev/%s ...${RST}\n\n" "$target"
+    bash /opt/flynn/install/install-flynnos-full.sh --target "/dev/$target" 2>&1 | while IFS= read -r line; do printf "  %s\n" "$line"; done
+}
+
+cmd_help() {
+    echo ""; hline "═" "$DIM"; center "COMMAND REFERENCE  —  Flynn OS v2.0" "$LCY"; hline "─" "$DIM"; echo ""
+    printf "  ${LCY}SYSTEM${RST}\n"
+    printf "  ${CY}  status        ${DRK}live CPU · RAM · disk · processes${RST}\n"
+    printf "  ${CY}  version       ${DRK}Flynn OS version info${RST}\n"
+    printf "  ${CY}  top / htop    ${DRK}interactive process monitor${RST}\n"
+    printf "  ${CY}  disk          ${DRK}disk + block devices${RST}\n"
+    printf "  ${CY}  mem           ${DRK}memory details${RST}\n"
+    printf "  ${CY}  ps            ${DRK}process list${RST}\n"
+    printf "  ${CY}  reboot/halt   ${DRK}restart or power off${RST}\n\n"
+    printf "  ${LCY}NETWORK${RST}\n"
+    printf "  ${CY}  net           ${DRK}interfaces + connectivity${RST}\n"
+    printf "  ${CY}  scan [host]   ${DRK}LAN scan or port scan a host${RST}\n"
+    printf "  ${CY}  wifi scan     ${DRK}list nearby WiFi networks${RST}\n"
+    printf "  ${CY}  wifi connect  ${DRK}join a WiFi network${RST}\n"
+    printf "  ${CY}  ping <host>   ${DRK}reachability test${RST}\n"
+    printf "  ${CY}  ssh-info      ${DRK}show SSH access credentials${RST}\n\n"
+    printf "  ${LCY}SERVICES${RST}\n"
+    printf "  ${CY}  services      ${DRK}show all service status${RST}\n"
+    printf "  ${CY}  daemon        ${DRK}start Flynn REST API :7777${RST}\n\n"
+    printf "  ${LCY}GRID CONTROL${RST}\n"
+    printf "  ${CY}  pi            ${DRK}Pi status (100.74.204.71)${RST}\n"
+    printf "  ${CY}  pi sync       ${DRK}sync config to Pi${RST}\n"
+    printf "  ${CY}  pi wakepc     ${DRK}send WoL via Pi${RST}\n"
+    printf "  ${CY}  install       ${DRK}install Flynn OS to disk${RST}\n\n"
+    printf "  ${LCY}FILES${RST}\n"
+    printf "  ${CY}  ls [path]     ${DRK}list directory${RST}\n"
+    printf "  ${CY}  cat/nano      ${DRK}view / edit files${RST}\n\n"
+    printf "  ${LCY}FUN${RST}\n"
+    printf "  ${CY}  matrix        ${DRK}matrix rain animation${RST}\n"
+    printf "  ${CY}  tron/clear    ${DRK}redisplay boot splash${RST}\n"
+    printf "  ${CY}  sh            ${DRK}drop to BusyBox shell${RST}\n\n"
+    hline "═" "$DIM"; echo ""
+}
+
+prompt() {
+    local load=$(cut -d' ' -f1 /proc/loadavg 2>/dev/null||echo 0)
+    local ncpu=$(nproc 2>/dev/null||echo 1)
+    local cpq=$(awk "BEGIN{printf \"%d\",${load}*100/${ncpu}}")
+    local memq=$(get_mem_pct)
+    local cc=$(color_pct ${cpq:-0}) mc=$(color_pct $memq)
+    local pip=$(get_ip||echo "no-net")
+    printf "${DIM}╔[${WHT}root${CY}@flynnos${DIM}][${cc}cpu:${cpq}%%${DIM}][${mc}mem:${memq}%%${DIM}][${CY}${pip}${DIM}][$(uptime_str)]╗${RST}\n"
+    printf "${DIM}╚${LCY}▶ ${RST}"
+}
+
+echo "2.0-linux-$(date +%Y%m%d 2>/dev/null||echo dev)" > /etc/flynnos-version 2>/dev/null||true
+
+# Auto-start daemon
+if [ -f /opt/flynn/daemon/flynn_daemon.py ] && ! pgrep -f 'flynn_daemon.py' &>/dev/null; then
+    nohup python3 /opt/flynn/daemon/flynn_daemon.py >/var/log/flynn-daemon.log 2>&1 &
+fi
+
+tron_splash
+
+while true; do
+    prompt
+    read -r CMD ARG1 ARG2 ARG3
+    CMD="${CMD#"${CMD%%[![:space:]]*}"}"
+    case "$CMD" in
+        ""|help|"?")             cmd_help ;;
+        status|sys|info|sysinfo) cmd_status ;;
+        net|ip|network)          cmd_net ;;
+        scan)                    cmd_scan "$ARG1" ;;
+        wifi)                    cmd_wifi "$ARG1" "$ARG2" "$ARG3" ;;
+        services|svc)            cmd_services ;;
+        matrix|rain)             cmd_matrix ;;
+        pi)                      cmd_pi "$ARG1" ;;
+        disk|df|storage)         cmd_disk ;;
+        install)                 cmd_install ;;
+        daemon)                  cmd_daemon ;;
+        ssh-info|ssh)            cmd_ssh_info ;;
+        ps|proc)
+            echo ""; ps -eo pid,comm,pcpu,pmem --sort=-pcpu 2>/dev/null | head -14 | \
+              awk 'NR==1{printf "  \033[2;36m%-6s %-22s %-6s %-6s\033[0m\n",$1,$2,$3,$4;next}{printf "  \033[0;37m%-6s \033[1;37m%-22s \033[0;36m%-6s \033[0;32m%-6s\033[0m\n",$1,$2,$3,$4}'
+            echo "" ;;
+        mem|memory)    echo ""; free -h 2>/dev/null; echo "" ;;
+        ls)            echo ""; ls --color=auto ${ARG1:-.} 2>/dev/null; echo "" ;;
+        cat)           echo ""; cat "$ARG1" 2>/dev/null || printf "  ${RED}Not found: %s${RST}\n" "$ARG1"; echo "" ;;
+        nano|vi|vim)   nano "$ARG1" 2>/dev/null || vi "$ARG1" 2>/dev/null || printf "  ${YEL}No editor found${RST}\n" ;;
+        find)          echo ""; find / -name "*${ARG1}*" 2>/dev/null | head -20; echo "" ;;
+        ping)          echo ""; ping -c3 $ARG1 2>&1; echo "" ;;
+        top)           top ;;
+        htop)          htop 2>/dev/null || top ;;
+        clear|cls|tron) tron_splash ;;
+        version|ver)
+            printf "\n  ${LCY}Flynn OS Linux 2.0${RST}  ${DIM}$(cat /etc/flynnos-version 2>/dev/null)${RST}\n"
+            printf "  ${DIM}Kernel ${WHT}%s  ${DIM}Arch ${WHT}%s${RST}\n\n" "$(uname -r)" "$(uname -m)" ;;
+        reboot)        printf "${YEL}  Rebooting...${RST}\n"; sleep 1; reboot ;;
+        halt|poweroff|shutdown) printf "${YEL}  Halting...${RST}\n"; sleep 1; poweroff ;;
+        sh|bash|shell) printf "  ${DIM}(type 'exit' to return)${RST}\n"; /bin/sh; tron_splash ;;
+        tmux)          tmux $ARG1 2>/dev/null || printf "  ${YEL}tmux not available${RST}\n" ;;
+        curl)          curl $ARG1 $ARG2 2>/dev/null ;;
+        wget)          wget $ARG1 2>/dev/null ;;
+        uname)         uname $ARG1 ;;
+        date)          date ;;
+        echo)          echo "$ARG1 $ARG2 $ARG3" ;;
+        *)
+            if command -v "$CMD" &>/dev/null 2>&1; then $CMD $ARG1 $ARG2 $ARG3
+            else printf "  ${DIM}Unknown: ${WHT}%s  ${DRK}— type ${LCY}help${RST}\n" "$CMD"; fi ;;
+    esac
+    echo ""
+done

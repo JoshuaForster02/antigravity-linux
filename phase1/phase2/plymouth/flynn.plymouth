@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Flynn OS
+Description=TRON:Legacy boot animation — grid builds up, logo fades in
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/flynn
+ScriptFile=/usr/share/plymouth/themes/flynn/flynn.script

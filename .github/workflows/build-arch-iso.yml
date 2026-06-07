@@ -1,0 +1,112 @@
+name: Flynn OS — Build Arch Linux ISO
+
+on:
+  push:
+    branches: [ main, dev ]
+    paths:
+      - 'archiso/**'
+      - '.github/workflows/build-arch-iso.yml'
+  workflow_dispatch:   # manual trigger from GitHub UI → Actions tab
+
+concurrency:
+  group: build-arch-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Flynn OS Arch ISO
+    runs-on: ubuntu-22.04        # real x86_64 Linux — no Rosetta, no emulation
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Build inside Arch Linux Docker ────────────────────────────────────────
+      # GitHub Actions runners are x86_64 Ubuntu, so Arch Docker works natively.
+      # No cross-compilation, no Rosetta, no pacman-key entropy issues.
+      - name: Build ISO inside archlinux container
+        run: |
+          docker run --rm --privileged \
+            -v "${{ github.workspace }}/archiso:/build" \
+            -v "${{ github.workspace }}/archiso/output:/output" \
+            --platform linux/amd64 \
+            archlinux:latest \
+            bash -c "
+              set -euo pipefail
+              mkdir -p /output /work
+
+              echo '=== Initializing pacman ==='
+              pacman-key --init
+              pacman-key --populate archlinux
+
+              echo '=== Installing archiso ==='
+              pacman -Syu --noconfirm
+              pacman -S --noconfirm archiso grub efibootmgr mtools squashfs-tools dosfstools
+
+              echo '=== Setting permissions ==='
+              chmod +x /build/customize_airootfs.sh
+              chmod +x /build/airootfs/usr/local/bin/* 2>/dev/null || true
+              chmod +x /build/airootfs/root/.xinitrc 2>/dev/null || true
+              chmod +x /build/airootfs/root/.config/openbox/autostart 2>/dev/null || true
+
+              echo '=== Building Flynn OS ISO ==='
+              mkarchiso -v -w /work -o /output /build
+
+              echo '=== Done ==='
+              ls -lh /output/*.iso
+            "
+
+      - name: Generate checksum
+        run: |
+          cd archiso/output
+          sha256sum *.iso > flynnos-arch.iso.sha256
+          cat flynnos-arch.iso.sha256
+          echo "ISO_SIZE=$(du -sh *.iso | cut -f1)" >> $GITHUB_ENV
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flynnos-arch-${{ github.sha }}
+          path: |
+            archiso/output/*.iso
+            archiso/output/*.sha256
+          retention-days: 30
+
+      - name: Create GitHub Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            archiso/output/*.iso
+            archiso/output/*.sha256
+          body: |
+            ## Flynn OS Linux ${{ github.ref_name }} — Arch Edition
+
+            **Base:** Arch Linux · linux-zen kernel · AMDGPU/Vulkan
+            **Size:** ${{ env.ISO_SIZE }}
+            **GPU:** AMD RX 6800 optimized (vulkan-radeon + mesa)
+            **Gaming:** Steam + Proton-GE + GameMode + MangoHud
+            **Audio:** PipeWire
+            **UI:** Openbox + TRON theme + Flynn UI Shell v2.0
+
+            ### Boot
+            ```bash
+            # QEMU (testing)
+            qemu-system-x86_64 -cdrom flynnos-*.iso -m 4G -smp 4 -vga virtio -boot d
+
+            # Real hardware: burn to USB
+            sudo dd if=flynnos-*.iso of=/dev/sdX bs=4M status=progress
+            ```
+
+            ### Install to disk (from live session)
+            ```bash
+            bash /opt/flynn/install/install-to-disk.sh
+            ```
+
+            ### Verify
+            ```bash
+            sha256sum -c flynnos-arch.iso.sha256
+            ```
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}

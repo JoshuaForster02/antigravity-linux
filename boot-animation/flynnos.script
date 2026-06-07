@@ -1,0 +1,116 @@
+// Flynn OS — Plymouth Boot Animation Script
+// TRON-style grid that fills in during boot
+
+// ── Setup ─────────────────────────────────────────────────────────────────────
+Window.SetBackgroundTopColor(0.02, 0.04, 0.10);      // dark blue-black
+Window.SetBackgroundBottomColor(0.00, 0.02, 0.06);
+
+screen_width  = Window.GetWidth();
+screen_height = Window.GetHeight();
+
+// ── Background grid ───────────────────────────────────────────────────────────
+grid_color  = Plymouth.CreateColor(0.04, 0.12, 0.18, 0.6);
+grid_step   = 40;
+
+for (x = 0; x < screen_width; x += grid_step) {
+    line = Image.CreateRectangle(1, screen_height, grid_color);
+    sprite = Sprite(line);
+    sprite.SetX(x);
+    sprite.SetY(0);
+    sprite.SetOpacity(0.3);
+}
+for (y = 0; y < screen_height; y += grid_step) {
+    line = Image.CreateRectangle(screen_width, 1, grid_color);
+    sprite = Sprite(line);
+    sprite.SetX(0);
+    sprite.SetY(y);
+    sprite.SetOpacity(0.3);
+}
+
+// ── Logo ─────────────────────────────────────────────────────────────────────
+logo = Image("logo.png");
+logo_sprite = Sprite(logo);
+logo_sprite.SetX(screen_width  / 2 - logo.GetWidth()  / 2);
+logo_sprite.SetY(screen_height / 2 - logo.GetHeight() / 2 - 40);
+logo_sprite.SetOpacity(0);
+
+// ── Progress bar ─────────────────────────────────────────────────────────────
+bar_width  = 300;
+bar_height = 3;
+bar_x      = screen_width  / 2 - bar_width / 2;
+bar_y      = screen_height / 2 + 60;
+
+bar_bg_color   = Plymouth.CreateColor(0.05, 0.15, 0.22, 1.0);
+bar_fill_color = Plymouth.CreateColor(0.20, 0.67, 0.80, 1.0);   // TRON cyan
+bar_glow_color = Plymouth.CreateColor(0.47, 0.87, 1.00, 0.4);   // glow
+
+bar_bg = Image.CreateRectangle(bar_width, bar_height, bar_bg_color);
+bar_bg_sprite = Sprite(bar_bg);
+bar_bg_sprite.SetX(bar_x);
+bar_bg_sprite.SetY(bar_y);
+
+bar_fill = Sprite();
+bar_glow = Sprite();
+
+// ── Status text ───────────────────────────────────────────────────────────────
+status_label = Sprite();
+status_label.SetX(bar_x);
+status_label.SetY(bar_y + 12);
+
+fun draw_status(msg) {
+    img = Image.Text(msg, 0.4, 0.7, 0.9, 1.0, "Monospace 10");
+    status_label.SetImage(img);
+}
+
+// ── Animation tick ────────────────────────────────────────────────────────────
+tick = 0;
+progress = 0;
+
+fun refresh_callback() {
+    tick++;
+
+    // Fade in logo
+    if (tick < 30) {
+        logo_sprite.SetOpacity(tick / 30.0);
+    }
+
+    // Pulse glow on logo
+    glow_alpha = 0.5 + 0.5 * Math.Sin(tick * 0.08);
+    logo_sprite.SetOpacity(Math.Clamp(tick / 30.0, 0, 1) * (0.85 + 0.15 * glow_alpha));
+}
+
+Plymouth.SetRefreshFunction(refresh_callback);
+
+// ── Progress callback ─────────────────────────────────────────────────────────
+fun progress_callback(duration, progress_val) {
+    progress = progress_val;
+    fill_w = Math.Ceil(bar_width * progress_val);
+    if (fill_w < 1) fill_w = 1;
+
+    fill_img  = Image.CreateRectangle(fill_w, bar_height, bar_fill_color);
+    glow_img  = Image.CreateRectangle(fill_w, bar_height + 4, bar_glow_color);
+
+    bar_fill.SetImage(fill_img);
+    bar_fill.SetX(bar_x);
+    bar_fill.SetY(bar_y);
+
+    bar_glow.SetImage(glow_img);
+    bar_glow.SetX(bar_x);
+    bar_glow.SetY(bar_y - 2);
+}
+
+Plymouth.SetBootProgressFunction(progress_callback);
+
+// ── Status messages ───────────────────────────────────────────────────────────
+fun status_callback(status) {
+    if (status == "failed")
+        draw_status("[ SYSTEM ERROR ]");
+}
+
+Plymouth.SetDisplayStatusFunction(status_callback);
+
+// ── Password prompt ───────────────────────────────────────────────────────────
+fun display_password_callback(prompt, bullets) {
+    draw_status("PASSWORD: " + String.Repeat("*", bullets));
+}
+Plymouth.SetDisplayPasswordFunction(display_password_callback);

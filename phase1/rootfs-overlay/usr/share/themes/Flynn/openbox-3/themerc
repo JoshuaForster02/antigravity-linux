@@ -1,0 +1,41 @@
+# Flynn OS Openbox Theme — TRON aesthetic
+
+border.width: 1
+padding.width: 4
+padding.height: 2
+
+window.active.title.bg: Solid Flat
+window.active.title.bg.color: #001520
+window.active.label.bg: Parentrelative
+window.active.label.text.color: #00e5ff
+window.active.border.color: #00e5ff
+
+window.inactive.title.bg: Solid Flat
+window.inactive.title.bg.color: #000810
+window.inactive.label.bg: Parentrelative
+window.inactive.label.text.color: #004455
+window.inactive.border.color: #003344
+
+window.active.button.*.bg: Solid Flat
+window.active.button.*.bg.color: #001520
+window.active.button.*.image.color: #00e5ff
+window.inactive.button.*.bg: Solid Flat
+window.inactive.button.*.bg.color: #000810
+window.inactive.button.*.image.color: #003344
+
+menu.border.color: #00e5ff
+menu.border.width: 1
+menu.title.bg: Solid Flat
+menu.title.bg.color: #001520
+menu.title.text.color: #00e5ff
+menu.items.bg: Solid Flat
+menu.items.bg.color: #000810
+menu.items.text.color: #00ccdd
+menu.items.active.bg: Solid Flat
+menu.items.active.bg.color: #001828
+menu.items.active.text.color: #00e5ff
+
+osd.border.color: #00e5ff
+osd.bg: Solid Flat
+osd.bg.color: #000810
+osd.label.text.color: #00e5ff

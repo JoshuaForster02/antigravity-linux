@@ -1,0 +1,85 @@
+#!/bin/bash
+# Flynn OS Session Launcher
+# Starts the full Flynn OS graphical session:
+#   1. Flynn compositor (Wayland server)
+#   2. ANTIGRAVITY daemon (statusbar + palette)
+#   3. Default apps (terminal, Notion panel)
+#   4. Flynn daemon (REST API + MQTT)
+
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export XDG_SESSION_TYPE=wayland
+export MOZ_ENABLE_WAYLAND=1
+export QT_QPA_PLATFORM=wayland
+export GDK_BACKEND=wayland
+
+mkdir -p "$XDG_RUNTIME_DIR"
+LOG_DIR="$HOME/.local/share/flynnos/logs"
+mkdir -p "$LOG_DIR"
+
+CY='\e[1;36m'
+RST='\e[0m'
+
+log() { printf "${CY}[Flynn Session]${RST} %s\n" "$*"; }
+
+# ── 1. Start compositor ───────────────────────────────────────────────────────
+log "Starting Flynn compositor..."
+if command -v flynn-compositor &>/dev/null; then
+    flynn-compositor &>"$LOG_DIR/compositor.log" &
+    COMPOSITOR_PID=$!
+    sleep 1
+
+    # Wait for Wayland socket
+    for i in $(seq 1 10); do
+        [ -S "$XDG_RUNTIME_DIR/wayland-0" ] && break
+        sleep 0.3
+    done
+    log "Compositor online (PID $COMPOSITOR_PID, WAYLAND_DISPLAY=$WAYLAND_DISPLAY)"
+else
+    log "WARNING: flynn-compositor not found — using existing display"
+    export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
+fi
+
+# ── 2. Start ANTIGRAVITY daemon ───────────────────────────────────────────────
+log "Starting ANTIGRAVITY daemon..."
+python3 /opt/flynn/agd/antigravity.py &>"$LOG_DIR/agd.log" &
+AGD_PID=$!
+sleep 0.5
+
+# ── 3. Start Flynn daemon (REST + MQTT) ───────────────────────────────────────
+log "Starting Flynn daemon (REST API :7777)..."
+python3 /opt/flynn/daemon/flynn_daemon.py &>"$LOG_DIR/daemon.log" &
+DAEMON_PID=$!
+
+# ── 4. Launch default apps ────────────────────────────────────────────────────
+sleep 1
+log "Launching workspace apps..."
+
+# Terminal window
+if command -v foot &>/dev/null; then
+    foot &
+elif command -v alacritty &>/dev/null; then
+    alacritty &
+fi
+
+# Notion panel (if browser available)
+if command -v flynn-browser &>/dev/null; then
+    sleep 0.5
+    flynn-browser https://notion.so --title "Notion" &
+fi
+
+log "Flynn OS session active."
+log "  Compositor: $COMPOSITOR_PID"
+log "  AGD:        $AGD_PID"
+log "  Daemon:     $DAEMON_PID"
+log ""
+log "Keyboard shortcuts:"
+log "  Super+Space  — ⌘K Command Palette"
+log "  Super+D      — Focus Mode"
+log "  Super+G      — Game Mode"
+log "  Super+Q      — Close window"
+log "  Super+H/J/K/L — Move window"
+log ""
+
+# Wait for compositor to exit
+wait $COMPOSITOR_PID 2>/dev/null
+log "Session ended."

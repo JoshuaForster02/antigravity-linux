@@ -1,0 +1,230 @@
+name: Flynn OS — Build ISO
+
+on:
+  push:
+    branches: [ main, dev ]
+    paths:
+      - 'phase1/**'
+      - 'phase2/**'
+      - 'daemon/**'
+      - '.github/workflows/build-iso.yml'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:           # manual trigger from GitHub UI
+
+concurrency:
+  group: build-iso-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Flynn OS Linux ISO
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Cache Alpine rootfs download ─────────────────────────────────────────
+      - name: Cache Alpine rootfs
+        uses: actions/cache@v4
+        with:
+          path: phase1/alpine-cache
+          key: alpine-minirootfs-3.19.1-x86_64
+          restore-keys: alpine-minirootfs-
+
+      # ── Install build tools ──────────────────────────────────────────────────
+      - name: Install build tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            linux-image-generic \
+            grub-pc-bin \
+            grub-efi-amd64-bin \
+            grub-common \
+            xorriso \
+            mtools \
+            squashfs-tools \
+            dosfstools \
+            cpio \
+            wget \
+            python3
+
+      # ── Prepare Alpine rootfs ────────────────────────────────────────────────
+      - name: Prepare Alpine rootfs
+        run: |
+          mkdir -p phase1/build/rootfs
+          ALPINE_URL="https://dl-cdn.alpinelinux.org/alpine/v3.19/releases/x86_64/alpine-minirootfs-3.19.1-x86_64.tar.gz"
+          ALPINE_CACHE="phase1/alpine-cache/alpine-minirootfs-3.19.1-x86_64.tar.gz"
+          mkdir -p phase1/alpine-cache
+          if [ ! -f "$ALPINE_CACHE" ]; then
+            echo "Downloading Alpine rootfs..."
+            wget -q "$ALPINE_URL" -O "$ALPINE_CACHE"
+          else
+            echo "Using cached Alpine rootfs"
+          fi
+          tar -xzf "$ALPINE_CACHE" -C phase1/build/rootfs
+
+      # ── Install Alpine packages ──────────────────────────────────────────────
+      - name: Install Alpine packages in rootfs
+        run: |
+          cp /etc/resolv.conf phase1/build/rootfs/etc/resolv.conf
+          sudo chroot phase1/build/rootfs /bin/sh -c "
+            apk update -q &&
+            apk add --no-cache -q
+              bash busybox-extras coreutils
+              python3 py3-pip
+              iproute2 iputils
+              ncurses nano
+              procps util-linux
+              alsa-utils alsa-lib
+          " || true
+          rm -f phase1/build/rootfs/etc/resolv.conf
+
+      # ── Overlay Flynn OS files ────────────────────────────────────────────────
+      - name: Copy Flynn OS overlay
+        run: |
+          # rootfs-overlay
+          cp -r phase1/rootfs-overlay/. phase1/build/rootfs/
+
+          # Phase 2: boot experience
+          mkdir -p phase1/build/rootfs/usr/share/plymouth/themes/flynn
+          mkdir -p phase1/build/rootfs/etc/flynnos/sounds
+          mkdir -p phase1/build/rootfs/usr/local/bin
+
+          [ -f phase2/plymouth/flynn-theme/flynn.script ]   && cp phase2/plymouth/flynn-theme/flynn.script   phase1/build/rootfs/usr/share/plymouth/themes/flynn/
+          [ -f phase2/plymouth/flynn-theme/flynn.plymouth ] && cp phase2/plymouth/flynn-theme/flynn.plymouth phase1/build/rootfs/usr/share/plymouth/themes/flynn/
+          [ -f phase2/sounds/boot-chime.wav ]               && cp phase2/sounds/boot-chime.wav               phase1/build/rootfs/etc/flynnos/sounds/
+          [ -f phase2/greetd/flynn-greeter ]                && cp phase2/greetd/flynn-greeter                phase1/build/rootfs/usr/local/bin/
+
+          # Daemon
+          mkdir -p phase1/build/rootfs/opt/flynn/daemon
+          cp -r daemon/. phase1/build/rootfs/opt/flynn/daemon/ 2>/dev/null || true
+
+          # Permissions
+          chmod +x phase1/build/rootfs/init
+          chmod +x phase1/build/rootfs/usr/local/bin/flynn-ui
+          chmod +x phase1/build/rootfs/usr/local/bin/flynn-greeter 2>/dev/null || true
+
+      # ── Configure rootfs ──────────────────────────────────────────────────────
+      - name: Configure rootfs
+        run: |
+          ROOTFS="phase1/build/rootfs"
+
+          echo "flynnos" > $ROOTFS/etc/hostname
+          echo "127.0.1.1 flynnos" >> $ROOTFS/etc/hosts
+
+          # Inittab
+          printf '::sysinit:/etc/init.d/rcS\n::once:/sbin/udhcpc -i eth0 -q 2>/dev/null\ntty1::respawn:/usr/local/bin/flynn-ui\ntty2::respawn:/sbin/getty 38400 tty2\n' \
+            > $ROOTFS/etc/inittab
+
+          # Boot chime
+          printf '#!/bin/sh\nif command -v aplay >/dev/null 2>&1; then\n  aplay -q /etc/flynnos/sounds/boot-chime.wav 2>/dev/null &\nfi\n' \
+            > $ROOTFS/etc/profile.d/flynn-chime.sh
+          chmod +x $ROOTFS/etc/profile.d/flynn-chime.sh
+
+          # ALSA
+          printf 'pcm.!default { type hw; card 0 }\nctl.!default { type hw; card 0 }\n' \
+            > $ROOTFS/etc/asound.conf
+
+          # Version
+          echo "1.0-linux-$(date +%Y%m%d)-${{ github.sha }}" > $ROOTFS/etc/flynnos-version
+
+          mkdir -p $ROOTFS/root $ROOTFS/var/log $ROOTFS/etc/profile.d
+          rm -rf $ROOTFS/var/cache/apk/*
+
+      # ── Build initramfs ────────────────────────────────────────────────────────
+      - name: Build initramfs
+        run: |
+          (cd phase1/build/rootfs && find . | cpio -H newc -o 2>/dev/null) \
+            | gzip -9 > phase1/build/initrd.img
+          echo "initrd size: $(du -sh phase1/build/initrd.img | cut -f1)"
+
+      # ── Copy kernel ────────────────────────────────────────────────────────────
+      - name: Copy kernel
+        run: |
+          KERNEL=$(ls /boot/vmlinuz-*-generic 2>/dev/null | sort -V | tail -1)
+          echo "Using kernel: $KERNEL"
+          cp "$KERNEL" phase1/build/vmlinuz
+          echo "Kernel size: $(du -sh phase1/build/vmlinuz | cut -f1)"
+
+      # ── Assemble ISO staging ──────────────────────────────────────────────────
+      - name: Assemble ISO staging tree
+        run: |
+          mkdir -p phase1/build/staging/boot/grub/fonts
+          mkdir -p phase1/build/staging/boot/grub/themes/flynnos
+          mkdir -p phase1/build/staging/EFI/BOOT
+
+          cp phase1/build/vmlinuz     phase1/build/staging/boot/vmlinuz
+          cp phase1/build/initrd.img  phase1/build/staging/boot/initrd.img
+          cp phase1/grub/grub-linux.cfg phase1/build/staging/boot/grub/grub.cfg
+
+          cp /usr/share/grub/unicode.pf2 \
+             phase1/build/staging/boot/grub/fonts/ 2>/dev/null || true
+
+          # GRUB TRON theme
+          if [ -f phase2/grub-theme/background.png ]; then
+            cp phase2/grub-theme/background.png \
+               phase1/build/staging/boot/grub/themes/flynnos/
+            cp phase2/grub-theme/theme.txt \
+               phase1/build/staging/boot/grub/themes/flynnos/
+          fi
+
+      # ── Build ISO ─────────────────────────────────────────────────────────────
+      - name: Build ISO with grub-mkrescue
+        run: |
+          mkdir -p phase1/output
+          grub-mkrescue \
+            -o phase1/output/flynn-os.iso \
+            phase1/build/staging \
+            --compress=no 2>&1
+
+          SIZE=$(du -sh phase1/output/flynn-os.iso | cut -f1)
+          echo "ISO built: $SIZE"
+          echo "ISO_SIZE=$SIZE" >> $GITHUB_ENV
+
+          # Checksum
+          sha256sum phase1/output/flynn-os.iso > phase1/output/flynn-os.iso.sha256
+          cat phase1/output/flynn-os.iso.sha256
+
+      # ── Upload artifact ───────────────────────────────────────────────────────
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flynn-os-linux-${{ github.sha }}
+          path: |
+            phase1/output/flynn-os.iso
+            phase1/output/flynn-os.iso.sha256
+          retention-days: 30
+
+      # ── Create release on tags ────────────────────────────────────────────────
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            phase1/output/flynn-os.iso
+            phase1/output/flynn-os.iso.sha256
+          body: |
+            ## Flynn OS Linux ${{ github.ref_name }}
+
+            **Size:** ${{ env.ISO_SIZE }}
+
+            ### What's in this release
+            - Phase 1: Linux kernel + Alpine rootfs + Flynn UI Shell
+            - Phase 2: TRON GRUB theme + boot chime (ALSA)
+            - Flynn daemon (REST API :7777)
+
+            ### Boot with QEMU
+            ```bash
+            qemu-system-x86_64 -cdrom flynn-os.iso -m 1G -smp 2 -vga std -boot d
+            ```
+
+            ### Verify checksum
+            ```bash
+            sha256sum -c flynn-os.iso.sha256
+            ```
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}

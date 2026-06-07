@@ -1,0 +1,19 @@
+export TERM=linux
+export PATH=/usr/local/bin:/usr/bin:/bin:/sbin:/usr/sbin
+export HOME=/root
+export HISTFILE=/root/.ash_history
+export HISTSIZE=1000
+
+# Aliases
+alias ls='ls --color=auto'
+alias ll='ls -lah --color=auto'
+alias grep='grep --color=auto'
+alias ..='cd ..'
+
+# Source profile.d scripts (boot chime, etc.)
+for f in /etc/profile.d/*.sh; do
+    [ -r "$f" ] && . "$f"
+done
+
+# tty1 → Flynn UI automatically
+[ "$(tty)" = "/dev/tty1" ] && exec /usr/local/bin/flynn-ui

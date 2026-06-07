@@ -1,0 +1,78 @@
+# Flynn OS GRUB Theme — TRON style
+# Place at: /boot/grub/themes/flynnos/theme.txt
+
+title-text: ""
+desktop-color: "#06091a"
+desktop-image: "background.png"
+
+# Scrollbar
+scrollbar: false
+
+# Boot menu
++ boot_menu {
+    left   = 15%
+    top    = 30%
+    width  = 70%
+    height = 40%
+
+    item_color            = "#335566"
+    item_font             = "Fira Code Regular 14"
+    selected_item_color   = "#33ddff"
+    selected_item_font    = "Fira Code Bold 14"
+
+    item_height           = 32
+    item_padding          = 10
+    item_spacing          = 4
+
+    selected_item_pixmap_style = "selected_item_*.png"
+    menu_pixmap_style          = "menu_*.png"
+}
+
+# Title bar
++ label {
+    top    = 12%
+    left   = 0
+    width  = 100%
+    height = 48
+    text   = "FLYNN  OS  //  LINUX  1.0"
+    color  = "#22aacc"
+    font   = "Fira Code Bold 20"
+    align  = "center"
+}
+
+# Subtitle
++ label {
+    top    = 19%
+    left   = 0
+    width  = 100%
+    height = 28
+    text   = "T H E   G R I D"
+    color  = "#1a4455"
+    font   = "Fira Code Regular 12"
+    align  = "center"
+}
+
+# Bottom status
++ label {
+    top    = 88%
+    left   = 0
+    width  = 100%
+    height = 24
+    text   = "Use ↑↓ to navigate  ·  Enter to boot  ·  e to edit  ·  c for console"
+    color  = "#1a3344"
+    font   = "Fira Code Regular 10"
+    align  = "center"
+}
+
+# Countdown progress bar
++ progress_bar {
+    id         = "__timeout__"
+    left       = 25%
+    top        = 84%
+    width      = 50%
+    height     = 4
+    fg_color   = "#22aacc"
+    bg_color   = "#0a1a2a"
+    border_color = "#1a3344"
+    text       = ""
+}

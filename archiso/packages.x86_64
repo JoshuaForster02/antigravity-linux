@@ -1,0 +1,141 @@
+# ── Flynn OS Linux — Package list ─────────────────────────────────────────────
+# Base system
+base
+linux-zen
+linux-zen-headers
+linux-firmware
+amd-ucode
+intel-ucode
+
+# Boot
+grub
+efibootmgr
+mtools
+
+# System tools
+systemd
+systemd-sysvcompat
+sudo
+which
+less
+man-db
+
+# Shell + terminal utils
+bash
+bash-completion
+zsh
+tmux
+htop
+btop
+neofetch
+tree
+file
+lsof
+strace
+ncdu
+
+# Network
+networkmanager
+iwd
+dhcpcd
+openssh
+dropbear
+nmap
+curl
+wget
+rsync
+iproute2
+iputils
+
+# Audio — PipeWire stack
+pipewire
+pipewire-alsa
+pipewire-pulse
+pipewire-jack
+wireplumber
+alsa-utils
+
+# Display — X11 (QEMU + fallback) + Wayland
+xorg-server
+xorg-xinit
+xorg-xrandr
+xorg-xsetroot
+xf86-video-vmware
+xf86-video-vesa
+xf86-video-fbdev
+xf86-input-libinput
+
+# Wayland
+wayland
+wayland-protocols
+xdg-desktop-portal
+
+# GPU — AMD RX 6800 (RDNA2 = amdgpu)
+mesa
+lib32-mesa
+vulkan-radeon
+lib32-vulkan-radeon
+libva-mesa-driver
+mesa-vdpau
+opencl-rusticl-mesa
+
+# Window manager + desktop environment
+openbox
+obconf
+picom
+xterm
+feh
+rofi
+dunst
+tint2
+scrot
+xdotool
+xorg-xsetroot
+xorg-xrdb
+xorg-xset
+nm-connection-editor
+
+# Fonts
+ttf-dejavu
+ttf-jetbrains-mono
+noto-fonts
+noto-fonts-emoji
+
+# File manager + apps
+thunar
+mousepad
+viewnior
+mpv
+
+# Python (for Flynn daemon + wallpaper + Notion/Anki sync)
+python
+python-pip
+python-flask
+python-requests
+python-paho-mqtt
+python-psutil
+python-xlib
+
+# Gaming
+steam
+gamemode
+lib32-gamemode
+mangohud
+lib32-mangohud
+
+# Dev tools
+git
+vim
+nano
+make
+gcc
+pkg-config
+
+# Arch install helpers
+arch-install-scripts
+gptfdisk
+parted
+e2fsprogs
+dosfstools
+btrfs-progs
+calamares

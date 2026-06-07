@@ -1,0 +1,100 @@
+/* Flynn OS — Rofi launcher config — TRON aesthetic */
+
+configuration {
+    modi:            "drun,run,window";
+    show-icons:      true;
+    icon-theme:      "Papirus-Dark";
+    terminal:        "xterm";
+    font:            "JetBrains Mono 12";
+    case-sensitive:  false;
+    cycle:           true;
+    drun-display-format: "{name}";
+    window-format:   "{w}  {c}  {t}";
+}
+
+@theme "flynn-tron"
+
+/* ── Flynn TRON Theme ─────────────────────────────────────────────────────── */
+* {
+    bg:         #000810F5;
+    bg-sel:     #001828EE;
+    fg:         #00E5FF;
+    fg-dim:     #004455;
+    border:     #00E5FF;
+    border-dim: #002233;
+
+    background-color:  @bg;
+    text-color:        @fg;
+    border-color:      @border;
+}
+
+window {
+    width:            520px;
+    border:           1px;
+    border-color:     @border;
+    border-radius:    6px;
+    padding:          0;
+    background-color: @bg;
+    location:         center;
+    anchor:           center;
+}
+
+mainbox {
+    padding:  0;
+    children: [inputbar, listview];
+}
+
+inputbar {
+    padding:          10px 14px;
+    background-color: #000C1AEE;
+    border:           0 0 1px 0;
+    border-color:     @border-dim;
+    children:         [prompt, entry];
+}
+
+prompt {
+    text-color:   @fg;
+    padding:      0 8px 0 0;
+    font:         "JetBrains Mono Bold 12";
+}
+
+entry {
+    text-color:   @fg;
+    placeholder:  "search...";
+    placeholder-color: @fg-dim;
+}
+
+listview {
+    padding:      6px;
+    spacing:      2px;
+    background-color: @bg;
+    lines:        10;
+    columns:      1;
+    scrollbar:    false;
+}
+
+element {
+    padding:          8px 10px;
+    border-radius:    4px;
+    background-color: transparent;
+    text-color:       @fg-dim;
+}
+
+element selected {
+    background-color: @bg-sel;
+    text-color:       @fg;
+    border:           1px;
+    border-color:     @border;
+    border-radius:    4px;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       inherit;
+    vertical-align:   0.5;
+}
+
+element-icon {
+    size:             22px;
+    background-color: transparent;
+}

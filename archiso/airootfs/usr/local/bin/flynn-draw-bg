@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+"""Draw a TRON grid on the X11 root window via xsetroot + xterm fallback."""
+import subprocess, sys, os
+
+# Try to use xdotool/xsetroot for a quick solid color first
+subprocess.run(["xsetroot", "-solid", "#000810"], capture_output=True)
+
+# For a proper TRON grid we'd need python-xlib or a custom C tool.
+# For now, set a gradient-like solid + launch the terminal immediately.
+# The real visual work happens inside the Flynn UI shell running in xterm.

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_config xmlns="http://openbox.org/3.4/rc">
+  <theme>
+    <name>Flynn</name>
+    <titleLayout>NL</titleLayout>
+    <keepBorder>no</keepBorder>
+    <animateIconify>no</animateIconify>
+    <font place="ActiveWindow">
+      <name>JetBrains Mono</name><size>9</size><weight>Bold</weight>
+    </font>
+    <font place="InactiveWindow">
+      <name>JetBrains Mono</name><size>9</size><weight>Normal</weight>
+    </font>
+  </theme>
+
+  <desktops>
+    <number>2</number>
+    <firstdesk>1</firstdesk>
+    <names><name>GRID</name><name>GAME</name></names>
+  </desktops>
+
+  <resize><drawContents>yes</drawContents></resize>
+  <focus><focusNew>yes</focusNew><followMouse>no</followMouse></focus>
+
+  <keyboard>
+    <!-- Terminal -->
+    <keybind key="Super-Return">
+      <action name="Execute">
+        <command>xterm -bg "#000810" -fg "#00E5FF" -fa "JetBrains Mono" -fs 12 -e /usr/local/bin/flynn-ui</command>
+      </action>
+    </keybind>
+    <!-- Rofi launcher -->
+    <keybind key="Super-space">
+      <action name="Execute"><command>rofi -show drun</command></action>
+    </keybind>
+    <!-- Window management -->
+    <keybind key="Super-q"><action name="Close"/></keybind>
+    <keybind key="Super-f"><action name="ToggleMaximizeFull"/></keybind>
+    <keybind key="Super-h">
+      <action name="MoveResizeTo"><x>0</x><y>0</y><width>50%</width><height>100%</height></action>
+    </keybind>
+    <keybind key="Super-l">
+      <action name="MoveResizeTo"><x>50%</x><y>0</y><width>50%</width><height>100%</height></action>
+    </keybind>
+    <keybind key="Super-Up"><action name="ToggleMaximizeFull"/></keybind>
+    <keybind key="Super-Down"><action name="Iconify"/></keybind>
+    <keybind key="Super-Tab"><action name="NextWindow"/></keybind>
+    <!-- Desktop switch -->
+    <keybind key="Super-1"><action name="GoToDesktop"><to>1</to></action></keybind>
+    <keybind key="Super-2"><action name="GoToDesktop"><to>2</to></action></keybind>
+    <!-- Wallpaper refresh -->
+    <keybind key="Super-b">
+      <action name="Execute"><command>/usr/local/bin/flynn-wallpaper</command></action>
+    </keybind>
+    <!-- Screenshot -->
+    <keybind key="Print">
+      <action name="Execute"><command>scrot ~/screenshot-%Y%m%d-%H%M%S.png</command></action>
+    </keybind>
+  </keyboard>
+
+  <mouse>
+    <context name="Desktop">
+      <mousebind button="Right" action="Press">
+        <action name="ShowMenu"><menu>root-menu</menu></action>
+      </mousebind>
+    </context>
+    <context name="Frame">
+      <mousebind button="Left" action="Press">
+        <action name="Focus"/><action name="Raise"/>
+      </mousebind>
+      <mousebind button="Left" action="Drag"><action name="Move"/></mousebind>
+    </context>
+    <context name="Titlebar">
+      <mousebind button="Left" action="DoubleClick">
+        <action name="ToggleMaximizeFull"/>
+      </mousebind>
+      <mousebind button="Right" action="Press">
+        <action name="ShowMenu"><menu>client-menu</menu></action>
+      </mousebind>
+    </context>
+    <context name="Top">
+      <mousebind button="Left" action="Drag"><action name="Resize"/></mousebind>
+    </context>
+  </mouse>
+
+  <applications>
+    <!-- Flynn terminal starts in bottom-left area -->
+    <application title="Flynn OS — The Grid">
+      <position><x>60</x><y>60</y></position>
+      <size><width>112</width><height>32</height></size>
+      <focus>yes</focus>
+    </application>
+    <!-- Steam on desktop 2 -->
+    <application class="Steam">
+      <desktop>2</desktop>
+    </application>
+  </applications>
+</openbox_config>

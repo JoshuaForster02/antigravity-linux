@@ -1,0 +1,18 @@
+[Unit]
+Description=Flynn OS Daemon (REST API + MQTT + AI)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=flynn
+Group=flynn
+WorkingDirectory=/opt/flynn/daemon
+ExecStart=/usr/bin/python3 /opt/flynn/daemon/flynn_daemon.py
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
