@@ -38,7 +38,8 @@ jobs:
         run: |
           docker run --rm --privileged \
             --shm-size=512m \
-            --tmpfs /work:exec,size=4g \
+            --tmpfs /work:exec,size=6g \
+            --tmpfs /isoout:exec,size=2g \
             -v "${{ github.workspace }}/archiso:/build" \
             -v "${{ github.workspace }}/archiso/output:/output" \
             archlinux:latest \
@@ -63,7 +64,10 @@ jobs:
               chmod +x /build/customize_airootfs.sh
 
               echo '=== Building Flynn OS ISO ==='
-              mkarchiso -v -w /work -o /output /build
+              mkarchiso -v -w /work -o /isoout /build
+
+              echo '=== Kopiere ISO nach /output ==='
+              cp /isoout/*.iso /output/
 
               echo '=== Done ==='
               ls -lh /output/*.iso

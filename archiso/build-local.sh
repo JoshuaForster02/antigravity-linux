@@ -56,7 +56,8 @@ docker run --rm \
     --privileged \
     --platform linux/amd64 \
     --shm-size=512m \
-    --tmpfs /work:exec,size=3g \
+    --tmpfs /work:exec,size=6g \
+    --tmpfs /isoout:exec,size=2g \
     -v "$(pwd):/build" \
     -v "$OUTPUT:/output" \
     -v "$CACHE:/var/cache/pacman/pkg" \
@@ -78,7 +79,11 @@ docker run --rm \
         chmod +x /build/customize_airootfs.sh
 
         echo '=== ISO bauen ==='
-        mkarchiso -v -w /work -o /output /build
+        mkarchiso -v -w /work -o /isoout /build
+
+        echo '=== Kopiere ISO nach /output ==='
+        cp /isoout/*.iso /output/
+        cp /isoout/*.iso.sha256 /output/ 2>/dev/null || true
 
         echo ''
         echo '╔══════════════════════════════════════════╗'

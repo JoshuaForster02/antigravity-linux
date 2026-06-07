@@ -171,3 +171,17 @@ gtk-layer-shell
 python-pillow
 
 # Phase 6: First-boot wizard deps
+# Gaming (post-ISO install via flynn-setup if needed)
+steam
+lib32-mesa
+lib32-vulkan-radeon
+lib32-gtk3
+lib32-gamemode
+lib32-mangohud
+
+# Productivity
+anki
+python-pyqt6
+python-pyqt6-webengine
+mpv
+viewnior
