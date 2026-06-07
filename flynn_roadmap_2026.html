@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flynn OS — Master Roadmap 2026</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: #04060f;
+  color: #9cc8d8;
+  font-family: 'SF Mono','JetBrains Mono','Fira Code','Courier New',monospace;
+  font-size: 11px;
+  padding: 28px 24px 40px;
+  min-height: 100vh;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+.header {
+  margin-bottom: 28px;
+}
+.header h1 {
+  font-size: 13px;
+  letter-spacing: 5px;
+  color: #00d8f0;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.header .sub {
+  font-size: 10px;
+  color: #224455;
+  letter-spacing: 2px;
+}
+.header .updated {
+  font-size: 9px;
+  color: #1a3344;
+  margin-top: 6px;
+  letter-spacing: 1px;
+}
+
+/* ── Legend ─────────────────────────────────────────────────────────────────  */
+.legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  background: #060a18;
+  border: 1px solid #0e1e2e;
+  border-radius: 6px;
+}
+.leg { display:flex; align-items:center; gap:6px; font-size:9px; color:#334455; }
+
+/* ── Track grid ─────────────────────────────────────────────────────────────  */
+.tracks {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+/* ── Track card ─────────────────────────────────────────────────────────────  */
+.track {
+  border: 1px solid #0e1e30;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #060a16;
+}
+
+.track-head {
+  padding: 12px 14px;
+  border-bottom: 1px solid #0e1e30;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.track-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.track-icon { font-size: 13px; }
+.track-sub {
+  font-size: 9px;
+  color: #224455;
+  letter-spacing: 1px;
+}
+.track-progress {
+  margin-top: 8px;
+  height: 3px;
+  background: #0a1a28;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.track-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Track colors */
+.track-kernel .track-head  { background:#080f1a; }
+.track-kernel .track-title { color:#3399cc; }
+.track-kernel .track-progress-fill { background: linear-gradient(to right,#1a4466,#3399cc); }
+
+.track-linux .track-head   { background:#0a0810; }
+.track-linux .track-title  { color:#cc44aa; }
+.track-linux .track-progress-fill { background: linear-gradient(to right,#3a0830,#cc44aa); }
+
+.track-mac .track-head     { background:#081410; }
+.track-mac .track-title    { color:#22cc88; }
+.track-mac .track-progress-fill { background: linear-gradient(to right,#083020,#22cc88); }
+
+.track-pi .track-head      { background:#100f08; }
+.track-pi .track-title     { color:#ccaa22; }
+.track-pi .track-progress-fill { background: linear-gradient(to right,#302808,#ccaa22); }
+
+.track-gaming .track-head  { background:#100808; }
+.track-gaming .track-title { color:#ee6622; }
+.track-gaming .track-progress-fill { background: linear-gradient(to right,#301008,#ee6622); }
+
+/* ── Phase sections ─────────────────────────────────────────────────────────  */
+.phase-section {
+  border-bottom: 1px solid #0a161e;
+  padding: 10px 12px;
+}
+.phase-section:last-child { border-bottom: none; }
+.phase-label {
+  font-size: 8px;
+  color: #1e3444;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.phase-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #0a1a26;
+}
+
+/* ── Feature items ───────────────────────────────────────────────────────────  */
+.feat {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 4px 0;
+  cursor: default;
+  border-radius: 4px;
+  transition: background 0.1s;
+}
+.feat:hover { background: rgba(0,200,240,0.03); }
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.s-done    { background: #00cc88; box-shadow: 0 0 5px #00cc8866; }
+.s-wip     { background: #ccaa22; box-shadow: 0 0 5px #ccaa2266; }
+.s-plan    { background: #1a3344; }
+.s-krass   { background: #ee44aa; box-shadow: 0 0 5px #ee44aa55; }
+.s-block   { background: #cc3322; box-shadow: 0 0 4px #cc332266; }
+
+.feat-text {
+  font-size: 10px;
+  line-height: 1.45;
+  color: #6699aa;
+  flex: 1;
+}
+.feat-text strong { color: #99ccdd; font-weight: 600; }
+.feat-text .tag {
+  display: inline-block;
+  font-size: 8px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: 4px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  vertical-align: middle;
+}
+.tag-krass { background:#2a0a1a; color:#ee44aa; border:1px solid #ee44aa44; }
+.tag-must  { background:#0a1a2a; color:#22aacc; border:1px solid #22aacc44; }
+.tag-pi    { background:#1a1a0a; color:#ccaa22; border:1px solid #ccaa2244; }
+.tag-nice  { background:#0a180a; color:#22cc88; border:1px solid #22cc8844; }
+
+/* ── Bottom summary bar ─────────────────────────────────────────────────────  */
+.summary {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+.summary-card {
+  background: #060a16;
+  border: 1px solid #0e1e30;
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+.summary-card .sc-label {
+  font-size: 9px;
+  color: #1e3444;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.summary-card .sc-item {
+  font-size: 10px;
+  color: #5588aa;
+  padding: 3px 0;
+  border-bottom: 1px solid #0a1620;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.summary-card .sc-item:last-child { border-bottom: none; }
+.sc-next { color: #00e5ff !important; font-weight: 600; }
+
+/* ── Ecosystem diagram ───────────────────────────────────────────────────────  */
+.ecosystem {
+  margin-top: 16px;
+  padding: 14px 18px;
+  background: #060a16;
+  border: 1px solid #0e1e30;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-size: 10px;
+}
+.eco-node {
+  background: #0a1428;
+  border: 1px solid #1a3456;
+  border-radius: 6px;
+  padding: 8px 12px;
+  text-align: center;
+  min-width: 110px;
+}
+.eco-node .eco-name { color: #44aacc; font-weight: 700; font-size: 11px; }
+.eco-node .eco-sub  { color: #334455; font-size: 9px; margin-top: 3px; }
+.eco-arrow {
+  flex: 1;
+  text-align: center;
+  color: #1a3444;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Flynn OS — Master Roadmap</h1>
+  <div class="sub">Alle Tracks · Juni 2026</div>
+  <div class="updated">Letztes Update: 07.06.2026 · antigravity-linux v4.0 · antigravity-app v1.0</div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="leg"><span class="status-dot s-done"></span>Done</div>
+  <div class="leg"><span class="status-dot s-wip"></span>In Progress</div>
+  <div class="leg"><span class="status-dot s-plan"></span>Planned</div>
+  <div class="leg"><span class="status-dot s-krass"></span>Signature Feature</div>
+  <div class="leg"><span class="status-dot s-block"></span>Blocked</div>
+  <div class="leg" style="margin-left:auto">
+    <span class="tag tag-krass">KRASS</span> Macht Flynn OS einzigartig &nbsp;
+    <span class="tag tag-must">MUST</span> Blockiert Nutzbarkeit &nbsp;
+    <span class="tag tag-pi">PI</span> Läuft auf Pi &nbsp;
+    <span class="tag tag-nice">NICE</span> Gut zu haben
+  </div>
+</div>
+
+<!-- 5 Tracks -->
+<div class="tracks">
+
+  <!-- ── TRACK A: Bare-Metal Kernel ─────────────────────────────────────────── -->
+  <div class="track track-kernel">
+    <div class="track-head">
+      <div class="track-title"><span class="track-icon">⚙</span> BARE-METAL</div>
+      <div class="track-sub">Eigener x86 Kernel · C/ASM</div>
+      <div class="track-progress"><div class="track-progress-fill" style="width:40%"></div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">DONE</div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Protected Mode</strong> — x86 32-bit</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>VGA Text Mode</strong> — Terminal Output</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>GDT/IDT</strong> — Interrupts + Segmentation</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Keyboard Driver</strong> — PS/2 Input</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>VESA Framebuffer</strong> — 800×600 Grafik</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>TRON Grid Renderer</strong> — Cairo in eigener FB</div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">IN PROGRESS</div>
+      <div class="feat"><div class="status-dot s-wip"></div><div class="feat-text"><strong>PS/2 Mouse</strong> — Fenster verschieben <span class="tag tag-must">MUST</span></div></div>
+      <div class="feat"><div class="status-dot s-wip"></div><div class="feat-text"><strong>Heap Allocator</strong> — kmalloc/kfree</div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">PLANNED</div>
+      <div class="feat"><div class="status-dot s-plan"></div><div class="feat-text"><strong>FAT32 Reader</strong> — USB-Dateien lesen <span class="tag tag-nice">NICE</span></div></div>
+      <div class="feat"><div class="status-dot s-plan"></div><div class="feat-text"><strong>PC Speaker Chime</strong> <span class="tag tag-nice">NICE</span></div></div>
+      <div class="feat"><div class="status-dot s-krass"></div><div class="feat-text"><strong>RTL8139 NIC</strong> — echtes Netzwerk <span class="tag tag-krass">KRASS</span></div></div>
+      <div class="feat"><div class="status-dot s-krass"></div><div class="feat-text"><strong>Context Switch</strong> — Multi-Process <span class="tag tag-krass">KRASS</span></div></div>
+      <div class="feat"><div class="status-dot s-krass"></div><div class="feat-text"><strong>Glow Shader</strong> — Window Edges glühen <span class="tag tag-krass">KRASS</span></div></div>
+    </div>
+  </div>
+
+  <!-- ── TRACK B: Linux OS ──────────────────────────────────────────────────── -->
+  <div class="track track-linux">
+    <div class="track-head">
+      <div class="track-title"><span class="track-icon">⬡</span> LINUX OS</div>
+      <div class="track-sub">Arch · Sway · TRON Desktop</div>
+      <div class="track-progress"><div class="track-progress-fill" style="width:65%"></div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">DONE</div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Arch ISO</strong> — linux-zen, UEFI/BIOS</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Sway Wayland</strong> — TRON config</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Live Grid Background</strong> — GTK4 Cairo 20fps</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>ENCOM OS Dock</strong> — floating macOS-style</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Waybar Menubar</strong> — top, clean</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Frosted Glass GTK4</strong> — ENCOM panels</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Picom Glow</strong> — cyan shadows</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Plymouth Spinner</strong> — kein arch-branding</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>PipeWire + Boot-Chime</strong></div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Steam + MangoHud TRON</strong></div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>ANTIGRAVITY AGD Shell</strong> — basic</div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">IN PROGRESS</div>
+      <div class="feat"><div class="status-dot s-wip"></div><div class="feat-text"><strong>WebKit Browser</strong> — WebKit 6.0 fix pending</div></div>
+      <div class="feat"><div class="status-dot s-block"></div><div class="feat-text"><strong>Howdy FaceID</strong> — python-dlib AUR-only <span class="tag tag-krass">KRASS</span></div></div>
+      <div class="feat"><div class="status-dot s-wip"></div><div class="feat-text"><strong>⌘K Palette</strong> — AGD ausbau läuft</div></div>
+      <div class="feat"><div class="status-dot s-wip"></div><div class="feat-text"><strong>Sunshine Streaming</strong> — AUR, post-boot</div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">PLANNED</div>
+      <div class="feat"><div class="status-dot s-krass"></div><div class="feat-text"><strong>Custom TRON Cursor</strong> <span class="tag tag-must">MUST</span></div></div>
+      <div class="feat"><div class="status-dot s-plan"></div><div class="feat-text"><strong>Grafischer Installer</strong> <span class="tag tag-must">MUST</span></div></div>
+      <div class="feat"><div class="status-dot s-plan"></div><div class="feat-text"><strong>OTA Update daemon</strong> <span class="tag tag-nice">NICE</span></div></div>
+      <div class="feat"><div class="status-dot s-krass"></div><div class="feat-text"><strong>App-Launch Animation</strong> — materialisieren <span class="tag tag-krass">KRASS</span></div></div>
+      <div class="feat"><div class="status-dot s-krass"></div><div class="feat-text"><strong>ANTIGRAVITY Shell v2</strong> — ersetzt Sway-Tiling <span class="tag tag-krass">KRASS</span></div></div>
+      <div class="feat"><div class="status-dot s-plan"></div><div class="feat-text"><strong>Clipboard History</strong> — TRON Overlay <span class="tag tag-nice">NICE</span></div></div>
+      <div class="feat"><div class="status-dot s-plan"></div><div class="feat-text"><strong>Ambient Sound</strong> — Study-Mode Loop</div></div>
+    </div>
+  </div>
+
+  <!-- ── TRACK C: macOS App ──────────────────────────────────────────────────── -->
+  <div class="track track-mac">
+    <div class="track-head">
+      <div class="track-title"><span class="track-icon">◈</span> MACOS APP</div>
+      <div class="track-sub">ANTIGRAVITY · SwiftUI · M1</div>
+      <div class="track-progress"><div class="track-progress-fill" style="width:55%"></div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">DONE</div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Menu Bar Agent</strong> — LSUIElement app</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Keychain Storage</strong> — Tokens sicher</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>TRON UI</strong> — dark, frosted glass panels</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Flynn REST Client</strong> — PC status, GameMode</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Notion Panel</strong> — WebKit embed</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Anki Panel</strong> — basic WebKit</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Session Tracker</strong> — flow timer</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Screen OCR</strong> — Vision framework</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Pi Bridge</strong> — presence detection</div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">IN PROGRESS</div>
+      <div class="feat"><div class="status-dot s-wip"></div><div class="feat-text"><strong>⌘K Global Palette</strong> — auch im Hintergrund <span class="tag tag-must">MUST</span></div></div>
+      <div class="feat"><div class="status-dot s-wip"></div><div class="feat-text"><strong>Package.swift Fix</strong> — infoPlist build error</div></div>
+      <div class="feat"><div class="status-dot s-wip"></div><div class="feat-text"><strong>Notion→Anki Sync</strong> — highlight = Karte</div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">PLANNED</div>
+      <div class="feat"><div class="status-dot s-plan"></div><div class="feat-text"><strong>Launch at Login</strong> — LaunchAgent <span class="tag tag-must">MUST</span></div></div>
+      <div class="feat"><div class="status-dot s-krass"></div><div class="feat-text"><strong>System Notifications</strong> — Notion tasks push <span class="tag tag-krass">KRASS</span></div></div>
+      <div class="feat"><div class="status-dot s-krass"></div><div class="feat-text"><strong>Study/Game Dashboard</strong> — Wochen-Stats <span class="tag tag-krass">KRASS</span></div></div>
+      <div class="feat"><div class="status-dot s-plan"></div><div class="feat-text"><strong>Moonlight Client</strong> — Stream vom PC <span class="tag tag-nice">NICE</span></div></div>
+      <div class="feat"><div class="status-dot s-krass"></div><div class="feat-text"><strong>AI Context Agent</strong> — kennt Stundenplan + Tasks <span class="tag tag-krass">KRASS</span></div></div>
+    </div>
+  </div>
+
+  <!-- ── TRACK D: Pi Brain ──────────────────────────────────────────────────── -->
+  <div class="track track-pi">
+    <div class="track-head">
+      <div class="track-title"><span class="track-icon">◉</span> PI BRAIN</div>
+      <div class="track-sub">Always-on · Tailscale · MQTT</div>
+      <div class="track-progress"><div class="track-progress-fill" style="width:35%"></div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">DONE</div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Pi Agent</strong> — MQTT + REST bridge</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Tailscale VPN</strong> — überall erreichbar</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Wake-on-LAN</strong> — PC per MQTT starten</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Notion→Anki Sync</strong> — Pi-seitig</div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">IN PROGRESS</div>
+      <div class="feat"><div class="status-dot s-wip"></div><div class="feat-text"><strong>BT Presence Detection</strong> — iPhone → WoL <span class="tag tag-must">MUST</span></div></div>
+      <div class="feat"><div class="status-dot s-wip"></div><div class="feat-text"><strong>Anki Alerts</strong> — Push wenn Karten fällig <span class="tag tag-pi">PI</span></div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">PLANNED</div>
+      <div class="feat"><div class="status-dot s-krass"></div><div class="feat-text"><strong>Whisper Voice Input</strong> — Sprachbefehle <span class="tag tag-krass">KRASS</span></div></div>
+      <div class="feat"><div class="status-dot s-krass"></div><div class="feat-text"><strong>Context-aware AI</strong> — kennt Kalender + Tasks <span class="tag tag-krass">KRASS</span></div></div>
+      <div class="feat"><div class="status-dot s-plan"></div><div class="feat-text"><strong>Smart Load Balancer</strong> — Pi vs GPU-PC <span class="tag tag-krass">KRASS</span></div></div>
+      <div class="feat"><div class="status-dot s-plan"></div><div class="feat-text"><strong>Camera Presence</strong> — Visual detection <span class="tag tag-pi">PI</span></div></div>
+      <div class="feat"><div class="status-dot s-plan"></div><div class="feat-text"><strong>Home Automation Bridge</strong> <span class="tag tag-nice">NICE</span></div></div>
+    </div>
+  </div>
+
+  <!-- ── TRACK E: Gaming ───────────────────────────────────────────────────── -->
+  <div class="track track-gaming">
+    <div class="track-head">
+      <div class="track-title"><span class="track-icon">▶</span> GAMING</div>
+      <div class="track-sub">Steam · MangoHud · Streaming</div>
+      <div class="track-progress"><div class="track-progress-fill" style="width:50%"></div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">DONE</div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Steam + Proton</strong></div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>GameMode</strong> — CPU governor boost</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>MangoHud TRON skin</strong> — custom config</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>Mode Switch</strong> — Super+G Study↔Game</div></div>
+      <div class="feat"><div class="status-dot s-done"></div><div class="feat-text"><strong>AMD RDNA2 Mesa</strong> — Vulkan + OpenGL</div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">IN PROGRESS</div>
+      <div class="feat"><div class="status-dot s-wip"></div><div class="feat-text"><strong>Sunshine Server</strong> — AUR, post-boot install</div></div>
+      <div class="feat"><div class="status-dot s-wip"></div><div class="feat-text"><strong>Controller BT</strong> — DS5/Xbox pairing <span class="tag tag-must">MUST</span></div></div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-label">PLANNED</div>
+      <div class="feat"><div class="status-dot s-krass"></div><div class="feat-text"><strong>Game Session Tracker</strong> — Spielzeit-Log <span class="tag tag-must">MUST</span></div></div>
+      <div class="feat"><div class="status-dot s-plan"></div><div class="feat-text"><strong>HDR Pipeline</strong> — HDR10 support <span class="tag tag-nice">NICE</span></div></div>
+      <div class="feat"><div class="status-dot s-krass"></div><div class="feat-text"><strong>One-Key Switch</strong> — animierter Übergang + Sound <span class="tag tag-krass">KRASS</span></div></div>
+      <div class="feat"><div class="status-dot s-plan"></div><div class="feat-text"><strong>Moonlight Bridge</strong> — Mac→PC streaming <span class="tag tag-nice">NICE</span></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Ecosystem diagram -->
+<div class="ecosystem" style="margin-top:16px">
+  <div class="eco-node">
+    <div class="eco-name">macOS App</div>
+    <div class="eco-sub">ANTIGRAVITY · M1 · SwiftUI</div>
+  </div>
+  <div class="eco-arrow">◄── REST/MQTT ──►</div>
+  <div class="eco-node">
+    <div class="eco-name">Flynn OS PC</div>
+    <div class="eco-sub">Arch · Sway · RX 6800</div>
+  </div>
+  <div class="eco-arrow">◄── SSH/Tailscale ──►</div>
+  <div class="eco-node">
+    <div class="eco-name">Pi Brain</div>
+    <div class="eco-sub">RPi · always-on · Whisper</div>
+  </div>
+  <div class="eco-arrow">── BT Presence ──►</div>
+  <div class="eco-node">
+    <div class="eco-name">iPhone</div>
+    <div class="eco-sub">Trigger · Moonlight · Push</div>
+  </div>
+  <div class="eco-arrow" style="flex:0;padding:0 12px">◄── Stream ──►</div>
+  <div class="eco-node">
+    <div class="eco-name">iPad</div>
+    <div class="eco-sub">Moonlight Gaming</div>
+  </div>
+</div>
+
+<!-- Next Actions -->
+<div class="summary">
+  <div class="summary-card">
+    <div class="sc-label">BARE-METAL · NEXT</div>
+    <div class="sc-item sc-next">▶ PS/2 Mouse driver</div>
+    <div class="sc-item">Heap allocator</div>
+    <div class="sc-item">FAT32 reader</div>
+  </div>
+  <div class="summary-card">
+    <div class="sc-label">LINUX OS · NEXT</div>
+    <div class="sc-item sc-next">▶ TRON Cursor</div>
+    <div class="sc-item sc-next">▶ AGD ⌘K Palette v2</div>
+    <div class="sc-item">WebKit 6.0 rebuild</div>
+    <div class="sc-item">App-launch animation</div>
+  </div>
+  <div class="summary-card">
+    <div class="sc-label">MACOS APP · NEXT</div>
+    <div class="sc-item sc-next">▶ Package.swift fix</div>
+    <div class="sc-item sc-next">▶ Launch at Login</div>
+    <div class="sc-item">Global ⌘K hotkey</div>
+    <div class="sc-item">Study dashboard</div>
+  </div>
+  <div class="summary-card">
+    <div class="sc-label">PI BRAIN · NEXT</div>
+    <div class="sc-item sc-next">▶ BT Presence stable</div>
+    <div class="sc-item">Anki push alerts</div>
+    <div class="sc-item">Whisper voice</div>
+  </div>
+  <div class="summary-card">
+    <div class="sc-label">GAMING · NEXT</div>
+    <div class="sc-item sc-next">▶ DS5 BT setup guide</div>
+    <div class="sc-item">Session tracker</div>
+    <div class="sc-item">Moonlight bridge</div>
+  </div>
+</div>
+
+</body>
+</html>

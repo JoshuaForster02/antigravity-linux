@@ -10,12 +10,14 @@ export GDK_BACKEND=wayland,x11
 export ELECTRON_OZONE_PLATFORM_HINT=wayland
 mkdir -p "$XDG_RUNTIME_DIR"
 
-# Auto-start on tty1: Sway (Wayland) → startx (X11) → text shell
+# Auto-start on tty1: Sway (Wayland, software-render safe for VMs)
 if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
     if command -v sway &>/dev/null; then
+        # pixman = pure software renderer, works in UTM/QEMU/VMware without GPU
+        export WLR_RENDERER=pixman
+        export WLR_NO_HARDWARE_CURSORS=1
+        export LIBSEAT_BACKEND=noop
         exec sway --unsupported-gpu 2>/tmp/sway.log
-    elif command -v startx &>/dev/null; then
-        exec startx -- -nolisten tcp >/tmp/startx.log 2>&1
     fi
 fi
 exec /usr/local/bin/flynn-ui

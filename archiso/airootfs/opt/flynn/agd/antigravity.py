@@ -214,73 +214,178 @@ class StatusBar(Gtk.ApplicationWindow):
 
 # ─── Command Palette ─────────────────────────────────────────────────────────
 
+# ─── Command Palette — ENCOM OS Spotlight ────────────────────────────────────
+
 PALETTE_COMMANDS = [
-    {'label': 'Open Notion',       'icon': 'N', 'action': lambda: launch_panel('notion')},
-    {'label': 'Open Amboss',       'icon': 'A', 'action': lambda: launch_panel('amboss')},
-    {'label': 'Open Terminal',     'icon': '>_','action': lambda: launch('foot')},
-    {'label': 'Focus Mode ON',     'icon': '◉', 'action': lambda: ipc_send('mode_changed', 'focus')},
-    {'label': 'Focus Mode OFF',    'icon': '○', 'action': lambda: ipc_send('mode_changed', 'normal')},
-    {'label': 'Game Mode',         'icon': '⬛','action': lambda: ipc_send('mode_changed', 'game')},
-    {'label': 'Reset Flow Timer',  'icon': '⏱', 'action': flow_timer.reset},
-    {'label': 'Overview',          'icon': '⊞', 'action': lambda: ipc_send('mode_changed', 'overview')},
-    {'label': 'Open Anki',         'icon': '📚','action': lambda: launch('flatpak run net.ankiweb.Anki')},
-    {'label': 'System Info',       'icon': '≡', 'action': lambda: launch('foot -e htop')},
-    {'label': 'Flynn Daemon Status','icon':'⚡', 'action': lambda: launch('foot -e curl -s http://localhost:7777/api/status | python3 -m json.tool')},
+    # ── Apps ──
+    {'cat':'APPS',   'label':'Terminal',          'icon':'▶', 'hint':'⌥T', 'desc':'Flynn UI Shell',        'action': lambda: launch('foot -e /usr/local/bin/flynn-ui')},
+    {'cat':'APPS',   'label':'Notion',            'icon':'≡', 'hint':'⌥N', 'desc':'Open workspace',        'action': lambda: launch_url('https://notion.so', 'Notion')},
+    {'cat':'APPS',   'label':'Anki',              'icon':'◈', 'hint':'⌥A', 'desc':'Flashcard review',      'action': lambda: launch_url('http://localhost:8765', 'Anki')},
+    {'cat':'APPS',   'label':'Files',             'icon':'⊞', 'hint':'',  'desc':'Thunar file manager',   'action': lambda: launch('thunar')},
+    {'cat':'APPS',   'label':'Steam',             'icon':'◉', 'hint':'',  'desc':'Gaming library',        'action': lambda: launch('steam -bigpicture')},
+    # ── Study ──
+    {'cat':'STUDY',  'label':'Focus Mode',        'icon':'◎', 'hint':'⌥F', 'desc':'Dims all but active',   'action': lambda: ipc_send('mode_changed', 'focus')},
+    {'cat':'STUDY',  'label':'Focus OFF',         'icon':'○', 'hint':'',  'desc':'Restore normal mode',   'action': lambda: ipc_send('mode_changed', 'normal')},
+    {'cat':'STUDY',  'label':'Reset Flow Timer',  'icon':'⏱', 'hint':'',  'desc':'Restart session clock', 'action': flow_timer.reset},
+    {'cat':'STUDY',  'label':'Ambient Sound',     'icon':'♪', 'hint':'',  'desc':'Study loop on/off',     'action': lambda: launch('/usr/local/bin/flynn-ambient toggle')},
+    {'cat':'STUDY',  'label':'Health Check',      'icon':'♡', 'hint':'F1','desc':'Break + stretch alert', 'action': lambda: launch('/usr/local/bin/flynn-health status')},
+    {'cat':'STUDY',  'label':'Notion → Anki Sync','icon':'⇄', 'hint':'',  'desc':'Sync highlights→cards', 'action': lambda: launch('python3 /opt/flynn/notion_anki_sync.py')},
+    # ── System ──
+    {'cat':'SYSTEM', 'label':'System Info',       'icon':'⬡', 'hint':'',  'desc':'CPU / RAM / Disk',      'action': lambda: launch('foot -e fastfetch')},
+    {'cat':'SYSTEM', 'label':'Network',           'icon':'⊛', 'hint':'',  'desc':'NetworkManager UI',     'action': lambda: launch('nm-connection-editor')},
+    {'cat':'SYSTEM', 'label':'Game Mode ON',      'icon':'▶▶','hint':'⌥G', 'desc':'Boost CPU + close apps','action': lambda: launch('/usr/local/bin/game-mode-switch.sh game')},
+    {'cat':'SYSTEM', 'label':'Study Mode ON',     'icon':'◑', 'hint':'⌥H', 'desc':'Quiet, focus layout',  'action': lambda: launch('/usr/local/bin/game-mode-switch.sh study')},
+    {'cat':'SYSTEM', 'label':'Lock Screen',       'icon':'⊗', 'hint':'',  'desc':'Swaylock',              'action': lambda: launch('swaylock')},
+    {'cat':'SYSTEM', 'label':'OTA Update',        'icon':'↑', 'hint':'',  'desc':'Pull latest Flynn OS',  'action': lambda: launch('foot -e /usr/local/bin/flynn-update')},
+    # ── Flynn ──
+    {'cat':'FLYNN',  'label':'PC Status',         'icon':'⚡', 'hint':'',  'desc':'Flynn daemon :7777',    'action': lambda: launch("foot -e sh -c 'curl -s localhost:7777/api/status|python3 -m json.tool;read'")},
+    {'cat':'FLYNN',  'label':'Stream Desktop',    'icon':'⟐', 'hint':'',  'desc':'Sunshine server',       'action': lambda: launch('/usr/local/bin/flynn-sunshine --start')},
+    {'cat':'FLYNN',  'label':'Wake PC',           'icon':'◈', 'hint':'',  'desc':'Send Wake-on-LAN',      'action': lambda: launch('python3 /opt/flynn/pi-control/pi_agent.py wakepc')},
 ]
 
 def launch(cmd: str):
-    subprocess.Popen(cmd.split(), env={**os.environ, 'WAYLAND_DISPLAY': os.environ.get('WAYLAND_DISPLAY', 'wayland-0')})
+    env = {**os.environ, 'WAYLAND_DISPLAY': os.environ.get('WAYLAND_DISPLAY', 'wayland-0')}
+    subprocess.Popen(cmd, shell=True, env=env)
 
-def launch_panel(name: str):
-    urls = {
-        'notion': 'https://notion.so',
-        'amboss': 'https://amboss.com/us',
-    }
-    url = urls.get(name, 'https://example.com')
-    launch(f'flynn-browser {url} --title {name.capitalize()}')
+def launch_url(url: str, title: str):
+    launch(f'/usr/local/bin/flynn-browser {url} --title {title}')
+
+CSS_PALETTE = b"""
+window.palette-win {
+    background: rgba(0, 6, 16, 0.97);
+    border:        1px solid rgba(0, 229, 255, 0.30);
+    border-radius: 16px;
+}
+
+/* ── Search bar ─────────────────────────────────────────────────────────────  */
+.p-search-row {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid rgba(0, 229, 255, 0.08);
+}
+.p-search-icon {
+    font-size: 20px;
+    color: rgba(0, 150, 180, 0.50);
+    padding-right: 4px;
+}
+.p-entry {
+    background:  transparent;
+    border:      none;
+    color:       #d0eef8;
+    font-family: "JetBrains Mono", monospace;
+    font-size:   18px;
+    font-weight: 500;
+    caret-color: #00e5ff;
+}
+.p-entry:focus { box-shadow: none; outline: none; }
+.p-entry placeholder { color: rgba(0, 150, 180, 0.35); font-size: 16px; }
+
+/* ── Category header ─────────────────────────────────────────────────────────  */
+.p-cat {
+    font-family:   "JetBrains Mono", monospace;
+    font-size:     8px;
+    font-weight:   700;
+    letter-spacing: 2px;
+    color:         rgba(0, 120, 150, 0.55);
+    padding:       8px 20px 4px;
+}
+
+/* ── Result row ─────────────────────────────────────────────────────────────  */
+row {
+    border-radius: 6px;
+    margin:        1px 8px;
+    padding:       0;
+}
+row:selected, row:hover { background: rgba(0, 229, 255, 0.08); }
+row:selected .p-label   { color: #00e5ff; }
+
+.p-icon {
+    font-size:     16px;
+    color:         rgba(0, 180, 220, 0.75);
+    min-width:     32px;
+    padding-left:  12px;
+    font-family:   "JetBrains Mono", monospace;
+}
+row:selected .p-icon { color: #00e5ff; }
+
+.p-label {
+    font-family:   "JetBrains Mono", monospace;
+    font-size:     13px;
+    font-weight:   600;
+    color:         rgba(180, 220, 235, 0.90);
+}
+.p-desc {
+    font-family: "JetBrains Mono", monospace;
+    font-size:   10px;
+    color:       rgba(0, 130, 160, 0.55);
+    margin-top:  1px;
+}
+.p-hint {
+    font-family:  "JetBrains Mono", monospace;
+    font-size:    9px;
+    color:        rgba(0, 130, 160, 0.40);
+    padding-right: 14px;
+    margin-left:  auto;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────────────  */
+.p-footer {
+    padding:       8px 20px;
+    border-top:    1px solid rgba(0, 229, 255, 0.06);
+    font-family:   "JetBrains Mono", monospace;
+    font-size:     9px;
+    color:         rgba(0, 100, 130, 0.40);
+    letter-spacing: 1px;
+}
+"""
 
 class CommandPalette(Gtk.Window):
     def __init__(self, app):
         super().__init__(title='Flynn Command Palette')
         self.set_decorated(False)
         self.set_modal(True)
-        self.set_default_size(580, 400)
-        self._query = ''
-        self._filtered = list(PALETTE_COMMANDS)
-        self._selected = 0
-        self._build_ui()
-        self._apply_css()
+        self.set_default_size(640, 480)
+        self.set_resizable(False)
+        self.add_css_class('palette-win')
+        self._all = list(PALETTE_COMMANDS)
+        self._filtered = self._all[:]
 
-        ctrl = Gtk.EventControllerKey()
-        ctrl.connect('key-pressed', self._on_key)
-        self.add_controller(ctrl)
+        self._load_css()
+        self._build_ui()
+
+        key = Gtk.EventControllerKey()
+        key.connect('key-pressed', self._on_key)
+        self.add_controller(key)
+        GLib.idle_add(lambda: self.entry.grab_focus() or False)
+
+    def _load_css(self):
+        prov = Gtk.CssProvider()
+        prov.load_from_data(CSS_PALETTE)
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(), prov,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION + 10)
 
     def _build_ui(self):
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
-        # Search field
-        search_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        search_row.set_margin_top(12)
-        search_row.set_margin_bottom(8)
-        search_row.set_margin_start(16)
-        search_row.set_margin_end(16)
+        # ── Search row
+        srow = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        srow.add_css_class('p-search-row')
 
         icon = Gtk.Label(label='⌘')
-        icon.add_css_class('palette-icon')
+        icon.add_css_class('p-search-icon')
 
         self.entry = Gtk.Entry()
-        self.entry.set_placeholder_text('Search commands, open apps, ask AI...')
-        self.entry.add_css_class('palette-entry')
+        self.entry.set_placeholder_text('Befehl, App oder Suche...')
+        self.entry.add_css_class('p-entry')
         self.entry.set_hexpand(True)
         self.entry.connect('changed', self._on_search)
         self.entry.connect('activate', self._on_activate)
 
-        search_row.append(icon)
-        search_row.append(self.entry)
+        srow.append(icon)
+        srow.append(self.entry)
+        root.append(srow)
 
-        sep = Gtk.Separator()
-
-        # Results list
+        # ── Results
         self.list_box = Gtk.ListBox()
         self.list_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
         self.list_box.connect('row-activated', self._on_row_activated)
@@ -288,115 +393,140 @@ class CommandPalette(Gtk.Window):
         scroll = Gtk.ScrolledWindow()
         scroll.set_vexpand(True)
         scroll.set_child(self.list_box)
+        root.append(scroll)
 
-        box.append(search_row)
-        box.append(sep)
-        box.append(scroll)
-        self.set_child(box)
+        # ── Footer hint
+        footer = Gtk.Label(label='↑↓  navigate  ·  ⏎  execute  ·  Esc  close')
+        footer.add_css_class('p-footer')
+        footer.set_halign(Gtk.Align.START)
+        root.append(footer)
 
+        self.set_child(root)
         self._populate()
 
+    def _make_row(self, cmd):
+        row = Gtk.ListBoxRow()
+        h = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        h.set_margin_top(7); h.set_margin_bottom(7)
+
+        icon = Gtk.Label(label=cmd['icon'])
+        icon.add_css_class('p-icon')
+
+        texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        texts.set_hexpand(True)
+
+        lbl = Gtk.Label(label=cmd['label'])
+        lbl.add_css_class('p-label')
+        lbl.set_halign(Gtk.Align.START)
+
+        desc = Gtk.Label(label=cmd['desc'])
+        desc.add_css_class('p-desc')
+        desc.set_halign(Gtk.Align.START)
+
+        texts.append(lbl)
+        texts.append(desc)
+
+        hint = Gtk.Label(label=cmd.get('hint', ''))
+        hint.add_css_class('p-hint')
+
+        h.append(icon)
+        h.append(texts)
+        h.append(hint)
+        row.set_child(h)
+        return row
+
     def _populate(self):
-        while row := self.list_box.get_row_at_index(0):
-            self.list_box.remove(row)
+        while (r := self.list_box.get_row_at_index(0)):
+            self.list_box.remove(r)
 
-        for i, cmd in enumerate(self._filtered):
-            row = Gtk.ListBoxRow()
-            h = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-            h.set_margin_top(8)
-            h.set_margin_bottom(8)
-            h.set_margin_start(16)
+        prev_cat = None
+        for cmd in self._filtered:
+            if cmd['cat'] != prev_cat:
+                lbl = Gtk.Label(label=cmd['cat'])
+                lbl.add_css_class('p-cat')
+                lbl.set_halign(Gtk.Align.START)
+                header_row = Gtk.ListBoxRow()
+                header_row.set_selectable(False)
+                header_row.set_activatable(False)
+                header_row.set_child(lbl)
+                self.list_box.append(header_row)
+                prev_cat = cmd['cat']
+            self.list_box.append(self._make_row(cmd))
 
-            icon_lbl = Gtk.Label(label=cmd['icon'])
-            icon_lbl.add_css_class('palette-cmd-icon')
-            icon_lbl.set_size_request(28, 28)
-
-            lbl = Gtk.Label(label=cmd['label'])
-            lbl.add_css_class('palette-cmd-label')
-            lbl.set_halign(Gtk.Align.START)
-
-            h.append(icon_lbl)
-            h.append(lbl)
-            row.set_child(h)
-            self.list_box.append(row)
-
-        if self._filtered:
-            first = self.list_box.get_row_at_index(0)
+        first = self._first_selectable()
+        if first:
             self.list_box.select_row(first)
 
+    def _first_selectable(self):
+        i = 0
+        while (r := self.list_box.get_row_at_index(i)):
+            if r.get_selectable():
+                return r
+            i += 1
+        return None
+
     def _on_search(self, entry):
-        q = entry.get_text().lower()
-        self._filtered = [c for c in PALETTE_COMMANDS
-                          if q in c['label'].lower()] if q else list(PALETTE_COMMANDS)
+        q = entry.get_text().lower().strip()
+        self._filtered = [c for c in self._all
+                          if q in c['label'].lower() or q in c['desc'].lower()
+                          ] if q else self._all[:]
         self._populate()
 
     def _on_activate(self, entry):
         row = self.list_box.get_selected_row()
-        if row:
-            idx = row.get_index()
-            if 0 <= idx < len(self._filtered):
+        if row and row.get_selectable():
+            idx = self._row_to_cmd_index(row)
+            if idx is not None:
                 self._filtered[idx]['action']()
                 self.close()
 
     def _on_row_activated(self, lb, row):
-        idx = row.get_index()
-        if 0 <= idx < len(self._filtered):
+        if not row.get_selectable():
+            return
+        idx = self._row_to_cmd_index(row)
+        if idx is not None:
             self._filtered[idx]['action']()
             self.close()
+
+    def _row_to_cmd_index(self, row):
+        """Map a ListBoxRow to its index in _filtered (skipping category headers)."""
+        cmd_idx = 0
+        prev_cat = None
+        i = 0
+        while (r := self.list_box.get_row_at_index(i)):
+            if not r.get_selectable():
+                i += 1
+                continue
+            if r == row:
+                return cmd_idx
+            cmd_idx += 1
+            i += 1
+        return None
 
     def _on_key(self, ctrl, keyval, keycode, state):
         if keyval == Gdk.KEY_Escape:
             self.close()
             return True
+        if keyval == Gdk.KEY_Down:
+            self._move_selection(1)
+            return True
+        if keyval == Gdk.KEY_Up:
+            self._move_selection(-1)
+            return True
         return False
 
-    def _apply_css(self):
-        css = Gtk.CssProvider()
-        css.load_from_data(b"""
-            window {
-                background-color: #131929;
-                border-radius: 12px;
-                border: 1px solid #1a3344;
-            }
-            .palette-entry {
-                background: transparent;
-                border: none;
-                color: #ddeeff;
-                font-family: monospace;
-                font-size: 15px;
-            }
-            .palette-entry:focus { box-shadow: none; }
-            .palette-icon { color: #335566; font-size: 16px; }
-            .palette-cmd-icon {
-                color: #22aacc;
-                font-size: 14px;
-                background: #0a1a2a;
-                border-radius: 6px;
-            }
-            .palette-cmd-label {
-                color: #cce8f0;
-                font-family: monospace;
-                font-size: 13px;
-            }
-            row:selected { background: #1a2a3a; }
-            row:hover    { background: #0f1a28; }
-        """)
-        Gtk.StyleContext.add_provider_for_display(
-            self.get_display(), css,
-            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+    def _move_selection(self, delta):
+        row = self.list_box.get_selected_row()
+        i = row.get_index() if row else -1
+        while True:
+            i += delta
+            r = self.list_box.get_row_at_index(i)
+            if r is None:
+                break
+            if r.get_selectable():
+                self.list_box.select_row(r)
+                break
 
-# ─── Main Application ─────────────────────────────────────────────────────────
-
-class AGDApp(Gtk.Application):
-    def __init__(self):
-        super().__init__(application_id='os.flynnos.agd')
-        self.status_bar = None
-        self.palette    = None
-        self.connect('activate', self.on_activate)
-
-    def on_activate(self, app):
-        self.status_bar = StatusBar(app)
-        self.status_bar.present()
 
         # Listen to compositor IPC for palette toggle
         self._start_ipc_listener()

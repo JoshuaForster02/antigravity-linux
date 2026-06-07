@@ -58,6 +58,10 @@ input type:touchpad {
     dwt enabled
 }
 
+# ── Cursor ────────────────────────────────────────────────────────────────────
+seat seat0 xcursor_theme capitaine-cursors-white 24
+seat seat0 hide_cursor 8000
+
 # ── Startup ───────────────────────────────────────────────────────────────────
 exec_always {
     pkill waybar; waybar -c /root/.config/waybar/config -s /root/.config/waybar/style.css
@@ -190,5 +194,7 @@ for_window [title="Picture-in-Picture"] floating enable, sticky enable, resize s
 for_window [title="Picture-in-Picture"] move position 1430 20
 # Thunar (files) → floating
 for_window [app_id="thunar"] floating enable, resize set 1000 600, move position center
+# AGD Command Palette — centered, floating, no shadows needed
+for_window [title="Flynn Command Palette"] floating enable, move position center, border none
 
 include /etc/sway/config.d/*
