@@ -188,12 +188,12 @@ viewnior
 brightnessctl
 
 # Wayland UX polish
-wlogout
+# wlogout is AUR-only now; keep it out of ISO package base list
 nwg-look
 papirus-icon-theme
 
 # Face-ID login
-python-dlib
+# python-dlib is AUR-only now; install post-boot if needed
 python-numpy
 
 # Game streaming (Sunshine server)
