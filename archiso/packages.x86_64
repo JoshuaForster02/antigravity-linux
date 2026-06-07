@@ -84,7 +84,7 @@ wayland
 wayland-protocols
 xdg-desktop-portal
 xdg-desktop-portal-wlr
-wlroots
+wlroots0.18
 seatd
 libdrm
 libxkbcommon
