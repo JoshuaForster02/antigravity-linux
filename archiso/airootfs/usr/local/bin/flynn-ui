@@ -348,6 +348,10 @@ while true; do
         matrix|rain)             cmd_matrix ;;
         pi)                      cmd_pi "$ARG1" ;;
         pi-deploy)               bash /opt/flynn/pi-control/setup-pi.sh ;;
+        notion-sync|anki-sync)   python3 /opt/flynn/notion_anki_sync.py ;;
+        config)                  /usr/local/bin/flynn-config "$ARG1" "$ARG2" "$ARG3" ;;
+        notion)                  xdg-open https://notion.so 2>/dev/null || echo "  Open: notion.so" ;;
+        anki)                    anki 2>/dev/null & echo "  Starting Anki..." ;;
         disk|df|storage)         cmd_disk ;;
         install)                 cmd_install ;;
         startx|gui|x11)          startx -- -nolisten tcp 2>/dev/null || printf "  \e[0;33mstartx not available\e[0m\n" ;;

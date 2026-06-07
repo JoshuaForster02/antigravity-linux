@@ -15,10 +15,13 @@ concurrency:
   group: build-arch-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write   # needed for creating GitHub Releases
+
 jobs:
   build:
     name: Build Flynn OS Arch ISO
-    runs-on: ubuntu-22.04        # real x86_64 Linux — no Rosetta, no emulation
+    runs-on: ubuntu-22.04
     timeout-minutes: 90
 
     steps:

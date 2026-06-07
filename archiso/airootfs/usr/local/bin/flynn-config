@@ -1,0 +1,64 @@
+#!/bin/bash
+# Flynn OS — Config Manager
+# Liest und schreibt /etc/flynn/config.json
+# Usage: flynn-config [get KEY] [set KEY VALUE] [show]
+
+CONFIG="/etc/flynn/config.json"
+mkdir -p /etc/flynn
+
+# Initialize if missing
+[ -f "$CONFIG" ] || cat > "$CONFIG" << 'INIT'
+{
+  "pi_host": "100.74.204.71",
+  "pi_port": 8765,
+  "pc_mac": "",
+  "daemon_port": 7777,
+  "notion_token": "",
+  "notion_db_id": "",
+  "anki_port": 8765,
+  "anki_deck": "Flynn::Notion",
+  "sync_interval_h": 6
+}
+INIT
+
+case "${1:-show}" in
+  show)
+    printf "\e[1;36m  Flynn OS Config\e[0m  (%s)\n\n" "$CONFIG"
+    python3 -c "
+import json
+with open('$CONFIG') as f:
+    d = json.load(f)
+for k, v in d.items():
+    val = '***' if 'token' in k and v else v
+    print(f'  \033[2;36m{k:20}\033[0m \033[1;37m{val}\033[0m')
+print()
+" 2>/dev/null || cat "$CONFIG"
+    ;;
+  get)
+    python3 -c "import json; d=json.load(open('$CONFIG')); print(d.get('$2',''))" 2>/dev/null
+    ;;
+  set)
+    python3 -c "
+import json
+with open('$CONFIG') as f: d = json.load(f)
+d['$2'] = '$3'
+with open('$CONFIG', 'w') as f: json.dump(d, f, indent=2)
+print('  \033[1;32m✓\033[0m $2 = $3')
+" 2>/dev/null
+    ;;
+  notion-token)
+    printf "  Notion Integration Token: "; read -r TOKEN
+    "$0" set notion_token "$TOKEN"
+    ;;
+  notion-db)
+    printf "  Notion Database ID: "; read -r DB
+    "$0" set notion_db_id "$DB"
+    ;;
+  pi)
+    printf "  Pi IP (current: $(/usr/local/bin/flynn-config get pi_host)): "; read -r IP
+    [ -n "$IP" ] && "$0" set pi_host "$IP"
+    ;;
+  *)
+    echo "  Usage: flynn-config [show|get KEY|set KEY VAL|notion-token|notion-db|pi]"
+    ;;
+esac

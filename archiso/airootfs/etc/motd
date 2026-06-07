@@ -1,7 +1,38 @@
 
-  ╔══════════════════════════════════════════════════════════════╗
-  ║   F L Y N N   O S   ·   Arch Linux   ·   The Grid   v3.0  ║
-  ║   Login: root / flynn  ·  GUI auto-starts on tty1           ║
-  ║   API: http://localhost:7777/api/status                     ║
-  ║   Install: bash /opt/flynn/install/install-to-disk.sh      ║
-  ╚══════════════════════════════════════════════════════════════╝
+  ███████╗██╗  ██╗   ██╗███╗   ██╗███╗   ██╗     ██████╗ ███████╗
+  ██╔════╝██║  ╚██╗ ██╔╝████╗  ██║████╗  ██║    ██╔═══██╗██╔════╝
+  █████╗  ██║   ╚████╔╝ ██╔██╗ ██║██╔██╗ ██║    ██║   ██║███████╗
+  ╚═╝     ╚══════╝╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═══╝    ╚═════╝ ╚══════╝
+
+  Flynn OS Linux 3.0  ·  Arch  ·  linux-zen  ·  The Grid
+
+  ── DESKTOP ────────────────────────────────────────────────────────
+   startx          X11 + Openbox TRON desktop (UTM / VMware / PC)
+   session         Wayland compositor (real hardware with GPU)
+   flynn-setup     First-boot wizard (compositor, Proton-GE, Pi)
+
+  ── GAMING ─────────────────────────────────────────────────────────
+   game            Game Mode  (CPU→performance, Steam launches)
+   study           Study Mode (CPU→schedutil, Flynn layer back)
+   steam           Launch Steam
+   proton-ge       Install latest Proton-GE
+
+  ── INTEGRATION ────────────────────────────────────────────────────
+   config          View / set Notion token, Pi IP, Anki port
+   notion-sync     Sync Notion → Anki cards (runs on Pi)
+   pi              Pi status / sync / wakepc
+   pi-deploy       Deploy agent to Pi (100.74.204.71)
+
+  ── SYSTEM ─────────────────────────────────────────────────────────
+   status          Live CPU / RAM / disk / network dashboard
+   services        Service status panel
+   scan [host]     LAN sweep or port scan
+   wifi            WiFi manager
+   update          Full system upgrade (pacman -Syu)
+   install         Dual-boot disk installer (for PC)
+
+  ── FUN ────────────────────────────────────────────────────────────
+   matrix          TRON matrix rain
+   fetch           System info (fastfetch)
+   help            Full command list
+

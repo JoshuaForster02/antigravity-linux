@@ -32,4 +32,7 @@ file_permissions=(
     ["/root/.bash_profile"]="0:0:755"
     ["/root/.config/openbox/autostart"]="0:0:755"
     ["/etc/flynn/"]="0:0:755"
+    ["/usr/local/bin/flynn-config"]="0:0:755"
+    ["/opt/flynn/notion_anki_sync.py"]="0:0:755"
+    ["/opt/flynn/pi-control/pi_agent.py"]="0:0:755"
 )
