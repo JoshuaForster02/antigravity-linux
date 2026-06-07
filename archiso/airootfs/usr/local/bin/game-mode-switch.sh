@@ -50,7 +50,11 @@ if [ "$MODE" = "game" ]; then
 
     # ── Launch Steam ─────────────────────────────────────────────────────────
     echo game > "$STATE_FILE"
-    notify "⚡ GAME MODE" "CPU→Performance · AMD optimized · Waybar hidden"
+    # Stop ambient + health timer in game mode
+    /usr/local/bin/flynn-ambient stop 2>/dev/null
+    /usr/local/bin/flynn-health stop 2>/dev/null
+    export MANGOHUD=1
+    notify "⚡ GAME MODE" "CPU→Performance · MangoHud ON · Ambient OFF"
     steam 2>/dev/null &
 
 else
@@ -73,7 +77,10 @@ else
     python3 /opt/flynn/agd/antigravity.py &>/tmp/agd.log &
 
     echo study > "$STATE_FILE"
-    notify "📚 STUDY MODE" "CPU→Schedutil · Flynn layer on · Focus active"
+    # Start ambient sound + health timer in study mode
+    /usr/local/bin/flynn-ambient start 2>/dev/null &
+    /usr/local/bin/flynn-health start 2>/dev/null &
+    notify "📚 STUDY MODE" "CPU→Schedutil · Ambient ON · Health timer ON"
 fi
 
 echo "[flynn] Mode: $MODE"

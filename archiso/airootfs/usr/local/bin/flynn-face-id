@@ -1,0 +1,153 @@
+#!/usr/bin/env python3
+"""
+Flynn OS — Howdy Face-ID Setup + Test
+Richtet IR-Kamera Login ein (wie Windows Hello / macOS FaceID).
+Nutzt Howdy (python-face-recognition via dlib).
+"""
+import subprocess, sys, os, json
+
+CY='\033[1;36m'; GN='\033[1;32m'; RD='\033[0;31m'; YL='\033[0;33m'; RST='\033[0m'
+
+def run(cmd, check=True):
+    r = subprocess.run(cmd, shell=isinstance(cmd,str), capture_output=True, text=True)
+    if check and r.returncode != 0:
+        print(f"{RD}Error: {r.stderr.strip()}{RST}")
+    return r
+
+def header():
+    print(f"{CY}╔══════════════════════════════════════════════════╗")
+    print("║  Flynn OS — Face-ID (Howdy) Setup               ║")
+    print(f"╚══════════════════════════════════════════════════╝{RST}\n")
+
+def install_howdy():
+    print(f"{CY}[1/4] Howdy installieren...{RST}")
+    # Check if yay/paru available for AUR
+    aur = "yay" if run("which yay", check=False).returncode == 0 else \
+          "paru" if run("which paru", check=False).returncode == 0 else None
+
+    if aur:
+        print(f"  AUR helper: {aur}")
+        run([aur, "-S", "--noconfirm", "howdy"], check=False)
+    else:
+        print(f"  {YL}Kein AUR Helper — Howdy manuell installieren:{RST}")
+        print("  git clone https://aur.archlinux.org/howdy.git")
+        print("  cd howdy && makepkg -si")
+        return False
+
+    if run("which howdy", check=False).returncode != 0:
+        print(f"  {RD}Howdy nicht gefunden nach Installation{RST}")
+        return False
+    print(f"  {GN}✓ Howdy installiert{RST}")
+    return True
+
+def detect_camera():
+    print(f"\n{CY}[2/4] IR-Kamera erkennen...{RST}")
+    r = run("v4l2-ctl --list-devices 2>/dev/null", check=False)
+    if r.returncode != 0:
+        print(f"  {YL}v4l2-ctl nicht verfügbar — installiere v4l-utils{RST}")
+        run("pacman -S --noconfirm v4l-utils", check=False)
+        r = run("v4l2-ctl --list-devices 2>/dev/null", check=False)
+
+    devices = []
+    for line in r.stdout.split('\n'):
+        if '/dev/video' in line:
+            devices.append(line.strip())
+
+    if not devices:
+        print(f"  {RD}Keine Kamera gefunden{RST}")
+        return None
+
+    print(f"  Gefundene Kameras:")
+    for i, d in enumerate(devices):
+        print(f"    [{i}] {d}")
+
+    # Prefer IR camera (usually higher /dev/video number or named 'IR')
+    ir_cam = next((d for d in devices if 'IR' in d.upper() or 'infrared' in d.lower()),
+                  devices[-1])
+    cam_path = ir_cam.split()[-1] if '/dev/video' in ir_cam else "/dev/video0"
+    print(f"  {GN}✓ Kamera: {cam_path}{RST}")
+    return cam_path
+
+def configure_howdy(cam_path):
+    print(f"\n{CY}[3/4] Howdy konfigurieren...{RST}")
+    config_path = "/lib/security/howdy/config.ini"
+    if not os.path.exists(config_path):
+        config_path = "/etc/howdy/config.ini"
+
+    if os.path.exists(config_path):
+        # Set camera device
+        with open(config_path, 'r') as f:
+            cfg = f.read()
+        cfg = cfg.replace('device_path = /dev/video2', f'device_path = {cam_path}')
+        cfg = cfg.replace('certainty = 3.5', 'certainty = 3.0')  # slightly more permissive
+        with open(config_path, 'w') as f:
+            f.write(cfg)
+        print(f"  {GN}✓ Kamera auf {cam_path} gesetzt{RST}")
+    else:
+        print(f"  {YL}Config nicht gefunden — Howdy neu installieren{RST}")
+        return False
+
+    # Configure PAM for swaylock
+    pam_files = ["/etc/pam.d/swaylock", "/etc/pam.d/login", "/etc/pam.d/sudo"]
+    howdy_line = "auth sufficient pam_python.so /lib/security/howdy/pam.py\n"
+    for pam in pam_files:
+        if os.path.exists(pam):
+            with open(pam, 'r') as f:
+                content = f.read()
+            if "howdy" not in content:
+                with open(pam, 'w') as f:
+                    f.write(howdy_line + content)
+                print(f"  {GN}✓ PAM: {pam}{RST}")
+    return True
+
+def enroll_face():
+    print(f"\n{CY}[4/4] Gesicht einlernen...{RST}")
+    print("  Schau in die Kamera und drücke Enter")
+    input()
+    result = run("howdy add", check=False)
+    if result.returncode == 0:
+        print(f"\n{GN}✓ Face-ID eingerichtet!")
+        print("  Swaylock + sudo entsperren jetzt per Gesicht.{RST}")
+        return True
+    else:
+        print(f"\n{RD}Fehler beim Einlernen: {result.stderr}{RST}")
+        return False
+
+def test_face_id():
+    print(f"\n{CY}Face-ID testen...{RST}")
+    result = run("howdy test", check=False)
+    if result.returncode == 0:
+        print(f"{GN}✓ Erkennung erfolgreich{RST}")
+    else:
+        print(f"{RD}Erkennung fehlgeschlagen{RST}")
+        print(result.stdout)
+
+if __name__ == "__main__":
+    if os.geteuid() != 0:
+        print(f"{RD}Muss als root ausgeführt werden: sudo flynn-face-id{RST}")
+        sys.exit(1)
+
+    header()
+
+    if "--test" in sys.argv:
+        test_face_id()
+        sys.exit(0)
+
+    if "--remove" in sys.argv:
+        run("howdy remove -y", check=False)
+        print(f"{GN}Face-ID Daten gelöscht{RST}")
+        sys.exit(0)
+
+    ok = install_howdy()
+    if not ok:
+        print(f"\n{YL}Nach manueller Installation nochmal: sudo flynn-face-id{RST}")
+        sys.exit(1)
+
+    cam = detect_camera()
+    configure_howdy(cam or "/dev/video0")
+    enroll_face()
+
+    print(f"\n{CY}Commands:{RST}")
+    print("  sudo flynn-face-id --test     → Erkennung testen")
+    print("  sudo flynn-face-id --remove   → Daten löschen")
+    print("  sudo howdy list               → eingespeicherte Gesichter")

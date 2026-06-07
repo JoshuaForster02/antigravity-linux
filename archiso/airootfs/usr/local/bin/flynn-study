@@ -1,0 +1,160 @@
+#!/usr/bin/env python3
+"""
+Flynn OS — Smart Study Dashboard
+Zeigt: Anki due cards + Notion tasks + Empfehlung was als nächstes lernen
+"""
+import json, urllib.request, urllib.error, os, time
+from datetime import datetime
+
+CY='\033[1;36m'; GN='\033[1;32m'; YL='\033[0;33m'; RD='\033[0;31m'
+DIM='\033[2;36m'; WHT='\033[1;37m'; RST='\033[0m'
+COLS = int(os.get_terminal_size().columns) if hasattr(os, 'get_terminal_size') else 80
+
+def hline(c='─'): print(f"{DIM}{c*COLS}{RST}")
+def center(txt, color=CY): pad=(COLS-len(txt))//2; print(f"{' '*pad}{color}{txt}{RST}")
+
+ANKI_URL  = "http://localhost:8765"
+PI_IP     = os.environ.get("FLYNN_PI_IP", "100.74.204.71")
+PI_URL    = f"http://{PI_IP}:8765"
+
+def anki_req(action, **params):
+    try:
+        data = json.dumps({"action": action,"version":6,"params":params}).encode()
+        req  = urllib.request.Request(ANKI_URL, data=data,
+                                      headers={"Content-Type":"application/json"})
+        with urllib.request.urlopen(req, timeout=4) as r:
+            return json.loads(r.read()).get("result")
+    except: return None
+
+def get_anki_stats():
+    decks = anki_req("deckNames") or []
+    total_due, total_new, deck_info = 0, 0, []
+    for deck in decks:
+        if deck in ("Default", "filtered"): continue
+        due  = len(anki_req("findCards", query=f'deck:"{deck}" is:due') or [])
+        new  = len(anki_req("findCards", query=f'deck:"{deck}" is:new') or [])
+        if due > 0 or new > 0:
+            deck_info.append((deck, due, new))
+        total_due += due
+        total_new += new
+    return total_due, total_new, sorted(deck_info, key=lambda x: -x[1])
+
+def get_pi_tasks():
+    try:
+        with urllib.request.urlopen(f"{PI_URL}/api/notion/tasks", timeout=4) as r:
+            return json.loads(r.read()).get("tasks", [])
+    except: return []
+
+def get_review_time_estimate(total_due):
+    """Estimate review time in minutes (avg 30 sec per card)"""
+    return round(total_due * 0.5)
+
+def get_ai_tip(context):
+    """Ask Pi Ollama for a study tip based on current state."""
+    try:
+        prompt = f"Kurzer Studier-Tipp (max 2 Sätze) basierend auf: {context}"
+        data = json.dumps({"model":"llama3","prompt":prompt,
+                           "stream":False,"options":{"num_predict":80}}).encode()
+        req = urllib.request.Request(f"http://{PI_IP}:11434/api/generate",
+                                     data=data, headers={"Content-Type":"application/json"})
+        with urllib.request.urlopen(req, timeout=8) as r:
+            return json.loads(r.read()).get("response","").strip()
+    except: return None
+
+def main():
+    os.system("clear")
+    now = datetime.now()
+
+    # Header
+    print()
+    center("F L Y N N   O S   —   S T U D Y   C O M M A N D", WHT)
+    center(f"{now.strftime('%A, %d. %B %Y  |  %H:%M')}", DIM)
+    print()
+    hline('═')
+
+    # Anki stats
+    print(f"\n{CY}  ANKI{RST}")
+    total_due, total_new, deck_info = get_anki_stats()
+
+    if total_due is None:
+        print(f"  {RD}Anki nicht erreichbar — läuft Anki?{RST}")
+    else:
+        est = get_review_time_estimate(total_due)
+        urgency = RD if total_due>50 else YL if total_due>20 else GN
+        print(f"  {urgency}Fällig: {total_due} Karten{RST}  {DIM}(~{est} min){RST}")
+        print(f"  {DIM}Neu:    {total_new} Karten{RST}")
+
+        if deck_info:
+            print()
+            for deck, due, new in deck_info[:6]:
+                bar_len = min(20, due)
+                bar = '█' * bar_len + '░' * (20 - bar_len)
+                color = RD if due>20 else YL if due>5 else GN
+                print(f"  {DIM}{deck[:28]:28}{RST} {color}{bar}{RST} {due:3d}")
+
+    # Notion tasks
+    print(f"\n{CY}  NOTION TASKS{RST}")
+    tasks = get_pi_tasks()
+    if not tasks:
+        print(f"  {DIM}Keine Tasks oder Pi nicht erreichbar{RST}")
+    else:
+        today_tasks = [t for t in tasks if t.get("due_today") or t.get("priority") == "high"][:5]
+        for task in today_tasks:
+            status = f"{GN}✓{RST}" if task.get("done") else f"{YL}○{RST}"
+            print(f"  {status} {task.get('title','')[:50]}")
+        if not today_tasks:
+            for task in tasks[:4]:
+                print(f"  {DIM}○ {task.get('title','')[:50]}{RST}")
+
+    # Recommendation
+    hline()
+    print(f"\n{WHT}  EMPFEHLUNG{RST}")
+
+    if total_due and total_due > 0:
+        if total_due >= 50:
+            print(f"  {RD}⚡ Priorität: Anki! {total_due} Karten sind kritisch überfällig.{RST}")
+            print(f"  {RD}  Starte jetzt: drücke Super+A (Anki){RST}")
+        elif total_due >= 20:
+            print(f"  {YL}  Anki zuerst ({total_due} fällig, ~{est} min), dann Notion{RST}")
+        else:
+            print(f"  {GN}  Anki quick-review ({total_due} Karten), dann neue Inhalte{RST}")
+    else:
+        print(f"  {GN}  Alle Anki-Karten erledigt! Neues Material lernen.{RST}")
+
+    # AI tip
+    if total_due is not None:
+        context = f"{total_due} Anki-Karten fällig, {len(tasks)} Notion-Tasks"
+        tip = get_ai_tip(context)
+        if tip:
+            print(f"\n  {DIM}💡 {tip}{RST}")
+
+    # Quick actions
+    print(f"\n{DIM}{'─'*COLS}")
+    print(f"  [a] Anki öffnen   [n] Notion   [p] PDF→Anki   [f] Focus an/aus   [q] Beenden{RST}")
+    print()
+
+    try:
+        import sys, tty, termios
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        tty.setraw(fd)
+        ch = sys.stdin.read(1)
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+        cmds = {
+            'a': "anki &",
+            'n': "/usr/local/bin/flynn-browser https://notion.so &",
+            'p': "echo 'Usage: flynn-pdf2anki <datei.pdf>'",
+            'f': "/usr/local/bin/flynn-focus toggle",
+        }
+        if ch in cmds:
+            os.system(cmds[ch])
+        elif ch == 'q':
+            pass
+        else:
+            main()  # Refresh
+    except Exception:
+        pass
+
+if __name__ == "__main__":
+    main()

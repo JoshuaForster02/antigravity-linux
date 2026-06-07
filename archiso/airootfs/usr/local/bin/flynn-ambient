@@ -1,0 +1,94 @@
+#!/bin/bash
+# Flynn OS — Ambient Sound System
+# Study Mode: elektronischer TRON-Loop
+# Game Mode: stoppt Ambient
+# Generiert Töne via Python + PipeWire/ALSA
+
+CY='\e[1;36m' GN='\e[1;32m' DIM='\e[2;36m' RST='\e[0m'
+STATE_FILE="/tmp/flynn-ambient-pid"
+
+generate_and_play() {
+    python3 - << 'PYEOF'
+import struct, math, subprocess, sys, os, random
+
+RATE = 44100
+def gen_wave(freq, duration, vol=0.15, wave="sine"):
+    samples = int(RATE * duration)
+    data = []
+    for i in range(samples):
+        t = i / RATE
+        if wave == "sine":
+            v = math.sin(2 * math.pi * freq * t)
+        elif wave == "square":
+            v = 1.0 if math.sin(2 * math.pi * freq * t) > 0 else -1.0
+        elif wave == "triangle":
+            v = 2 * abs(2 * (t * freq - math.floor(t * freq + 0.5))) - 1
+        # Envelope: fade in/out
+        env = min(1.0, min(i / (RATE * 0.02), (samples - i) / (RATE * 0.02)))
+        data.append(int(v * vol * env * 32767))
+    return struct.pack(f'<{len(data)}h', *data)
+
+def make_pad(base_freq=55, duration=8.0):
+    """TRON-style ambient pad chord"""
+    harmonics = [1.0, 1.5, 2.0, 3.0, 4.0]
+    vols      = [0.12, 0.08, 0.05, 0.03, 0.02]
+    result    = [0] * int(RATE * duration)
+    for h, v in zip(harmonics, vols):
+        wave = gen_wave(base_freq * h, duration, v, "sine")
+        for i, s in enumerate(struct.unpack(f'<{len(wave)//2}h', wave)):
+            result[i] = max(-32767, min(32767, result[i] + s))
+    return struct.pack(f'<{len(result)}h', *result)
+
+# Write raw audio then pipe to aplay
+proc = subprocess.Popen(
+    ["aplay", "-r", str(RATE), "-f", "S16_LE", "-c", "1", "-q"],
+    stdin=subprocess.PIPE
+)
+
+# Base notes for TRON ambient: A, E, D (minor feel)
+notes = [55, 82.4, 73.4, 65.4, 87.3, 98.0]  # A1,E2,D2,C2,F2,G2
+try:
+    while True:
+        note = random.choice(notes)
+        pad = make_pad(note, duration=random.uniform(4.0, 9.0))
+        proc.stdin.write(pad)
+        proc.stdin.flush()
+except (BrokenPipeError, KeyboardInterrupt):
+    pass
+PYEOF
+}
+
+case "${1:-start}" in
+    start)
+        if [ -f "$STATE_FILE" ] && kill -0 "$(cat $STATE_FILE)" 2>/dev/null; then
+            printf "${DIM}Ambient läuft bereits (PID $(cat $STATE_FILE))${RST}\n"
+            exit 0
+        fi
+        printf "${CY}Ambient Sound: Study Mode...${RST}\n"
+        generate_and_play &
+        echo $! > "$STATE_FILE"
+        printf "${GN}✓ TRON Ambient gestartet (PID $!)${RST}\n"
+        ;;
+    stop)
+        if [ -f "$STATE_FILE" ]; then
+            PID=$(cat "$STATE_FILE")
+            kill "$PID" 2>/dev/null
+            pkill -f "aplay.*S16_LE" 2>/dev/null
+            rm -f "$STATE_FILE"
+            printf "${GN}✓ Ambient gestoppt${RST}\n"
+        else
+            printf "${DIM}Ambient läuft nicht${RST}\n"
+        fi
+        ;;
+    toggle)
+        if [ -f "$STATE_FILE" ] && kill -0 "$(cat $STATE_FILE)" 2>/dev/null; then
+            "$0" stop
+        else
+            "$0" start
+        fi
+        ;;
+    status)
+        [ -f "$STATE_FILE" ] && kill -0 "$(cat $STATE_FILE)" 2>/dev/null && \
+            printf "${GN}RUNNING${RST}\n" || printf "${DIM}STOPPED${RST}\n"
+        ;;
+esac

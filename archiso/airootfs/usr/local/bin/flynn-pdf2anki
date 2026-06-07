@@ -1,0 +1,217 @@
+#!/usr/bin/env python3
+"""
+Flynn OS — PDF/Text → Anki Karten
+Liest PDFs oder Text, sendet an Pi Ollama, erstellt Anki-Karten automatisch.
+Usage: flynn-pdf2anki <datei.pdf> [deck-name]
+"""
+import sys, os, json, subprocess, urllib.request, urllib.error, tempfile, re
+from pathlib import Path
+
+CY='\033[1;36m'; GN='\033[1;32m'; YL='\033[0;33m'; RD='\033[0;31m'; DIM='\033[2;36m'; RST='\033[0m'
+
+PI_IP   = os.environ.get("FLYNN_PI_IP", "100.74.204.71")
+OLLAMA  = f"http://{PI_IP}:11434"
+ANKI    = "http://localhost:8765"
+MODEL   = "llama3"
+
+def log(msg, color=CY): print(f"{color}{msg}{RST}")
+
+def extract_text_from_pdf(path):
+    """Extract text using pdftotext (poppler)."""
+    try:
+        r = subprocess.run(["pdftotext", str(path), "-"],
+                          capture_output=True, text=True, timeout=30)
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout
+    except FileNotFoundError:
+        pass
+    # Fallback: pypdf
+    try:
+        import pypdf
+        reader = pypdf.PdfReader(str(path))
+        return "\n".join(p.extract_text() for p in reader.pages if p.extract_text())
+    except ImportError:
+        pass
+    return None
+
+def chunk_text(text, max_chars=3000):
+    """Split text into chunks for AI processing."""
+    paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
+    chunks, current = [], ""
+    for para in paragraphs:
+        if len(current) + len(para) < max_chars:
+            current += "\n\n" + para
+        else:
+            if current: chunks.append(current.strip())
+            current = para
+    if current: chunks.append(current.strip())
+    return chunks
+
+def ai_extract_cards(text_chunk, subject="Medizin"):
+    """Send chunk to Ollama, get Q&A pairs back."""
+    prompt = f"""Du bist ein Medizin-Lernexperte. Erstelle aus dem folgenden Text Anki-Lernkarten.
+
+Format (exakt so, eine Karte pro Zeile):
+FRAGE: [präzise Frage] | ANTWORT: [kurze, klare Antwort]
+
+Regeln:
+- Nur medizinisch relevante Fakten
+- Fragen so formulieren wie sie in Prüfungen kommen
+- Antworten max 2 Sätze
+- 5-15 Karten pro Textblock
+- Keine Karten über Seitenzahlen, Autoren, etc.
+
+Text:
+{text_chunk}
+
+Karten:"""
+
+    payload = json.dumps({
+        "model": MODEL,
+        "prompt": prompt,
+        "stream": False,
+        "options": {"temperature": 0.3, "num_predict": 1000}
+    }).encode()
+
+    try:
+        req = urllib.request.Request(f"{OLLAMA}/api/generate",
+                                     data=payload,
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=60) as r:
+            result = json.loads(r.read())
+            return result.get("response", "")
+    except Exception as e:
+        log(f"  Ollama-Fehler: {e}", RD)
+        return ""
+
+def parse_cards(ai_output):
+    """Parse Q&A lines from AI output."""
+    cards = []
+    for line in ai_output.split('\n'):
+        line = line.strip()
+        if '|' in line and 'FRAGE:' in line and 'ANTWORT:' in line:
+            try:
+                q_part = re.search(r'FRAGE:\s*(.+?)\s*\|', line)
+                a_part = re.search(r'ANTWORT:\s*(.+)', line)
+                if q_part and a_part:
+                    q = q_part.group(1).strip()
+                    a = a_part.group(1).strip()
+                    if len(q) > 5 and len(a) > 3:
+                        cards.append((q, a))
+            except Exception:
+                pass
+    return cards
+
+def add_to_anki(cards, deck_name):
+    """Add cards to Anki via AnkiConnect."""
+    notes = []
+    for q, a in cards:
+        notes.append({
+            "deckName": deck_name,
+            "modelName": "Basic",
+            "fields": {"Front": q, "Back": a},
+            "options": {"allowDuplicate": False},
+            "tags": ["flynn-ai", "auto-generated"]
+        })
+
+    payload = json.dumps({
+        "action": "addNotes",
+        "version": 6,
+        "params": {"notes": notes}
+    }).encode()
+
+    try:
+        req = urllib.request.Request(ANKI, data=payload,
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            result = json.loads(r.read())
+            added = sum(1 for x in (result.get("result") or []) if x is not None)
+            return added
+    except Exception as e:
+        log(f"  AnkiConnect-Fehler: {e}", RD)
+        return 0
+
+def ensure_deck(deck_name):
+    """Create deck if it doesn't exist."""
+    payload = json.dumps({
+        "action": "createDeck",
+        "version": 6,
+        "params": {"deck": deck_name}
+    }).encode()
+    try:
+        req = urllib.request.Request(ANKI, data=payload,
+                                     headers={"Content-Type": "application/json"})
+        urllib.request.urlopen(req, timeout=5)
+    except Exception:
+        pass
+
+def main():
+    if len(sys.argv) < 2:
+        print(f"Usage: flynn-pdf2anki <datei.pdf|text.txt> [Deck-Name]")
+        print(f"  Pi Ollama: {OLLAMA}")
+        print(f"  Anki: {ANKI}")
+        sys.exit(1)
+
+    src = Path(sys.argv[1])
+    deck = sys.argv[2] if len(sys.argv) > 2 else f"Flynn AI::{src.stem}"
+
+    print(f"{CY}╔══════════════════════════════════════════════════╗")
+    print("║  Flynn OS — PDF → Anki Karten                   ║")
+    print(f"╚══════════════════════════════════════════════════╝{RST}\n")
+
+    # 1. Extract text
+    log(f"[1/4] Text extrahieren: {src.name}...")
+    if src.suffix.lower() == ".pdf":
+        text = extract_text_from_pdf(src)
+        if not text:
+            log("  PDF-Extraktion fehlgeschlagen — versuche OCR", YL)
+            # Try OCR via tesseract
+            r = subprocess.run(["ocrmypdf", str(src), "-", "--sidecar", "/dev/stdout", "--quiet"],
+                              capture_output=True, text=True, timeout=120)
+            text = r.stdout or ""
+    else:
+        text = src.read_text(errors="ignore")
+
+    if not text or len(text.strip()) < 100:
+        log("  Kein Text gefunden", RD)
+        sys.exit(1)
+
+    log(f"  {GN}✓ {len(text)} Zeichen extrahiert{RST}")
+
+    # 2. Check Ollama
+    log(f"\n[2/4] Pi AI prüfen ({OLLAMA})...")
+    try:
+        urllib.request.urlopen(f"{OLLAMA}/api/tags", timeout=5)
+        log(f"  {GN}✓ Ollama erreichbar{RST}")
+    except Exception:
+        log(f"  {RD}Ollama nicht erreichbar — Pi online?{RST}")
+        sys.exit(1)
+
+    # 3. Generate cards
+    chunks = chunk_text(text)
+    log(f"\n[3/4] KI extrahiert Karten aus {len(chunks)} Textblöcken...")
+    all_cards = []
+    for i, chunk in enumerate(chunks):
+        log(f"  Block {i+1}/{len(chunks)}...", DIM)
+        ai_out = ai_extract_cards(chunk)
+        cards = parse_cards(ai_out)
+        all_cards.extend(cards)
+        log(f"  {GN}+{len(cards)} Karten{RST}")
+
+    if not all_cards:
+        log(f"\n{RD}Keine Karten generiert{RST}")
+        sys.exit(1)
+
+    log(f"\n  {GN}✓ {len(all_cards)} Karten generiert{RST}")
+
+    # 4. Add to Anki
+    log(f"\n[4/4] Zu Anki hinzufügen (Deck: {deck})...")
+    ensure_deck(deck)
+    added = add_to_anki(all_cards, deck)
+
+    print(f"\n{GN}╔══════════════════════════════════════════════════╗")
+    print(f"║  ✓ {added}/{len(all_cards)} neue Karten in Deck '{deck[:30]}'")
+    print(f"╚══════════════════════════════════════════════════╝{RST}")
+
+if __name__ == "__main__":
+    main()

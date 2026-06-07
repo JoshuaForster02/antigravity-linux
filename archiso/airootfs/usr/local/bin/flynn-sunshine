@@ -1,0 +1,107 @@
+#!/bin/bash
+# Flynn OS — Moonlight/Sunshine Setup (Remote Game Streaming)
+# Sunshine = Server auf dem Flynn OS PC
+# Moonlight = Client auf Mac/iPad/iPhone
+
+CY='\e[1;36m' GN='\e[1;32m' YL='\e[0;33m' RD='\e[0;31m' DIM='\e[2;36m' RST='\e[0m'
+
+header() {
+  printf "${CY}╔══════════════════════════════════════════════════╗\n"
+  printf "║  Flynn OS — Game Streaming (Sunshine Setup)      ║\n"
+  printf "╚══════════════════════════════════════════════════╝${RST}\n\n"
+}
+
+install_sunshine() {
+  printf "${CY}[1/3] Sunshine installieren (AUR)...${RST}\n"
+  if command -v sunshine &>/dev/null; then
+    printf "  ${GN}✓ Sunshine bereits installiert: $(sunshine --version 2>/dev/null)${RST}\n"
+    return 0
+  fi
+
+  # Try yay/paru
+  if command -v yay &>/dev/null; then
+    yay -S --noconfirm sunshine
+  elif command -v paru &>/dev/null; then
+    paru -S --noconfirm sunshine
+  else
+    printf "  ${YL}Kein AUR-Helper. Installiere yay zuerst:${RST}\n"
+    printf "  git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si\n"
+    return 1
+  fi
+
+  command -v sunshine &>/dev/null && \
+    printf "  ${GN}✓ Sunshine installiert${RST}\n" || \
+    { printf "  ${RD}Installation fehlgeschlagen${RST}\n"; return 1; }
+}
+
+configure_sunshine() {
+  printf "\n${CY}[2/3] Sunshine konfigurieren...${RST}\n"
+
+  # Sunshine needs cap_sys_admin for virtual display
+  setcap cap_sys_admin+p "$(which sunshine 2>/dev/null)" 2>/dev/null || true
+
+  # Config dir
+  mkdir -p ~/.config/sunshine
+
+  # Generate TRON-styled Sunshine config
+  cat > ~/.config/sunshine/sunshine.conf << 'CONF'
+# Sunshine — Flynn OS Stream Config
+sunshine_name = Flynn OS
+port = 47989
+upnp = disabled
+encoder = nvenc,vaapi,software
+# AMD RX 6800 — use VAAPI
+vaapi_device = /dev/dri/renderD128
+min_threads = 2
+# Audio
+audio_sink = default_sink
+# Virtual display for streaming (KVM/HDMI dummy)
+virtual_display = 0
+# Resolution options
+resolutions = 1920x1080,2560x1440,3840x2160
+fps = 60,120
+CONF
+
+  # Enable systemd service
+  systemctl --user enable --now sunshine.service 2>/dev/null || \
+    sunshine &>/tmp/sunshine.log &
+  printf "  ${GN}✓ Sunshine läuft${RST}\n"
+}
+
+show_pairing() {
+  printf "\n${CY}[3/3] Moonlight verbinden...${RST}\n"
+
+  # Get local IP
+  IP=$(ip route get 1.1.1.1 2>/dev/null | awk '/src/{print $7;exit}')
+  TAILSCALE_IP=$(tailscale ip --4 2>/dev/null || echo "nicht aktiv")
+
+  printf "\n"
+  printf "  ${GN}Sunshine Web-UI:${RST} https://localhost:47990\n"
+  printf "  ${DIM}Benutzername: admin | Passwort: beim ersten Start gesetzt${RST}\n\n"
+  printf "  ${CY}Moonlight-Verbindung:${RST}\n"
+  printf "    Lokales Netz:   ${GN}$IP${RST}\n"
+  printf "    Tailscale:      ${GN}$TAILSCALE_IP${RST}\n\n"
+  printf "  ${CY}Auf Mac/iPad:${RST}\n"
+  printf "    1. Moonlight laden: moonlight-stream.org\n"
+  printf "    2. '+' → IP eingeben → PIN eingeben\n"
+  printf "    3. Spiel starten → RX 6800 streamt auf dein Gerät\n\n"
+  printf "  ${CY}Latenz bei Tailscale:${RST} ~3-5ms lokal, ~30-50ms remote\n"
+  printf "  ${CY}Codec:${RST} HEVC (RX 6800 Hardware-Encode, 4K60fps möglich)\n"
+}
+
+# ── Main ──────────────────────────────────────────────────────────────────────
+header
+
+if [ "${1:-}" = "--status" ]; then
+  pgrep -x sunshine &>/dev/null && \
+    printf "${GN}Sunshine läuft${RST}\n" || \
+    printf "${RD}Sunshine nicht aktiv${RST}\n"
+  exit 0
+fi
+
+if [ "${1:-}" = "--stop" ]; then
+  pkill sunshine && printf "${GN}Sunshine gestoppt${RST}\n"
+  exit 0
+fi
+
+install_sunshine && configure_sunshine && show_pairing

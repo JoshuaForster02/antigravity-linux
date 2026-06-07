@@ -191,3 +191,14 @@ brightnessctl
 wlogout
 nwg-look
 papirus-icon-theme
+
+# Face-ID login
+python-dlib
+python-numpy
+
+# Game streaming (Sunshine server)
+# sunshine is in AUR — installed via flynn-setup post-boot
+# libevdev needed for controller passthrough
+libevdev
+
+# TRON MangoHud custom config

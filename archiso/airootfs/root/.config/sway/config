@@ -101,6 +101,11 @@ bindsym $mod+s           exec steam -bigpicture 2>/dev/null
 bindsym $mod+p           exec /usr/local/bin/flynn-dashboard
 bindsym $mod+u           exec /usr/local/bin/flynn-update
 
+bindsym $mod+Shift+s  exec /usr/local/bin/flynn-sunshine --status
+bindsym $mod+Shift+a  exec /usr/local/bin/flynn-ambient toggle
+bindsym $mod+Shift+h  exec /usr/local/bin/flynn-health status
+bindsym $mod+Shift+f  exec sudo /usr/local/bin/flynn-face-id --test
+
 # Screenshot
 bindsym Print            exec grim ~/screenshot-$(date +%s).png
 bindsym $mod+Print       exec grim -g "$(slurp)" ~/screenshot-$(date +%s).png
@@ -167,5 +172,25 @@ for_window [title="Flynn Browser"]    floating enable, resize set 1200 800
 
 # Drag floating windows
 floating_modifier $mod normal
+
+
+# ── Window Rules Engine ───────────────────────────────────────────────────────
+# Notion → workspace 2, right side
+for_window [title="Notion"] move to workspace 2
+for_window [title="Notion"] floating disable
+# Anki → workspace 3
+for_window [app_id="anki"] move to workspace 3
+# Steam → workspace 4
+for_window [app_id="steam"] move to workspace 4
+for_window [title="Steam Big Picture"] fullscreen enable, move to workspace 4
+# Flynn terminal → workspace 1
+for_window [app_id="foot"] move to workspace 1
+# Flynn Browser → floating, right side
+for_window [title="Flynn Browser.*Amboss"] move to workspace 2
+# Picture-in-picture → floating, top-right, always on top
+for_window [title="Picture-in-Picture"] floating enable, sticky enable, resize set 480 270
+for_window [title="Picture-in-Picture"] move position 1430 20
+# Thunar (files) → floating
+for_window [app_id="thunar"] floating enable, resize set 1000 600, move position center
 
 include /etc/sway/config.d/*

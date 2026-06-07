@@ -1,0 +1,109 @@
+#!/bin/bash
+# Flynn OS — Focus Mode Blocker
+# Study Mode: blockiert ablenkende Seiten via /etc/hosts
+# Game Mode / Off: entsperrt alles wieder
+
+HOSTS="/etc/hosts"
+MARKER="# FLYNN-FOCUS-START"
+MARKER_END="# FLYNN-FOCUS-END"
+STATE="/tmp/flynn-focus-active"
+
+# Konfigurierbar: eigene Domains in /etc/flynnos/focus-blocklist.txt
+CUSTOM_BLOCKLIST="/etc/flynnos/focus-blocklist.txt"
+
+DEFAULT_BLOCKED=(
+    "youtube.com" "www.youtube.com"
+    "reddit.com" "www.reddit.com" "old.reddit.com"
+    "instagram.com" "www.instagram.com"
+    "twitter.com" "x.com" "www.twitter.com"
+    "tiktok.com" "www.tiktok.com"
+    "twitch.tv" "www.twitch.tv"
+    "facebook.com" "www.facebook.com"
+    "netflix.com" "www.netflix.com"
+    "9gag.com"
+)
+
+CY='\e[1;36m' GN='\e[1;32m' YL='\e[0;33m' RST='\e[0m'
+
+get_blocked_domains() {
+    echo "${DEFAULT_BLOCKED[@]}"
+    [ -f "$CUSTOM_BLOCKLIST" ] && cat "$CUSTOM_BLOCKLIST"
+}
+
+focus_on() {
+    if [ -f "$STATE" ]; then
+        printf "${YL}Focus bereits aktiv${RST}\n"
+        return
+    fi
+
+    printf "${CY}Focus Blocker: AN${RST}\n"
+
+    # Remove any old marker block first
+    focus_off_silent
+
+    # Add block to /etc/hosts
+    {
+        echo ""
+        echo "$MARKER"
+        for domain in $(get_blocked_domains); do
+            echo "0.0.0.0 $domain"
+        done
+        echo "$MARKER_END"
+    } >> "$HOSTS"
+
+    touch "$STATE"
+    printf "${GN}✓ $(get_blocked_domains | wc -w) Domains gesperrt${RST}\n"
+    printf "${YL}  Entsperren: flynn-focus off${RST}\n"
+}
+
+focus_off_silent() {
+    # Remove the marker block from /etc/hosts
+    if grep -q "$MARKER" "$HOSTS" 2>/dev/null; then
+        python3 -c "
+import re
+with open('$HOSTS') as f: c = f.read()
+c = re.sub(r'\n# FLYNN-FOCUS-START.*?# FLYNN-FOCUS-END\n?', '', c, flags=re.DOTALL)
+with open('$HOSTS','w') as f: f.write(c)
+"
+    fi
+}
+
+focus_off() {
+    printf "${CY}Focus Blocker: AUS${RST}\n"
+    focus_off_silent
+    rm -f "$STATE"
+    printf "${GN}✓ Alle Domains entsperrt${RST}\n"
+}
+
+focus_status() {
+    if [ -f "$STATE" ]; then
+        printf "${CY}Focus: AKTIV${RST}\n"
+        COUNT=$(grep "^0.0.0.0" "$HOSTS" 2>/dev/null | wc -l)
+        printf "  ${COUNT} Domains blockiert\n"
+        printf "  Konfiguration: ${CUSTOM_BLOCKLIST}\n"
+    else
+        printf "${YL}Focus: INAKTIV${RST}\n"
+    fi
+}
+
+focus_add() {
+    local domain="${1:-}"
+    [ -z "$domain" ] && { printf "${YL}Usage: flynn-focus add <domain>${RST}\n"; return; }
+    mkdir -p "$(dirname $CUSTOM_BLOCKLIST)"
+    echo "$domain" >> "$CUSTOM_BLOCKLIST"
+    printf "${GN}✓ $domain zur Blockliste hinzugefügt${RST}\n"
+    # If focus is active, add immediately
+    [ -f "$STATE" ] && { focus_off_silent; focus_on; }
+}
+
+case "${1:-status}" in
+    on|start|study) focus_on ;;
+    off|stop|game)  focus_off ;;
+    toggle)
+        [ -f "$STATE" ] && focus_off || focus_on ;;
+    add)   focus_add "$2" ;;
+    list)
+        printf "${CY}Blockierte Domains:${RST}\n"
+        for d in $(get_blocked_domains); do printf "  $d\n"; done ;;
+    status|*) focus_status ;;
+esac

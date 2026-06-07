@@ -1,0 +1,88 @@
+#!/bin/bash
+# Flynn OS — Health Break Timer
+# Nach 50min Study Mode: Bildschirm dimmt, Notification, optional Ambient pausiert
+
+CY='\e[1;36m' GN='\e[1;32m' YL='\e[0;33m' RST='\e[0m'
+
+INTERVAL=${1:-50}  # Minuten
+BREAK=${2:-5}      # Pause in Minuten
+STATE="/tmp/flynn-health"
+
+header() {
+  printf "${CY}╔══════════════════════════════════════════════════╗\n"
+  printf "║  Flynn OS — Health Break Timer                   ║\n"
+  printf "║  Intervall: %-3s min  |  Pause: %-3s min          ║\n" "$INTERVAL" "$BREAK"
+  printf "╚══════════════════════════════════════════════════╝${RST}\n"
+}
+
+notify_break() {
+  local mins_done=$1
+  notify-send "⏸ BREAK TIME" \
+    "Du hast ${mins_done}min studiert. Nimm ${BREAK}min Pause — steh auf, streck dich." \
+    --urgency=critical --expire-time=0 2>/dev/null
+
+  # Dim screen
+  if command -v brightnessctl &>/dev/null; then
+    ORIG=$(brightnessctl get)
+    brightnessctl set 20% 2>/dev/null
+    sleep $((BREAK * 60))
+    brightnessctl set "${ORIG}" 2>/dev/null
+  else
+    sleep $((BREAK * 60))
+  fi
+
+  notify-send "▶ BACK TO WORK" \
+    "Pause vorbei. Fokus zurück." \
+    --urgency=normal --expire-time=5000 2>/dev/null
+}
+
+run_timer() {
+  header
+  local session=0
+  while true; do
+    printf "${GN}  Timer läuft: %d min bis zur Pause...${RST}\n" $((INTERVAL - session))
+    sleep 60
+    session=$((session + 1))
+
+    # Update state file
+    echo "$session" > "$STATE"
+
+    if [ $session -ge "$INTERVAL" ]; then
+      notify_break $session
+      session=0
+    fi
+  done
+}
+
+case "${1:-start}" in
+  start)
+    if pgrep -f "flynn-health" | grep -v $$ &>/dev/null; then
+      printf "${YL}Health timer läuft bereits${RST}\n"
+      exit 0
+    fi
+    run_timer &
+    disown
+    printf "${GN}✓ Health Break Timer gestartet (${INTERVAL}min Fokus / ${BREAK}min Pause)${RST}\n"
+    ;;
+  stop)
+    pkill -f "flynn-health" 2>/dev/null
+    rm -f "$STATE"
+    printf "${GN}✓ Timer gestoppt${RST}\n"
+    ;;
+  status)
+    if [ -f "$STATE" ]; then
+      MINS=$(cat "$STATE")
+      REMAIN=$((INTERVAL - MINS))
+      printf "${CY}Fokus: ${MINS}/${INTERVAL} min  |  Pause in ${REMAIN} min${RST}\n"
+    else
+      printf "${YL}Timer nicht aktiv${RST}\n"
+    fi
+    ;;
+  [0-9]*)  # called with interval as first arg
+    INTERVAL="$1"
+    BREAK="${2:-5}"
+    run_timer &
+    disown
+    printf "${GN}✓ Health Break Timer: ${INTERVAL}min Fokus / ${BREAK}min Pause${RST}\n"
+    ;;
+esac
