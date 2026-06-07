@@ -55,6 +55,8 @@ jobs:
               pacman -S --noconfirm --needed archiso grub efibootmgr mtools squashfs-tools dosfstools
 
               echo '=== Validating package list ==='
+              # Refresh DBs from /build/pacman.conf (includes multilib) for -Sp validation.
+              # This step performs no package install/upgrade operations.
               pacman -Sy --noconfirm --config /build/pacman.conf
               grep -vE '^[[:space:]]*(#|$)' /build/packages.x86_64 \
                 | xargs pacman -Sp --config /build/pacman.conf --print-format '%n' \
