@@ -65,7 +65,7 @@ if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ];
         export WLR_RENDERER=pixman
         export WLR_NO_HARDWARE_CURSORS=1
         export LIBSEAT_BACKEND=noop
-        exec sway --unsupported-gpu 2>/tmp/sway.log
+        exec dbus-run-session sway --unsupported-gpu 2>/tmp/sway.log
     fi
 fi
 exec /usr/local/bin/flynn-ui

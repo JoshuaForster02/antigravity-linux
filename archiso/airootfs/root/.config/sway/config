@@ -63,28 +63,32 @@ seat seat0 xcursor_theme capitaine-cursors-white 24
 seat seat0 hide_cursor 8000
 
 # ── Startup ───────────────────────────────────────────────────────────────────
-exec_always {
-    pkill waybar; waybar -c /root/.config/waybar/config -s /root/.config/waybar/style.css
-    pkill mako;   mako --config /root/.config/mako/config
-}
-exec {
-    pipewire
-    wireplumber
-    /usr/local/bin/flynn-boot-chime
-    /usr/local/bin/flynn-daemon 2>/dev/null
-    /usr/local/bin/flynn-bg-daemon
-    /usr/local/bin/flynn-dock
-    nm-applet --indicator 2>/dev/null
-    swayidle -w \
-        timeout 300 'swaylock -i /root/.config/sway/tron-bg.png --scaling fill' \
-        timeout 600 'swaymsg "output * power off"' \
-        resume 'swaymsg "output * power on"' \
-        before-sleep 'swaylock -i /root/.config/sway/tron-bg.png --scaling fill'
-}
+# NOTE: exec_always {} block does NOT support ; shell syntax — use sh -c explicitly
+
+# Waybar + mako restart-safe
+exec_always sh -c 'pkill -x waybar 2>/dev/null; sleep 0.3; waybar -c /root/.config/waybar/config -s /root/.config/waybar/style.css &'
+exec_always sh -c 'pkill -x mako 2>/dev/null; sleep 0.3; mako --config /root/.config/mako/config &'
+
+# Core services — started once
+exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
+exec pipewire
+exec pipewire-pulse
+exec wireplumber
+exec /usr/local/bin/flynn-boot-chime
+exec /usr/local/bin/flynn-daemon
+exec /usr/local/bin/flynn-bg-daemon
+exec /usr/local/bin/flynn-dock
+exec nm-applet --indicator
+exec swayidle -w \
+    timeout 300 'swaylock -i /root/.config/sway/tron-bg.png --scaling fill' \
+    timeout 600 'swaymsg "output * dpms off"' \
+    resume 'swaymsg "output * dpms on"' \
+    before-sleep 'swaylock -i /root/.config/sway/tron-bg.png --scaling fill'
+
+# Flynn services (delayed to let compositor settle)
+exec bash -c 'sleep 1 && python3 /opt/flynn/agd/antigravity.py'
+exec bash -c 'sleep 1.2 && foot -e /usr/local/bin/flynn-ui'
 exec bash -c '[ ! -f /etc/flynnos/.first-boot-done ] && sleep 2 && /usr/local/bin/flynn-first-boot'
-exec python3 /opt/flynn/agd/antigravity.py
-# Terminal opens slightly delayed so dock/bg are ready first
-exec bash -c 'sleep 0.8 && foot -e /usr/local/bin/flynn-ui'
 
 # ── Key bindings ──────────────────────────────────────────────────────────────
 # Core
