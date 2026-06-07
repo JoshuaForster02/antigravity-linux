@@ -18,6 +18,7 @@ sed -i 's/#en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen
 sed -i 's/#de_DE.UTF-8/de_DE.UTF-8/' /etc/locale.gen
 locale-gen
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
+echo "LC_ALL=en_US.UTF-8" >> /etc/locale.conf
 ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 echo "  ✓ locale + timezone"
 
