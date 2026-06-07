@@ -22,12 +22,8 @@ set $dborder #002233
 set $text    #e0f8ff
 set $urgent  #ff3300
 
-# ── Wallpaper ─────────────────────────────────────────────────────────────────
+# ── Background — solid color only (live TRON grid handled by flynn-bg-daemon) ──
 output * bg #000810 solid_color
-
-# Fallback if PNG not generated yet
-exec_always swaybg -o '*' -i /root/.config/sway/tron-bg.png -m fill 2>/dev/null \
-  || swaybg -o '*' -c '#000810'
 
 # ── Window appearance ─────────────────────────────────────────────────────────
 # class                  border   bg       text    indicator child_border
@@ -38,8 +34,8 @@ client.urgent            $urgent  $bg      $text   $urgent   $urgent
 
 default_border pixel 2
 default_floating_border pixel 2
-gaps inner 8
-gaps outer 4
+gaps inner 12
+gaps outer 8
 smart_gaps on
 smart_borders on
 
@@ -69,7 +65,7 @@ exec {
     wireplumber
     /usr/local/bin/flynn-boot-chime
     /usr/local/bin/flynn-daemon 2>/dev/null
-    /usr/local/bin/flynn-wallpaper-sway
+    /usr/local/bin/flynn-bg-daemon
     nm-applet --indicator 2>/dev/null
     swayidle -w \
         timeout 300 'swaylock' \

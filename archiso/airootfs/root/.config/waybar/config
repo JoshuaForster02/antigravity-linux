@@ -1,72 +1,80 @@
 {
   "layer": "top",
   "position": "bottom",
-  "height": 36,
-  "spacing": 4,
-  "modules-left":   ["sway/workspaces", "sway/mode", "sway/window"],
-  "modules-center": ["clock"],
-  "modules-right":  ["custom/flynn", "network", "pulseaudio", "cpu", "memory", "battery", "tray"],
+  "height": 40,
+  "spacing": 0,
+  "margin-bottom": 0,
+
+  "modules-left":   ["custom/logo", "sway/workspaces", "sway/mode"],
+  "modules-center": ["custom/clock-display"],
+  "modules-right":  ["cpu", "memory", "pulseaudio", "network", "custom/session"],
+
+  "custom/logo": {
+    "format": "  ⬡ FLYNN OS  ",
+    "tooltip": false,
+    "on-click": "exec /usr/local/bin/flynn-dashboard"
+  },
 
   "sway/workspaces": {
     "disable-scroll": true,
     "all-outputs": true,
-    "format": "{name}"
+    "format": "{name}",
+    "format-icons": {
+      "1": "I",
+      "2": "II",
+      "3": "III",
+      "4": "IV",
+      "5": "V",
+      "focused": "",
+      "urgent": "⚠"
+    }
   },
 
   "sway/mode": {
-    "format": "  {}"
+    "format": "  {}  "
   },
 
-  "sway/window": {
-    "max-length": 50
-  },
-
-  "clock": {
-    "format": "  {:%H:%M}   {:%a %d.%m.%Y}",
-    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
-    "interval": 10
-  },
-
-  "cpu": {
-    "format": "CPU {usage}%",
-    "interval": 3,
+  "custom/clock-display": {
+    "exec": "date +'%H:%M:%S  ·  %a %d.%m.%Y'",
+    "interval": 1,
+    "format": "{}",
     "tooltip": false
   },
 
+  "cpu": {
+    "format": "CPU  {usage:02}%",
+    "interval": 2,
+    "tooltip": false,
+    "states": { "warning": 70, "critical": 90 }
+  },
+
   "memory": {
-    "format": "MEM {}%",
-    "interval": 5
-  },
-
-  "battery": {
-    "states": { "warning": 30, "critical": 15 },
-    "format": "BAT {capacity}%",
-    "format-charging": "CHG {capacity}%",
-    "format-plugged": "PWR {capacity}%",
-    "format-unknown": "BAT --"
-  },
-
-  "network": {
-    "format-wifi":          " {signalStrength}%",
-    "format-ethernet":      " {ifname}",
-    "format-disconnected":  "⚠ disconnected",
-    "tooltip-format": "{ifname}  {ipaddr}/{cidr}",
-    "on-click": "nm-connection-editor"
+    "format": "MEM  {percentage:02}%",
+    "interval": 5,
+    "tooltip-format": "{used:0.1f}G / {total:0.1f}G"
   },
 
   "pulseaudio": {
-    "format": "VOL {volume}%",
-    "format-muted": "MUTE",
-    "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle"
+    "format": "VOL  {volume:03}%",
+    "format-muted": "VOL  ---",
+    "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+    "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +2%",
+    "on-scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -2%",
+    "tooltip": false
   },
 
-  "tray": {
-    "spacing": 8
+  "network": {
+    "format-wifi":         "NET  {signalStrength}%",
+    "format-ethernet":     "ETH  ▲",
+    "format-disconnected": "NET  ---",
+    "tooltip-format": "{ifname}  {ipaddr}",
+    "on-click": "nm-connection-editor",
+    "interval": 10
   },
 
-  "custom/flynn": {
-    "format": " GRID",
+  "custom/session": {
+    "format": "  ⏻  ",
     "tooltip": false,
-    "on-click": "exec /usr/local/bin/flynn-dashboard"
+    "on-click": "swaymsg exit"
   }
 }
