@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Flynn OS
+Description=Flynn OS TRON Boot Theme
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/flynnos
+ScriptFile=/usr/share/plymouth/themes/flynnos/flynnos.script

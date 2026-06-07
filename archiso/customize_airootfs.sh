@@ -10,7 +10,7 @@ echo "║  Flynn OS Linux 3.0 — archiso customize hook    ║"
 echo "╚══════════════════════════════════════════════════╝"
 
 # ── Root password ─────────────────────────────────────────────────────────────
-echo "root:flynn" | chpasswd
+echo "root:tron" | chpasswd
 echo "  ✓ root password: flynn"
 
 # ── Locale + timezone ─────────────────────────────────────────────────────────
@@ -47,15 +47,27 @@ cat > /root/.bash_profile << 'PROFILE'
 export HOME=/root
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 export TERM=xterm-256color
-export HISTSIZE=1000
-export HISTFILE=/root/.bash_history
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+export XDG_RUNTIME_DIR="/run/user/0"
+export XDG_SESSION_TYPE=wayland
+export MOZ_ENABLE_WAYLAND=1
+export QT_QPA_PLATFORM=wayland
+export GDK_BACKEND=wayland,x11
+export ELECTRON_OZONE_PLATFORM_HINT=wayland
 
-# ── Auto-start TRON desktop on tty1 ──────────────────────────────────────────
-if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
-    exec startx -- -nolisten tcp >/tmp/startx.log 2>&1
+mkdir -p "$XDG_RUNTIME_DIR"
+chmod 700 "$XDG_RUNTIME_DIR"
+
+# Auto-start Sway on tty1 — pixman renderer works in UTM/QEMU/VMware
+if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
+    if command -v sway &>/dev/null; then
+        export WLR_RENDERER=pixman
+        export WLR_NO_HARDWARE_CURSORS=1
+        export LIBSEAT_BACKEND=noop
+        exec sway --unsupported-gpu 2>/tmp/sway.log
+    fi
 fi
-
-# ── Fallback: Flynn UI shell ──────────────────────────────────────────────────
 exec /usr/local/bin/flynn-ui
 PROFILE
 
@@ -378,12 +390,12 @@ echo "  ✓ GameMode configured"
 mkdir -p /etc/plymouth
 cat > /etc/plymouth/plymouthd.conf << 'PLY'
 [Daemon]
-Theme=spinner
+Theme=flynnos
 ShowDelay=0
 DeviceTimeout=5
 PLY
-plymouth-set-default-theme spinner 2>/dev/null || true
-echo "  ✓ Plymouth: spinner theme (no arch branding)"
+plymouth-set-default-theme flynnos 2>/dev/null || true
+echo "  ✓ Plymouth: flynnos theme (TRON, no arch branding)"
 
 # ── GRUB TRON theme ───────────────────────────────────────────────────────────
 mkdir -p /usr/share/grub/themes/flynn

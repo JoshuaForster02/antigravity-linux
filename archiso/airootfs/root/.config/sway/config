@@ -47,7 +47,7 @@ font pango:JetBrains Mono 11
 
 # ── Input ─────────────────────────────────────────────────────────────────────
 input type:keyboard {
-    xkb_layout  de
+    xkb_layout  us
     xkb_options caps:escape
     repeat_delay 250
     repeat_rate  40
@@ -76,10 +76,10 @@ exec {
     /usr/local/bin/flynn-dock
     nm-applet --indicator 2>/dev/null
     swayidle -w \
-        timeout 300 'swaylock' \
+        timeout 300 'swaylock -i /root/.config/sway/tron-bg.png --scaling fill' \
         timeout 600 'swaymsg "output * power off"' \
         resume 'swaymsg "output * power on"' \
-        before-sleep 'swaylock'
+        before-sleep 'swaylock -i /root/.config/sway/tron-bg.png --scaling fill'
 }
 exec bash -c '[ ! -f /etc/flynnos/.first-boot-done ] && sleep 2 && /usr/local/bin/flynn-first-boot'
 exec python3 /opt/flynn/agd/antigravity.py

@@ -1,0 +1,44 @@
+# Flynn OS Plymouth Theme — TRON minimal
+# No Arch Linux branding. Just Flynn OS text + spinner.
+
+Window.SetBackgroundTopColor(0.0, 0.031, 0.063);
+Window.SetBackgroundBottomColor(0.0, 0.031, 0.063);
+
+# TRON cyan color
+cx = 0.0; cy = 0.898; cz = 1.0;
+
+# Logo text (drawn as simple spinner ring)
+logo_sprite = Sprite();
+logo_sprite.SetX(Window.GetWidth() / 2 - 80);
+logo_sprite.SetY(Window.GetHeight() / 2 - 60);
+
+logo_img = Image.Text("FLYNN  OS", cx, cy, cz, 1.0);
+logo_sprite.SetImage(logo_img);
+logo_sprite.SetOpacity(1.0);
+
+sub_img = Image.Text("THE  GRID  ·  linux-zen", cx * 0.4, cy * 0.4, cz * 0.5, 1.0);
+sub_sprite = Sprite();
+sub_sprite.SetImage(sub_img);
+sub_sprite.SetX(Window.GetWidth() / 2 - 100);
+sub_sprite.SetY(Window.GetHeight() / 2 - 20);
+
+# Spinner
+spin_img = SpriteImage("/usr/share/plymouth/themes/spinner/animation-0001.png") if File.Exists("/usr/share/plymouth/themes/spinner/animation-0001.png");
+
+progress_bar = Sprite();
+bar_x = Window.GetWidth() / 2 - 80;
+bar_y = Window.GetHeight() / 2 + 40;
+
+fun refresh_callback() {
+    theta = Math.Pi * 2.0 * (Plymouth.GetBootProgress());
+}
+Plymouth.SetRefreshFunction(refresh_callback);
+
+fun boot_progress_callback(time, progress) {
+    bar_img = Image(160, 3);
+    bar_img.Scale(160 * progress, 3);
+    progress_bar.SetImage(bar_img);
+    progress_bar.SetX(bar_x);
+    progress_bar.SetY(bar_y);
+}
+Plymouth.SetBootProgressFunction(boot_progress_callback);
