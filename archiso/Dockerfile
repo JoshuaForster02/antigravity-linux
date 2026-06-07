@@ -35,7 +35,8 @@ RUN pacman -Syy --noconfirm \
         mtools \
         squashfs-tools \
         dosfstools \
- && pacman -Scc --noconfirm
+ && pacman -Scc --noconfirm \
+ && sed -i 's/xorriso -as mkisofs/xorriso -media_space_limit 0 -as mkisofs/g' /usr/bin/mkarchiso
 
 WORKDIR /build
 
