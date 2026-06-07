@@ -56,7 +56,7 @@ jobs:
 
               echo '=== Validating package list ==='
               grep -vE '^[[:space:]]*(#|$)' /build/packages.x86_64 \
-                | xargs pacman -Sp --print-format '%n' \
+                | xargs pacman -Sp --config /build/pacman.conf --print-format '%n' \
                 | tail -5
 
               echo '=== Setting permissions ==='
