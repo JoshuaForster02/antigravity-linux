@@ -186,3 +186,8 @@ python-pyqt6-webengine
 mpv
 viewnior
 brightnessctl
+
+# Wayland UX polish
+wlogout
+nwg-look
+papirus-icon-theme

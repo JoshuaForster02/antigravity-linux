@@ -71,6 +71,11 @@ exec {
     /usr/local/bin/flynn-daemon 2>/dev/null
     /usr/local/bin/flynn-wallpaper-sway
     nm-applet --indicator 2>/dev/null
+    swayidle -w \
+        timeout 300 'swaylock' \
+        timeout 600 'swaymsg "output * power off"' \
+        resume 'swaymsg "output * power on"' \
+        before-sleep 'swaylock'
 }
 # Auto-open Flynn terminal on boot
 # First-boot wizard (runs once)
@@ -86,7 +91,7 @@ bindsym $mod+Return      exec $term
 bindsym $mod+q           kill
 bindsym $mod+d           exec $menu
 bindsym $mod+Shift+r     reload
-bindsym $mod+Shift+e     exec swaymsg exit
+bindsym $mod+Shift+e     exec wlogout -p layer-shell -b 5 -T 400 -B 400
 
 # Flynn-specific
 bindsym $mod+g           exec /usr/local/bin/game-mode-switch.sh toggle

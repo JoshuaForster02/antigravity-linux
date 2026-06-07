@@ -1,0 +1,83 @@
+/* Flynn OS — GTK3 TRON Override */
+* {
+    font-family: "JetBrains Mono", monospace;
+}
+
+window, .window {
+    background-color: #000810;
+    color: #00e5ff;
+}
+
+headerbar, .titlebar {
+    background: #000e1a;
+    border-bottom: 1px solid #002233;
+    color: #00e5ff;
+    box-shadow: none;
+}
+
+button {
+    background: #000e1a;
+    border: 1px solid #002233;
+    color: #00aacc;
+    border-radius: 0;
+}
+
+button:hover {
+    background: #001520;
+    border-color: #00e5ff;
+    color: #00e5ff;
+}
+
+button:active, button:checked {
+    background: #001a2a;
+    border-color: #00e5ff;
+    color: #00e5ff;
+}
+
+entry {
+    background: #000e1a;
+    border: 1px solid #002233;
+    color: #00e5ff;
+    border-radius: 0;
+    caret-color: #00e5ff;
+}
+
+entry:focus {
+    border-color: #00e5ff;
+    box-shadow: 0 0 0 1px #00e5ff;
+}
+
+scrollbar trough {
+    background: #000810;
+}
+
+scrollbar slider {
+    background: #002233;
+    min-width: 6px;
+    min-height: 6px;
+    border-radius: 0;
+}
+
+scrollbar slider:hover {
+    background: #00e5ff;
+}
+
+menu, .menu, .context-menu {
+    background: #000e1a;
+    border: 1px solid #002233;
+    color: #00e5ff;
+}
+
+menuitem:hover {
+    background: #001a2a;
+}
+
+treeview {
+    background: #000810;
+    color: #80c8d8;
+}
+
+treeview:selected {
+    background: #001a2a;
+    color: #00e5ff;
+}

@@ -1,0 +1,46 @@
+/* Flynn OS — GTK4 TRON Override */
+* { font-family: "JetBrains Mono", monospace; }
+
+window { background: #000810; color: #00e5ff; }
+
+headerbar {
+    background: #000e1a;
+    border-bottom: 1px solid #002233;
+    color: #00e5ff;
+    box-shadow: none;
+}
+
+button {
+    background: #000e1a;
+    border: 1px solid #002233;
+    color: #00aacc;
+    border-radius: 0;
+}
+button:hover { background: #001520; border-color: #00e5ff; color: #00e5ff; }
+button:active { background: #001a2a; color: #00e5ff; }
+
+entry {
+    background: #000e1a;
+    border: 1px solid #002233;
+    color: #00e5ff;
+    border-radius: 0;
+}
+entry:focus { border-color: #00e5ff; }
+
+listview, list { background: #000810; color: #80c8d8; }
+row:selected { background: #001a2a; color: #00e5ff; }
+row:hover { background: #000e1a; }
+
+scrollbar trough { background: #000810; min-width: 6px; }
+scrollbar slider { background: #002233; border-radius: 0; }
+scrollbar slider:hover { background: #00e5ff; }
+
+popover { background: #000e1a; border: 1px solid #002233; }
+tooltip { background: #001520; color: #00e5ff; border: 1px solid #002233; }
+
+progressbar trough { background: #001020; min-height: 6px; }
+progressbar progress { background: #00e5ff; min-height: 6px; }
+
+switch { background: #001020; }
+switch:checked { background: #004466; }
+switch slider { background: #00e5ff; }

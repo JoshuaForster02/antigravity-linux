@@ -1,0 +1,43 @@
+/* Flynn OS — wlogout TRON Style */
+* {
+    background-image: none;
+    font-family: "JetBrains Mono", monospace;
+}
+
+window {
+    background-color: rgba(0, 8, 16, 0.95);
+}
+
+button {
+    color: #004466;
+    background-color: rgba(0, 14, 26, 0.9);
+    border: 2px solid #002233;
+    border-radius: 0px;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    margin: 12px;
+    min-width: 140px;
+    min-height: 100px;
+}
+
+button:hover, button:focus {
+    background-color: rgba(0, 26, 42, 0.95);
+    border-color: #00e5ff;
+    color: #00e5ff;
+    outline: none;
+    /* simulated glow via shadow */
+    box-shadow: 0 0 0 1px #00e5ff, 0 0 16px rgba(0, 229, 255, 0.2);
+}
+
+button:active {
+    background-color: #001a2a;
+    color: #00e5ff;
+}
+
+#lock     { background-image: none; }
+#logout   { background-image: none; }
+#suspend  { background-image: none; }
+#reboot   { background-image: none; }
+#shutdown { background-image: none; }
+#shutdown:hover { border-color: #ff3300; color: #ff3300; }
