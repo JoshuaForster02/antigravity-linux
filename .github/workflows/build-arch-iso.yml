@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # ── Build inside Arch Linux Docker ────────────────────────────────────────
       # GitHub Actions runners are x86_64 Ubuntu, so Arch Docker works natively.
