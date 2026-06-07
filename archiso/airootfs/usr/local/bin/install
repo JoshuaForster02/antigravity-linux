@@ -1,0 +1,76 @@
+#!/bin/bash
+# Flynn OS — Interactive disk installer
+# Installs Flynn OS alongside Windows (dual-boot) or standalone
+
+printf "\e[1;36m"
+cat << 'BANNER'
+  ╔══════════════════════════════════════════════════════╗
+  ║   Flynn OS Linux — Disk Installer                   ║
+  ╚══════════════════════════════════════════════════════╝
+BANNER
+printf "\e[0m\n"
+
+echo "  Available disks:"
+lsblk -d -o NAME,SIZE,TYPE,MODEL | grep disk
+echo ""
+
+read -p "  Install to which disk? (e.g. sda, nvme0n1): " DISK
+DISK="/dev/$DISK"
+
+if [ ! -b "$DISK" ]; then
+    echo "  [ERROR] $DISK not found."
+    exit 1
+fi
+
+echo ""
+echo "  Windows detected on $DISK? Checking..."
+if fdisk -l "$DISK" 2>/dev/null | grep -q "Microsoft"; then
+    echo "  [!] Windows found — will install dual-boot (GRUB picks at startup)"
+    DUALBOOT=true
+else
+    echo "  No Windows found — standalone install"
+    DUALBOOT=false
+fi
+
+echo ""
+read -p "  WARNING: This will partition $DISK. Continue? [y/N] " CONFIRM
+[ "$CONFIRM" = "y" ] || { echo "Aborted."; exit 0; }
+
+echo ""
+echo "  [1/5] Partitioning $DISK..."
+if $DUALBOOT; then
+    # Add Flynn partition after Windows — find free space
+    PART=$(parted "$DISK" -s unit MB print free | grep "Free Space" | tail -1)
+    START=$(echo "$PART" | awk '{print $1}' | tr -d 'MB')
+    END=$(echo "$PART"   | awk '{print $2}' | tr -d 'MB')
+    parted "$DISK" -s mkpart primary ext4 "${START}MB" "${END}MB"
+    FLYNNPART="${DISK}$(lsblk -no KNAME "$DISK" | tail -1 | grep -o '[0-9]*$')"
+else
+    # Full disk
+    parted "$DISK" -s mklabel gpt
+    parted "$DISK" -s mkpart ESP fat32 1MiB 513MiB
+    parted "$DISK" -s set 1 esp on
+    parted "$DISK" -s mkpart primary ext4 513MiB 100%
+    FLYNNPART="${DISK}2"
+fi
+
+echo "  [2/5] Formatting..."
+mkfs.ext4 -L "FlynnOS" -q "$FLYNNPART"
+
+echo "  [3/5] Copying system..."
+mount "$FLYNNPART" /mnt
+rsync -a --exclude={/proc,/sys,/dev,/run,/mnt} / /mnt/
+
+echo "  [4/5] Installing GRUB..."
+arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id="Flynn OS" 2>/dev/null || \
+arch-chroot /mnt grub-install --target=i386-pc "$DISK"
+arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+
+echo "  [5/5] Done!"
+umount /mnt
+
+printf "\e[1;32m"
+echo "  ╔══════════════════════════════════════════════════╗"
+echo "  ║   Flynn OS installed! Remove ISO and reboot.    ║"
+echo "  ╚══════════════════════════════════════════════════╝"
+printf "\e[0m\n"

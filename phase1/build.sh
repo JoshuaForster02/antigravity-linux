@@ -123,35 +123,30 @@ fi
 # ── 4. Launch ─────────────────────────────────────────────────────────────────
 echo "[4/4] Launching Flynn OS in QEMU..."
 echo ""
-printf "  \e[2;37mControls: Ctrl+Alt+G = release mouse  |  Super+Return = new terminal\e[0m\n\n"
+printf "  \e[2;37mKernel output appears in THIS terminal (serial).\e[0m\n"
+printf "  \e[2;37mLogin prompt appears in QEMU window on tty1.\e[0m\n"
+printf "  \e[2;37mControls: Ctrl+Alt+G = release mouse\e[0m\n\n"
 
-# Primary: full graphical session — VGA std + USB mouse + sound
+ISO_ABS="$(cd "$(dirname "$ISO")" && pwd)/$(basename "$ISO")"
+
 qemu-system-x86_64 \
-    -cdrom "$ISO" \
-    -m 2G \
-    -smp 2 \
-    -vga std \
-    -boot d \
+    -cdrom  "$ISO_ABS" \
+    -m      2G \
+    -smp    2 \
+    -vga    std \
+    -boot   d \
     -device usb-ehci \
     -device usb-tablet \
-    -audiodev coreaudio,id=snd0 \
-    -device ich9-intel-hda \
-    -device hda-output,audiodev=snd0 \
+    -serial stdio \
     -display cocoa,show-cursor=on \
-    -name "Flynn OS Linux 2.0  —  The Grid" \
+    -name   "Flynn OS Linux — The Grid" \
     2>/dev/null || \
 qemu-system-x86_64 \
-    -cdrom "$ISO" \
-    -m 1G \
-    -smp 2 \
-    -vga std \
-    -boot d \
-    -display cocoa,show-cursor=on \
-    -name "Flynn OS Linux 2.0  —  The Grid" \
-    2>/dev/null || \
-qemu-system-x86_64 \
-    -cdrom "$ISO" \
-    -m 2G \
-    -vga std \
+    -cdrom  "$ISO_ABS" \
+    -m      2G \
+    -smp    2 \
+    -vga    std \
+    -boot   d \
     -device usb-tablet \
-    -boot d
+    -serial stdio \
+    -name   "Flynn OS Linux — The Grid"

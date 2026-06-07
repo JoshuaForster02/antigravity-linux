@@ -144,7 +144,7 @@ RUN KERNEL=$(ls /boot/vmlinuz-*-generic 2>/dev/null | sort -V | tail -1) && \
     echo "kernel: $(basename $KERNEL)  ($(du -sh /build/vmlinuz | cut -f1))"
 
 # ── GRUB config ───────────────────────────────────────────────────────────────
-COPY grub/grub-linux.cfg /staging-grub/grub.cfg
+COPY grub/grub.cfg /staging-grub/grub.cfg
 
 # ── Phase 2: GRUB TRON theme ─────────────────────────────────────────────────
 COPY phase2/grub-theme/ /build/grub-theme/
