@@ -55,6 +55,7 @@ jobs:
               pacman -S --noconfirm --needed archiso grub efibootmgr mtools squashfs-tools dosfstools
 
               echo '=== Validating package list ==='
+              pacman -Sy --noconfirm --config /build/pacman.conf
               grep -vE '^[[:space:]]*(#|$)' /build/packages.x86_64 \
                 | xargs pacman -Sp --config /build/pacman.conf --print-format '%n' \
                 | tail -5
