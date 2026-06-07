@@ -80,8 +80,11 @@ xf86-video-vesa
 xf86-video-fbdev
 xf86-input-libinput
 
-# VM guest tools — open-vm-tools covers VMware Fusion (uses modesetting driver, no xf86-video-vmware needed)
+# VM guest tools
 open-vm-tools
+# UTM/QEMU virtio-gpu support (Apple Silicon M-chip)
+spice-vdagent
+xf86-video-qxl
 
 # Wayland + Flynn Compositor deps
 wayland
