@@ -359,6 +359,7 @@ systemctl enable seatd                2>/dev/null || true
 systemctl enable tailscaled           2>/dev/null || true
 systemctl enable flynn-daemon.service 2>/dev/null || true
 systemctl enable flynn-update.timer    2>/dev/null || true
+systemctl enable vmtoolsd.service     2>/dev/null || true
 echo "  ✓ systemd services"
 
 # ── Flynn daemon Python deps ───────────────────────────────────────────────────

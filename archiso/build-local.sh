@@ -60,7 +60,7 @@ docker run --rm \
     --privileged \
     --platform linux/amd64 \
     --shm-size=512m \
-    --tmpfs /isoout:exec,size=2g \
+    --tmpfs /isoout:exec,size=4g \
     -v "$(pwd):/build" \
     -v "$OUTPUT:/output" \
     -v "$CACHE:/var/cache/pacman/pkg" \
@@ -75,6 +75,7 @@ docker run --rm \
 
         echo '=== archiso installieren ==='
         pacman -Sy --noconfirm --needed archiso grub efibootmgr mtools squashfs-tools dosfstools
+        sed -i 's/xorriso -as mkisofs/xorriso -media_space_limit 0 -as mkisofs/g' /usr/bin/mkarchiso
 
         echo '=== Rechte setzen ==='
         find /build/airootfs/usr/local/bin/ -type f -exec chmod +x {} \; 2>/dev/null || true

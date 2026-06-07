@@ -80,6 +80,9 @@ xf86-video-vesa
 xf86-video-fbdev
 xf86-input-libinput
 
+# VM guest tools — open-vm-tools covers VMware Fusion (uses modesetting driver, no xf86-video-vmware needed)
+open-vm-tools
+
 # Wayland + Flynn Compositor deps
 wayland
 wayland-protocols
@@ -188,12 +191,11 @@ viewnior
 brightnessctl
 
 # Wayland UX polish
-# wlogout is AUR-only now; keep it out of ISO package base list
+# wlogout — AUR only, install post-boot via: yay -S wlogout
 nwg-look
 papirus-icon-theme
 
-# Face-ID login
-# python-dlib is AUR-only now; install post-boot if needed
+# Face-ID login (python-dlib is AUR-only, installed post-boot via pip/yay)
 python-numpy
 
 # Game streaming (Sunshine server)

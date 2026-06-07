@@ -91,7 +91,8 @@ bindsym $mod+Return      exec $term
 bindsym $mod+q           kill
 bindsym $mod+d           exec $menu
 bindsym $mod+Shift+r     reload
-bindsym $mod+Shift+e     exec wlogout -p layer-shell -b 5 -T 400 -B 400
+bindsym $mod+Shift+e     exec swaymsg exit
+# wlogout (AUR): install post-boot with `yay -S wlogout` then restore this keybind
 
 # Flynn-specific
 bindsym $mod+g           exec /usr/local/bin/game-mode-switch.sh toggle
