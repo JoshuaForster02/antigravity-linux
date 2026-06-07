@@ -351,6 +351,10 @@ while true; do
         notion-sync|anki-sync)   python3 /opt/flynn/notion_anki_sync.py ;;
         config)                  /usr/local/bin/flynn-config "$ARG1" "$ARG2" "$ARG3" ;;
         notion)                  xdg-open https://notion.so 2>/dev/null || echo "  Open: notion.so" ;;
+        tailscale|ts)            tailscale "$ARG1" "$ARG2" 2>/dev/null ;;
+        vpn-up|ts-up)            tailscale up && tailscale status ;;
+        vpn-down|ts-down)        tailscale down ;;
+        vpn-status|ts-status)    tailscale status ;;
         anki)                    anki 2>/dev/null & echo "  Starting Anki..." ;;
         disk|df|storage)         cmd_disk ;;
         install)                 cmd_install ;;

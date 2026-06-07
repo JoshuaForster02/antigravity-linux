@@ -46,6 +46,7 @@ dhcpcd
 openssh
 dropbear
 nmap
+tailscale
 curl
 wget
 rsync

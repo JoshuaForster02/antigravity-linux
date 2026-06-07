@@ -331,6 +331,7 @@ systemctl enable NetworkManager
 systemctl enable sshd
 systemctl enable bluetooth.service    2>/dev/null || true
 systemctl enable seatd                2>/dev/null || true
+systemctl enable tailscaled           2>/dev/null || true
 systemctl enable flynn-daemon.service 2>/dev/null || true
 echo "  ✓ systemd services"
 
