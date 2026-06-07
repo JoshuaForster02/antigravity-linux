@@ -184,8 +184,8 @@ for_window [app_id="anki"] move to workspace 3
 # Steam → workspace 4
 for_window [app_id="steam"] move to workspace 4
 for_window [title="Steam Big Picture"] fullscreen enable, move to workspace 4
-# Flynn terminal → workspace 1
-for_window [app_id="foot"] move to workspace 1
+# Flynn terminal → floating, centered, workspace 1
+for_window [app_id="foot"] floating enable, resize set 1100 650, move position center
 # Flynn Browser → floating, right side
 for_window [title="Flynn Browser.*Amboss"] move to workspace 2
 # Picture-in-picture → floating, top-right, always on top
