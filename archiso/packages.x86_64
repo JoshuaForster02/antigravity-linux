@@ -142,7 +142,6 @@ python-psutil
 python-xlib
 python-gobject
 gtk4
-gtk-layer-shell
 
 # Gaming
 steam

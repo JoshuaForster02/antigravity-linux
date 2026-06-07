@@ -28,12 +28,14 @@ jobs:
       # ── Build inside Arch Linux Docker ────────────────────────────────────────
       # GitHub Actions runners are x86_64 Ubuntu, so Arch Docker works natively.
       # No cross-compilation, no Rosetta, no pacman-key entropy issues.
+      - name: Prepare output directory
+        run: mkdir -p "${{ github.workspace }}/archiso/output"
+
       - name: Build ISO inside archlinux container
         run: |
           docker run --rm --privileged \
             -v "${{ github.workspace }}/archiso:/build" \
             -v "${{ github.workspace }}/archiso/output:/output" \
-            --platform linux/amd64 \
             archlinux:latest \
             bash -c "
               set -euo pipefail
@@ -45,14 +47,15 @@ jobs:
 
               echo '=== Installing archiso ==='
               pacman -Syu --noconfirm
-              pacman -S --noconfirm archiso grub efibootmgr mtools squashfs-tools dosfstools
+              pacman -S --noconfirm --needed archiso grub efibootmgr mtools squashfs-tools dosfstools
+
+              echo '=== Validating package list ==='
+              pacman -Sp --print-format '%n' - < /build/packages.x86_64 | tail -5
 
               echo '=== Setting permissions ==='
+              find /build/airootfs/usr/local/bin/ -type f -exec chmod +x {} \; 2>/dev/null || true
+              find /build/airootfs/opt/flynn/ -name '*.py' -exec chmod +x {} \; 2>/dev/null || true
               chmod +x /build/customize_airootfs.sh
-              chmod +x /build/airootfs/opt/flynn/daemon/flynn_daemon.py 2>/dev/null || true
-              chmod +x /build/airootfs/usr/local/bin/* 2>/dev/null || true
-              chmod +x /build/airootfs/root/.xinitrc 2>/dev/null || true
-              chmod +x /build/airootfs/root/.config/openbox/autostart 2>/dev/null || true
 
               echo '=== Building Flynn OS ISO ==='
               mkarchiso -v -w /work -o /output /build
