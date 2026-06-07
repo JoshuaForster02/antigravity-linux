@@ -43,12 +43,8 @@ try:
 
     img.save(OUT, "PNG")
     print(f"Wallpaper saved: {OUT}")
+    # Reload via swaymsg (sway's exec_always swaybg is already running; tell it to switch)
+    subprocess.Popen(["swaymsg", f"output * bg {OUT} fill"], stderr=subprocess.DEVNULL)
 except ImportError:
-    # Fallback: swaybg solid color (no PIL)
     print("PIL not available, using solid background")
     sys.exit(1)
-
-# Apply via swaybg
-subprocess.Popen(["pkill", "swaybg"])
-import time; time.sleep(0.2)
-subprocess.Popen(["swaybg", "-o", "*", "-i", OUT, "-m", "fill"])

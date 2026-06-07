@@ -12,8 +12,6 @@ configuration {
     window-format:   "{w}  {c}  {t}";
 }
 
-@theme "flynn-tron"
-
 /* ── Flynn TRON Theme ─────────────────────────────────────────────────────── */
 * {
     bg:         #000810F5;

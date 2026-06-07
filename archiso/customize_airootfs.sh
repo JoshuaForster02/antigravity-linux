@@ -373,17 +373,16 @@ usermod -a -G gamemode root 2>/dev/null || true
 echo "  ✓ GameMode configured"
 
 # ── Plymouth TRON boot animation ──────────────────────────────────────────────
-if [ -f /usr/share/plymouth/themes/flynn/flynn.plymouth ]; then
-    mkdir -p /etc/plymouth
-    cat > /etc/plymouth/plymouthd.conf << 'PLY'
+# Plymouth — use built-in 'spinner' (no arch branding, no missing theme error)
+mkdir -p /etc/plymouth
+cat > /etc/plymouth/plymouthd.conf << 'PLY'
 [Daemon]
-Theme=flynn
+Theme=spinner
 ShowDelay=0
-DeviceTimeout=8
+DeviceTimeout=5
 PLY
-    plymouth-set-default-theme -R flynn 2>/dev/null || true
-    echo "  ✓ Plymouth TRON theme"
-fi
+plymouth-set-default-theme spinner 2>/dev/null || true
+echo "  ✓ Plymouth: spinner theme (no arch branding)"
 
 # ── GRUB TRON theme ───────────────────────────────────────────────────────────
 mkdir -p /usr/share/grub/themes/flynn

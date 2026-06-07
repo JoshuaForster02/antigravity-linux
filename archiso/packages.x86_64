@@ -124,7 +124,7 @@ noto-fonts-emoji
 # File manager + apps
 thunar
 mousepad
-webkit2gtk-4.1
+webkitgtk-6.0
 
 # Python (for Flynn daemon + wallpaper + Notion/Anki sync)
 python

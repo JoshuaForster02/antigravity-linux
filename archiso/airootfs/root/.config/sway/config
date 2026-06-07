@@ -104,7 +104,7 @@ bindsym $mod+u           exec /usr/local/bin/flynn-update
 
 bindsym $mod+Shift+s  exec /usr/local/bin/flynn-sunshine --status
 bindsym $mod+Shift+a  exec /usr/local/bin/flynn-ambient toggle
-bindsym $mod+Shift+h  exec /usr/local/bin/flynn-health status
+bindsym $mod+F1       exec /usr/local/bin/flynn-health status
 bindsym $mod+Shift+f  exec sudo /usr/local/bin/flynn-face-id --test
 
 # Screenshot
