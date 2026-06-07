@@ -79,10 +79,17 @@ xf86-video-vesa
 xf86-video-fbdev
 xf86-input-libinput
 
-# Wayland
+# Wayland + Flynn Compositor deps
 wayland
 wayland-protocols
 xdg-desktop-portal
+xdg-desktop-portal-wlr
+wlroots
+seatd
+libdrm
+libxkbcommon
+libinput
+pixman
 
 # GPU — AMD RX 6800 (RDNA2 = amdgpu)
 mesa
@@ -133,6 +140,9 @@ python-requests
 python-paho-mqtt
 python-psutil
 python-xlib
+python-gobject
+gtk4
+gtk-layer-shell
 
 # Gaming
 steam
@@ -141,13 +151,16 @@ lib32-gamemode
 mangohud
 lib32-mangohud
 
-# Dev tools
+# Dev tools + compositor build chain
 git
 vim
 nano
 make
 gcc
 pkg-config
+meson
+ninja
+cmake
 
 # Arch install helpers
 arch-install-scripts

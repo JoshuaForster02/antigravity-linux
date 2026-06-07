@@ -1,0 +1,59 @@
+#!/bin/bash
+# Flynn OS — Build + install the Wayland compositor
+# Run once after installation on real hardware (needs GPU + wlroots)
+# Usage: flynn-compositor-build
+
+SRC="/opt/flynn/compositor"
+BUILD="$SRC/build"
+
+printf "\e[1;36m"
+echo "╔══════════════════════════════════════════════════════╗"
+echo "║  Flynn OS Compositor — Build                        ║"
+echo "║  wlroots + OpenGL Glow Shaders + TRON Grid          ║"
+echo "╚══════════════════════════════════════════════════════╝"
+printf "\e[0m\n"
+
+# Check deps
+if ! command -v meson &>/dev/null; then
+    echo "[1/4] Installing build deps..."
+    pacman -S --noconfirm meson ninja gcc pkg-config wlroots seatd libxkbcommon
+fi
+
+echo "[2/4] Configuring with meson..."
+meson setup "$BUILD" "$SRC" --buildtype=release -Db_lto=true 2>&1 | tail -5
+
+echo "[3/4] Compiling..."
+ninja -C "$BUILD" 2>&1 | tail -10
+
+echo "[4/4] Installing..."
+install -Dm755 "$BUILD/flynn-compositor" /usr/local/bin/flynn-compositor
+
+# Create systemd user service
+mkdir -p /etc/systemd/user
+cat > /etc/systemd/system/flynn-compositor.service << 'SVC'
+[Unit]
+Description=Flynn OS Wayland Compositor
+After=seatd.service systemd-logind.service
+Wants=seatd.service
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/sleep 0.5
+ExecStart=/usr/local/bin/flynn-compositor
+Restart=on-failure
+RestartSec=3
+Environment=WLR_RENDERER=gles2
+Environment=WLR_NO_HARDWARE_CURSORS=1
+Environment=XDG_RUNTIME_DIR=/run/user/0
+Environment=WAYLAND_DISPLAY=wayland-1
+
+[Install]
+WantedBy=graphical.target
+SVC
+
+systemctl enable seatd
+systemctl enable flynn-compositor
+
+printf "\e[1;32m✓ Flynn Compositor installed.\e[0m\n"
+echo "  Start now:  systemctl start flynn-compositor"
+echo "  Or reboot — it starts automatically on graphical.target"

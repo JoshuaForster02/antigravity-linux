@@ -295,10 +295,22 @@ cmd_help() {
     printf "  ${LCY}FILES${RST}\n"
     printf "  ${CY}  ls [path]     ${DRK}list directory${RST}\n"
     printf "  ${CY}  cat/nano      ${DRK}view / edit files${RST}\n\n"
+    printf "  ${LCY}GUI${RST}\n"
+    printf "  ${CY}  startx        ${DRK}launch TRON Openbox desktop (X11)${RST}\n"
+    printf "  ${CY}  session       ${DRK}launch Wayland compositor session${RST}\n"
+    printf "  ${CY}  compositor    ${DRK}build Flynn Wayland compositor${RST}\n\n"
+    printf "  ${LCY}GAMING${RST}\n"
+    printf "  ${CY}  steam         ${DRK}launch Steam${RST}\n"
+    printf "  ${CY}  game          ${DRK}activate Game Mode (CPU perf, Steam)${RST}\n"
+    printf "  ${CY}  study         ${DRK}activate Study Mode${RST}\n"
+    printf "  ${CY}  proton-ge     ${DRK}install latest Proton-GE${RST}\n\n"
+    printf "  ${LCY}SYSTEM${RST}\n"
+    printf "  ${CY}  update        ${DRK}pacman -Syu (full system update)${RST}\n"
+    printf "  ${CY}  fetch         ${DRK}system info (fastfetch)${RST}\n\n"
     printf "  ${LCY}FUN${RST}\n"
     printf "  ${CY}  matrix        ${DRK}matrix rain animation${RST}\n"
     printf "  ${CY}  tron/clear    ${DRK}redisplay boot splash${RST}\n"
-    printf "  ${CY}  sh            ${DRK}drop to BusyBox shell${RST}\n\n"
+    printf "  ${CY}  sh            ${DRK}drop to bash${RST}\n\n"
     hline "═" "$DIM"; echo ""
 }
 
@@ -335,8 +347,19 @@ while true; do
         services|svc)            cmd_services ;;
         matrix|rain)             cmd_matrix ;;
         pi)                      cmd_pi "$ARG1" ;;
+        pi-deploy)               bash /opt/flynn/pi-control/setup-pi.sh ;;
         disk|df|storage)         cmd_disk ;;
         install)                 cmd_install ;;
+        startx|gui|x11)          startx -- -nolisten tcp 2>/dev/null || printf "  \e[0;33mstartx not available\e[0m\n" ;;
+        session|wayland)         exec /usr/local/bin/flynn-session ;;
+        compositor)              /usr/local/bin/flynn-compositor-build ;;
+        proton|proton-ge)        /usr/local/bin/proton-ge-install ;;
+        steam)                   steam 2>/dev/null & echo "  Steam launching..." ;;
+        game)                    /usr/local/bin/game-mode-switch.sh game ;;
+        study)                   /usr/local/bin/game-mode-switch.sh study ;;
+        fastfetch|neofetch|fetch) fastfetch 2>/dev/null || uname -a ;;
+        update)                  pacman -Syu --noconfirm ;;
+        pacman)                  pacman $ARG1 $ARG2 $ARG3 2>&1 | head -30 ;;
         daemon)                  cmd_daemon ;;
         ssh-info|ssh)            cmd_ssh_info ;;
         ps|proc)

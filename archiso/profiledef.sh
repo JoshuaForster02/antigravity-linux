@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Flynn OS Linux — archiso profile definition
-
 iso_name="flynnos"
 iso_label="FLYNNOS_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
 iso_publisher="Flynn OS Project"
@@ -24,8 +22,14 @@ file_permissions=(
     ["/usr/local/bin/flynn-boot-chime"]="0:0:755"
     ["/usr/local/bin/game-mode-switch.sh"]="0:0:755"
     ["/usr/local/bin/install"]="0:0:755"
+    ["/usr/local/bin/proton-ge-install"]="0:0:755"
+    ["/usr/local/bin/flynn-compositor-build"]="0:0:755"
+    ["/usr/local/bin/flynn-session"]="0:0:755"
+    ["/usr/local/bin/flynn-setup"]="0:0:755"
     ["/opt/flynn/daemon/flynn_daemon.py"]="0:0:755"
+    ["/opt/flynn/agd/antigravity.py"]="0:0:755"
     ["/root/.xinitrc"]="0:0:755"
+    ["/root/.bash_profile"]="0:0:755"
     ["/root/.config/openbox/autostart"]="0:0:755"
     ["/etc/flynn/"]="0:0:755"
 )

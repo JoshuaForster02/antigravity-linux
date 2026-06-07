@@ -1,0 +1,114 @@
+#!/bin/bash
+# Flynn OS — First-Boot Setup Wizard
+# Run after installing to disk. Sets up:
+#   - Compositor (Wayland / TRON Desktop)
+#   - Steam + Proton-GE
+#   - Pi Agent connection
+#   - Notion / Anki sync
+# Usage: flynn-setup
+
+CY='\e[1;36m' GN='\e[1;32m' YL='\e[0;33m' DIM='\e[2;36m' RST='\e[0m'
+ok()   { printf "${GN}  ✓  %s${RST}\n" "$*"; }
+info() { printf "${CY}  »  %s${RST}\n" "$*"; }
+ask()  { printf "${CY}  ?  %s${RST} " "$*"; }
+
+printf "${CY}"
+cat << 'BANNER'
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  F L Y N N   O S  —  Setup Wizard                          ║
+  ╚══════════════════════════════════════════════════════════════╝
+BANNER
+printf "${RST}\n"
+
+# ── 1. Compositor ─────────────────────────────────────────────────────────────
+info "Step 1/5: Flynn Wayland Compositor"
+if command -v meson &>/dev/null && [ -d /opt/flynn/compositor/src ]; then
+    ask "Build compositor now? [Y/n]"; read -r R
+    if [[ "${R:-y}" =~ ^[Yy] ]]; then
+        /usr/local/bin/flynn-compositor-build
+        ok "Compositor built"
+    fi
+else
+    info "meson not found — run: pacman -S meson ninja wlroots"
+fi
+
+# ── 2. GPU setup ──────────────────────────────────────────────────────────────
+info "Step 2/5: GPU optimization"
+GPU=$(lspci 2>/dev/null | grep -i "VGA\|3D" | head -1)
+info "Detected: ${GPU:-unknown}"
+
+if echo "$GPU" | grep -qi "AMD\|ATI\|Radeon"; then
+    ok "AMD GPU — amdgpu driver (already active)"
+    # Enable hardware video decode
+    usermod -a -G video,render root 2>/dev/null
+    # Set Vulkan env
+    grep -q "RADV_PERFTEST" /etc/profile.d/flynn-gpu.sh 2>/dev/null || \
+    cat > /etc/profile.d/flynn-gpu.sh << 'GPU'
+export AMD_VULKAN_ICD=RADV
+export RADV_PERFTEST=aco,ngg
+export DXVK_ASYNC=1
+export VKD3D_CONFIG=dxr11,dxr
+export MESA_VK_WSI_PRESENT_MODE=mailbox
+GPU
+    ok "AMD performance flags set"
+fi
+
+# ── 3. Steam + Proton-GE ──────────────────────────────────────────────────────
+info "Step 3/5: Gaming layer (Steam + Proton-GE)"
+if ! command -v steam &>/dev/null; then
+    ask "Install Steam? [Y/n]"; read -r R
+    [[ "${R:-y}" =~ ^[Yy] ]] && pacman -S --noconfirm steam
+fi
+
+ask "Download latest Proton-GE? [Y/n]"; read -r R
+if [[ "${R:-y}" =~ ^[Yy] ]]; then
+    /usr/local/bin/proton-ge-install
+fi
+
+# ── 4. Pi Agent ───────────────────────────────────────────────────────────────
+info "Step 4/5: Pi Agent (presence detection + Wake-on-LAN)"
+ask "Pi IP address (default: 100.74.204.71): "; read -r PI_IP
+PI_IP="${PI_IP:-100.74.204.71}"
+
+ask "Your PC MAC address (for Wake-on-LAN, leave blank to skip): "; read -r PC_MAC
+
+mkdir -p /etc/flynn
+cat > /etc/flynn/config.json << CONF
+{
+  "pi_host": "$PI_IP",
+  "pi_port": 8765,
+  "pc_mac": "$PC_MAC",
+  "daemon_port": 7777,
+  "notion_token": "",
+  "anki_port": 8765
+}
+CONF
+ok "Flynn config written to /etc/flynn/config.json"
+
+# ── 5. Auto-start session ─────────────────────────────────────────────────────
+info "Step 5/5: Auto-start graphical session"
+ask "Auto-start GUI on login? [Y/n]"; read -r R
+if [[ "${R:-y}" =~ ^[Yy] ]]; then
+    cat >> /root/.bash_profile << 'AUTOSTART'
+
+# Auto-start Flynn session on tty1
+if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
+    if command -v flynn-compositor &>/dev/null; then
+        exec /usr/local/bin/flynn-session
+    else
+        exec startx
+    fi
+fi
+AUTOSTART
+    ok "GUI auto-starts on tty1 login"
+fi
+
+# ── Done ──────────────────────────────────────────────────────────────────────
+printf "\n${GN}"
+echo "  ╔══════════════════════════════════════════════════════╗"
+echo "  ║  Flynn OS setup complete.                           ║"
+echo "  ║                                                      ║"
+echo "  ║  Reboot to start your TRON desktop.                ║"
+echo "  ║  Or type: session   (Wayland) / startx (X11)       ║"
+echo "  ╚══════════════════════════════════════════════════════╝"
+printf "${RST}\n"

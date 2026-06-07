@@ -1,17 +1,19 @@
 [Unit]
-Description=Flynn OS X11 Session
-After=systemd-user-sessions.service
+Description=Flynn OS Graphical Session
+After=seatd.service systemd-logind.service network.target
+Wants=seatd.service
 
 [Service]
+Type=simple
 User=root
 PAMName=login
 TTYPath=/dev/tty1
 StandardInput=tty
-StandardOutput=tty
-Environment=XDG_SESSION_TYPE=x11
-ExecStart=/usr/local/bin/flynn-startx
-Restart=always
-RestartSec=2
+StandardOutput=journal
+ExecStart=/usr/local/bin/flynn-session
+Restart=on-failure
+RestartSec=3
+Environment=XDG_RUNTIME_DIR=/run/user/0
 
 [Install]
 WantedBy=multi-user.target

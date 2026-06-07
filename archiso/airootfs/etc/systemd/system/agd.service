@@ -1,0 +1,16 @@
+[Unit]
+Description=ANTIGRAVITY Daemon — Overlay Layer + Command Palette
+After=flynn-compositor.service
+BindsTo=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/flynn/agd/antigravity.py
+Restart=on-failure
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+Environment=XDG_RUNTIME_DIR=/run/user/0
+Environment=DISPLAY=:0
+
+[Install]
+WantedBy=graphical-session.target

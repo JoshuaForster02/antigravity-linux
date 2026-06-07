@@ -1,0 +1,22 @@
+#!/bin/bash
+# Flynn OS — Install latest Proton-GE (Glorious Eggroll)
+# Makes Windows games run better than on Windows itself.
+# Usage: proton-ge-install
+
+STEAM_DIR="$HOME/.steam/root/compatibilitytools.d"
+API="https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest"
+
+printf "\e[1;36m  Installing Proton-GE (latest)...\e[0m\n"
+
+# Get latest release info
+RELEASE=$(curl -sf "$API") || { echo "  [!] Network error"; exit 1; }
+URL=$(echo "$RELEASE" | python3 -c "import sys,json; r=json.load(sys.stdin)['assets']; print(next(a['browser_download_url'] for a in r if a['name'].endswith('.tar.gz')))")
+NAME=$(echo "$RELEASE" | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
+
+echo "  Downloading $NAME..."
+mkdir -p "$STEAM_DIR"
+curl -L "$URL" | tar -xz -C "$STEAM_DIR"
+
+printf "\e[1;32m  ✓ Proton-GE %s installed.\e[0m\n" "$NAME"
+echo "  In Steam: Settings → Compatibility → use Proton-GE for all titles"
+echo "  Or per-game: right-click → Properties → Compatibility → $NAME"
