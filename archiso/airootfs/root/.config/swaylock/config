@@ -1,0 +1,20 @@
+# Flynn OS — Swaylock (TRON lockscreen)
+color=000810
+font=JetBrains Mono
+font-size=16
+indicator-radius=80
+indicator-thickness=6
+ring-color=00e5ff
+ring-clear-color=004466
+ring-wrong-color=ff3300
+key-hl-color=00e5ff
+bs-hl-color=004466
+text-color=00e5ff
+text-clear-color=004466
+text-wrong-color=ff3300
+inside-color=000810cc
+inside-clear-color=000810cc
+inside-wrong-color=1a0000cc
+line-uses-ring
+grace=2
+fade-in=0.3

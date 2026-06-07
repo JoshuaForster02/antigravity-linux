@@ -55,6 +55,27 @@ fi
 
 # ── 3. Steam + Proton-GE ──────────────────────────────────────────────────────
 info "Step 3/5: Gaming layer (Steam + Proton-GE)"
+# Install all gaming + productivity packages removed from live ISO for size
+POSTINSTALL_PKGS=(
+    steam lib32-mesa lib32-vulkan-radeon lib32-gtk3
+    lib32-gamemode lib32-mangohud
+    anki python-pyqt6 python-pyqt6-webengine
+    mpv
+)
+MISSING=()
+for pkg in "${POSTINSTALL_PKGS[@]}"; do
+    pacman -Q "$pkg" &>/dev/null || MISSING+=("$pkg")
+done
+
+if [ ${#MISSING[@]} -gt 0 ]; then
+    ask "Install ${#MISSING[@]} packages (Steam, Anki, Multimedia)? [Y/n]"; read -r R
+    if [[ "${R:-y}" =~ ^[Yy] ]]; then
+        pacman -S --noconfirm "${MISSING[@]}" && ok "Packages installed"
+    fi
+else
+    ok "All packages already installed"
+fi
+
 if ! command -v steam &>/dev/null; then
     ask "Install Steam? [Y/n]"; read -r R
     [[ "${R:-y}" =~ ^[Yy] ]] && pacman -S --noconfirm steam

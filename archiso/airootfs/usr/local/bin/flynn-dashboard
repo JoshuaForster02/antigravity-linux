@@ -1,0 +1,341 @@
+#!/usr/bin/env python3
+"""
+Flynn OS Dashboard — TRON Control Panel
+GTK4 floating window: System stats, App launchers, Pi status, Game Mode
+"""
+import gi, subprocess, threading, time, os, json
+gi.require_version("Gtk", "4.0")
+from gi.repository import Gtk, GLib, Pango
+
+CSS = b"""
+window {
+    background: rgba(0, 8, 16, 0.97);
+    border: 2px solid #00e5ff;
+}
+.title {
+    color: #00e5ff;
+    font-family: "JetBrains Mono";
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 3px;
+}
+.subtitle {
+    color: #004466;
+    font-family: "JetBrains Mono";
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+.stat-label {
+    color: #004466;
+    font-family: "JetBrains Mono";
+    font-size: 11px;
+}
+.stat-value {
+    color: #00e5ff;
+    font-family: "JetBrains Mono";
+    font-size: 11px;
+    font-weight: bold;
+}
+.section-header {
+    color: #00aacc;
+    font-family: "JetBrains Mono";
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 4px 0 2px 0;
+}
+.app-btn {
+    background: #000e1a;
+    color: #00aacc;
+    border: 1px solid #002233;
+    border-radius: 0;
+    font-family: "JetBrains Mono";
+    font-size: 11px;
+    padding: 6px 12px;
+    min-width: 100px;
+}
+.app-btn:hover {
+    background: #001a2a;
+    color: #00e5ff;
+    border-color: #00e5ff;
+}
+.app-btn.game {
+    border-color: #004422;
+    color: #00cc66;
+}
+.app-btn.game:hover {
+    background: #001a10;
+    color: #00ff88;
+    border-color: #00ff88;
+}
+.app-btn.danger {
+    border-color: #330000;
+    color: #ff4422;
+}
+.app-btn.danger:hover {
+    background: #1a0000;
+    color: #ff6644;
+    border-color: #ff3300;
+}
+.divider {
+    background: #001a2a;
+    min-height: 1px;
+    margin: 6px 0;
+}
+progressbar trough {
+    background: #001020;
+    min-height: 6px;
+}
+progressbar progress {
+    background: #00e5ff;
+    min-height: 6px;
+}
+progressbar.warn progress { background: #ffaa00; }
+progressbar.crit progress { background: #ff3300; }
+"""
+
+def read_stat(path, default="0"):
+    try:
+        with open(path) as f: return f.read().strip()
+    except: return default
+
+def get_cpu():
+    try:
+        a = list(map(int, read_stat("/proc/stat","0 0 0 0 0").split()[1:8]))
+        time.sleep(0.3)
+        b = list(map(int, read_stat("/proc/stat","0 0 0 0 0").split()[1:8]))
+        idle_a, idle_b = a[3], b[3]
+        tot_a,  tot_b  = sum(a), sum(b)
+        dt = tot_b - tot_a
+        return int((dt - (idle_b - idle_a)) * 100 / dt) if dt > 0 else 0
+    except: return 0
+
+def get_mem():
+    try:
+        data = {}
+        for line in open("/proc/meminfo"):
+            k,v = line.split(":",1)
+            data[k.strip()] = int(v.split()[0])
+        total = data.get("MemTotal", 1)
+        avail = data.get("MemAvailable", total)
+        used  = total - avail
+        pct   = int(used * 100 / total)
+        return pct, used//1024, total//1024
+    except: return 0, 0, 0
+
+def get_uptime():
+    try:
+        s = int(float(read_stat("/proc/uptime")))
+        h, m = s//3600, (s%3600)//60
+        return f"{h}h {m}m" if h else f"{m}m {s%60}s"
+    except: return "?"
+
+def get_ip():
+    try:
+        r = subprocess.run(["ip","route","get","1.1.1.1"], capture_output=True, text=True, timeout=2)
+        for part in r.stdout.split():
+            if part not in ("via","src","uid") and "." in part and part[0].isdigit():
+                return part
+        return "no network"
+    except: return "?"
+
+def get_pi_status():
+    try:
+        import urllib.request
+        r = urllib.request.urlopen("http://100.74.204.71:8765/api/status", timeout=2)
+        d = json.loads(r.read())
+        return "ONLINE", d.get("cpu","?"), d.get("memory","?")
+    except: return "OFFLINE", "?", "?"
+
+def run_cmd(cmd):
+    subprocess.Popen(cmd, shell=isinstance(cmd,str),
+                     start_new_session=True,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+class FlynnDashboard(Gtk.ApplicationWindow):
+    def __init__(self, app):
+        super().__init__(application=app, title="Flynn OS Dashboard")
+        self.set_default_size(820, 480)
+        self.set_resizable(False)
+
+        # CSS
+        p = Gtk.CssProvider()
+        p.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_display(
+            self.get_display(), p, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+        self._build_ui()
+        self._refresh()
+        GLib.timeout_add_seconds(4, self._refresh)
+
+    def _build_ui(self):
+        root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        root.set_margin_top(16); root.set_margin_bottom(16)
+        root.set_margin_start(20); root.set_margin_end(20)
+        self.set_child(root)
+
+        # Header
+        hdr = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        t = Gtk.Label(label="FLYNN OS  //  THE GRID"); t.add_css_class("title")
+        t.set_halign(Gtk.Align.START)
+        s = Gtk.Label(label="ANTIGRAVITY CONTROL PANEL  ·  ARCH LINUX  ·  linux-zen")
+        s.add_css_class("subtitle"); s.set_halign(Gtk.Align.START)
+        hdr.append(t); hdr.append(s)
+        root.append(hdr)
+
+        # Divider
+        div = Gtk.Separator(); div.add_css_class("divider"); div.set_margin_top(10); div.set_margin_bottom(8)
+        root.append(div)
+
+        # Body: 3 columns
+        body = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+        root.append(body)
+
+        # ── Column 1: System Stats ─────────────────────────────────────────────
+        col1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        col1.set_hexpand(True)
+
+        lbl = Gtk.Label(label="SYSTEM STATUS"); lbl.add_css_class("section-header")
+        lbl.set_halign(Gtk.Align.START); col1.append(lbl)
+
+        def stat_row(label):
+            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            lbl = Gtk.Label(label=label); lbl.add_css_class("stat-label")
+            lbl.set_halign(Gtk.Align.START); lbl.set_width_chars(8)
+            val = Gtk.Label(label="..."); val.add_css_class("stat-value")
+            val.set_halign(Gtk.Align.END); val.set_hexpand(True)
+            bar = Gtk.ProgressBar(); bar.set_hexpand(True); bar.set_valign(Gtk.Align.CENTER)
+            row.append(lbl); row.append(bar); row.append(val)
+            col1.append(row)
+            return val, bar
+
+        self.cpu_val, self.cpu_bar = stat_row("CPU")
+        self.mem_val, self.mem_bar = stat_row("MEM")
+
+        # Uptime / IP
+        for label_text in [("UPTIME","up_val"), ("IP","ip_val"), ("KERNEL","ker_val")]:
+            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            l = Gtk.Label(label=label_text[0]); l.add_css_class("stat-label"); l.set_width_chars(8)
+            v = Gtk.Label(label="..."); v.add_css_class("stat-value"); v.set_hexpand(True); v.set_halign(Gtk.Align.END)
+            row.append(l); row.append(v)
+            col1.append(row)
+            setattr(self, label_text[1], v)
+
+        # Pi status
+        div2 = Gtk.Separator(); div2.set_margin_top(6); div2.set_margin_bottom(4)
+        col1.append(div2)
+        lbl2 = Gtk.Label(label="PI STATUS"); lbl2.add_css_class("section-header"); lbl2.set_halign(Gtk.Align.START)
+        col1.append(lbl2)
+        pi_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        self.pi_status = Gtk.Label(label="CHECKING..."); self.pi_status.add_css_class("stat-value")
+        pi_row.append(self.pi_status); col1.append(pi_row)
+
+        body.append(col1)
+
+        # ── Column 2: App Launchers ────────────────────────────────────────────
+        col2 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        col2.set_hexpand(True)
+
+        lbl3 = Gtk.Label(label="LAUNCH"); lbl3.add_css_class("section-header"); lbl3.set_halign(Gtk.Align.START)
+        col2.append(lbl3)
+
+        apps = [
+            ("TERMINAL",  "foot -e /usr/local/bin/flynn-ui",                        "app-btn"),
+            ("NOTION",    "/usr/local/bin/flynn-browser https://notion.so",          "app-btn"),
+            ("AMBOSS",    "/usr/local/bin/flynn-browser https://amboss.com",         "app-btn"),
+            ("ANKI",      "anki",                                                    "app-btn"),
+            ("FILES",     "thunar",                                                  "app-btn"),
+            ("BROWSER",   "firefox 2>/dev/null || chromium 2>/dev/null",             "app-btn"),
+        ]
+        grid = Gtk.Grid(); grid.set_column_spacing(6); grid.set_row_spacing(6)
+        for i, (label, cmd, css) in enumerate(apps):
+            btn = Gtk.Button(label=label); btn.add_css_class(css)
+            btn.connect("clicked", lambda b, c=cmd: run_cmd(c))
+            grid.attach(btn, i%2, i//2, 1, 1)
+        col2.append(grid)
+
+        div3 = Gtk.Separator(); div3.set_margin_top(6); div3.set_margin_bottom(4)
+        col2.append(div3)
+
+        lbl4 = Gtk.Label(label="GAMING"); lbl4.add_css_class("section-header"); lbl4.set_halign(Gtk.Align.START)
+        col2.append(lbl4)
+
+        game_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        for label, cmd in [("STEAM", "steam 2>/dev/null"), ("BIG PICTURE", "steam -bigpicture 2>/dev/null"), ("GAME MODE", "/usr/local/bin/game-mode-switch.sh toggle")]:
+            b = Gtk.Button(label=label); b.add_css_class("app-btn"); b.add_css_class("game")
+            b.connect("clicked", lambda btn, c=cmd: run_cmd(c))
+            game_row.append(b)
+        col2.append(game_row)
+
+        body.append(col2)
+
+        # ── Column 3: System Actions ───────────────────────────────────────────
+        col3 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        col3.set_hexpand(False); col3.set_size_request(160, -1)
+
+        lbl5 = Gtk.Label(label="ACTIONS"); lbl5.add_css_class("section-header"); lbl5.set_halign(Gtk.Align.START)
+        col3.append(lbl5)
+
+        actions = [
+            ("UPDATE OS",    "/usr/local/bin/flynn-update",       "app-btn"),
+            ("STUDY MODE",   "pkill steam; sleep 0.5; foot -e /usr/local/bin/flynn-ui", "app-btn"),
+            ("LOCK",         "swaylock 2>/dev/null || i3lock 2>/dev/null", "app-btn"),
+            ("SCREENSHOT",   "grim ~/screenshot-$(date +%s).png", "app-btn"),
+            ("PI DEPLOY",    "foot -e bash /opt/flynn/pi-control/deploy-to-pi.sh", "app-btn"),
+            ("INSTALL TO HD","foot -e /usr/local/bin/flynn-install","app-btn"),
+        ]
+        for label, cmd, css in actions:
+            b = Gtk.Button(label=label); b.add_css_class(css)
+            b.connect("clicked", lambda btn, c=cmd: run_cmd(c))
+            col3.append(b)
+
+        div4 = Gtk.Separator(); div4.set_margin_top(8); div4.set_margin_bottom(4)
+        col3.append(div4)
+
+        reboot_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        for label, cmd in [("REBOOT","reboot"), ("SHUTDOWN","poweroff")]:
+            b = Gtk.Button(label=label); b.add_css_class("app-btn"); b.add_css_class("danger")
+            b.connect("clicked", lambda btn, c=cmd: run_cmd(f"systemctl {c}"))
+            reboot_row.append(b)
+        col3.append(reboot_row)
+
+        body.append(col3)
+
+    def _refresh(self):
+        cpu = get_cpu()
+        mem_pct, mem_used, mem_total = get_mem()
+
+        self.cpu_val.set_label(f"{cpu}%")
+        self.cpu_bar.set_fraction(cpu/100)
+        if cpu > 85: self.cpu_bar.add_css_class("crit")
+        elif cpu > 60: self.cpu_bar.add_css_class("warn")
+
+        self.mem_val.set_label(f"{mem_pct}%  {mem_used}M/{mem_total}M")
+        self.mem_bar.set_fraction(mem_pct/100)
+
+        self.up_val.set_label(get_uptime())
+        self.ip_val.set_label(get_ip())
+
+        import platform
+        self.ker_val.set_label(platform.release().split("-")[0])
+
+        def check_pi():
+            status, cpu, mem = get_pi_status()
+            GLib.idle_add(self.pi_status.set_label,
+                          f"{status}" + (f"  CPU:{cpu}  MEM:{mem}" if status == "ONLINE" else ""))
+        threading.Thread(target=check_pi, daemon=True).start()
+
+        return True  # keep timer running
+
+
+class FlynnApp(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="org.flynnos.dashboard")
+    def do_activate(self):
+        win = FlynnDashboard(self)
+        win.set_wmclass("flynn-dashboard", "flynn-dashboard")
+        win.present()
+
+if __name__ == "__main__":
+    import sys
+    FlynnApp().run(sys.argv)

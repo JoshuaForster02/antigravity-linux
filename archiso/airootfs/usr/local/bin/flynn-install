@@ -1,0 +1,290 @@
+#!/usr/bin/env python3
+"""
+Flynn OS — Grafischer Disk-Installer
+GTK4 Wizard: Disk auswählen → partitionieren → installieren → GRUB
+Fallback: Text-Installer wenn kein Display verfügbar.
+"""
+import sys, os, subprocess, threading
+
+# Fallback zu Text-Installer wenn kein Display
+if not os.environ.get('DISPLAY') and not os.environ.get('WAYLAND_DISPLAY'):
+    os.execv('/opt/flynn/install/install-to-disk.sh', ['/opt/flynn/install/install-to-disk.sh'])
+    sys.exit(0)
+
+try:
+    import gi
+    gi.require_version('Gtk', '4.0')
+    from gi.repository import Gtk, GLib, Pango
+except ImportError:
+    os.execv('/opt/flynn/install/install-to-disk.sh', ['/opt/flynn/install/install-to-disk.sh'])
+    sys.exit(0)
+
+CSS = b"""
+window { background: #000810; }
+.title { color: #00e5ff; font-size: 20px; font-weight: bold; font-family: "JetBrains Mono"; }
+.subtitle { color: #004466; font-size: 12px; font-family: "JetBrains Mono"; }
+.label { color: #80c8d8; font-family: "JetBrains Mono"; font-size: 13px; }
+.warn  { color: #ff6600; font-family: "JetBrains Mono"; font-size: 12px; }
+.ok    { color: #00ff88; font-family: "JetBrains Mono"; font-size: 12px; }
+.disk-row { background: #001520; border-radius: 6px; padding: 8px; }
+.disk-row:hover { background: #002030; }
+button {
+    background: #001a2a; color: #00e5ff;
+    border: 1px solid #00334d; border-radius: 4px;
+    font-family: "JetBrains Mono"; font-size: 13px;
+    padding: 8px 20px;
+}
+button:hover { background: #003040; border-color: #00e5ff; }
+button.danger { border-color: #ff4400; color: #ff6600; }
+button.danger:hover { background: #200800; }
+progressbar progress { background: #00e5ff; }
+progressbar trough { background: #001520; }
+entry { background: #001520; color: #00e5ff; border: 1px solid #00334d;
+        font-family: "JetBrains Mono"; border-radius: 4px; padding: 6px; }
+"""
+
+def get_disks():
+    try:
+        out = subprocess.check_output(
+            ['lsblk', '-d', '-o', 'NAME,SIZE,MODEL,TYPE', '--json'],
+            text=True, stderr=subprocess.DEVNULL)
+        import json
+        data = json.loads(out)
+        return [(d['name'], d.get('size','?'), d.get('model','').strip())
+                for d in data.get('blockdevices', [])
+                if d.get('type') == 'disk' and d.get('size','0B') != '0B']
+    except Exception:
+        return []
+
+class FlynnInstaller(Gtk.ApplicationWindow):
+    def __init__(self, app):
+        super().__init__(application=app, title='Flynn OS Installer')
+        self.set_default_size(700, 520)
+
+        provider = Gtk.CssProvider()
+        provider.load_from_data(CSS)
+        from gi.repository import Gdk
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(), provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+        self.selected_disk = None
+        self.stack = Gtk.Stack()
+        self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
+
+        self.stack.add_named(self._page_welcome(), 'welcome')
+        self.stack.add_named(self._page_disk(),    'disk')
+        self.stack.add_named(self._page_confirm(), 'confirm')
+        self.stack.add_named(self._page_install(), 'install')
+        self.stack.add_named(self._page_done(),    'done')
+
+        self.set_child(self.stack)
+        self.stack.set_visible_child_name('welcome')
+
+    def _wrap(self, child, pad=32):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
+        box.set_margin_top(pad); box.set_margin_bottom(pad)
+        box.set_margin_start(pad); box.set_margin_end(pad)
+        box.append(child)
+        return box
+
+    def _header(self, title, sub):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        t = Gtk.Label(label=title); t.add_css_class('title'); t.set_xalign(0)
+        s = Gtk.Label(label=sub);   s.add_css_class('subtitle'); s.set_xalign(0)
+        box.append(t); box.append(s)
+        return box
+
+    # ── Page 1: Welcome ───────────────────────────────────────────────────────
+    def _page_welcome(self):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=24)
+        box.set_margin_top(48); box.set_margin_start(48); box.set_margin_end(48)
+
+        box.append(self._header(
+            'Install Flynn OS',
+            'Arch Linux · linux-zen · TRON Desktop'))
+
+        info = Gtk.Label()
+        info.set_markup(
+            '<span foreground="#80c8d8" font_family="JetBrains Mono" size="small">'
+            '  • Dual-Boot mit Windows wird automatisch erkannt\n'
+            '  • GRUB wählt beim Start zwischen Windows und Flynn OS\n'
+            '  • Mindestens 20 GB freier Speicher empfohlen\n'
+            '  • Tailscale, Steam, Anki bereits vorinstalliert'
+            '</span>')
+        info.set_xalign(0)
+        box.append(info)
+
+        btn = Gtk.Button(label='Weiter →')
+        btn.set_halign(Gtk.Align.START)
+        btn.connect('clicked', lambda _: self.stack.set_visible_child_name('disk'))
+        box.append(btn)
+        return box
+
+    # ── Page 2: Disk Selection ────────────────────────────────────────────────
+    def _page_disk(self):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
+        box.set_margin_top(32); box.set_margin_start(48); box.set_margin_end(48)
+        box.append(self._header('Ziel-Disk wählen', 'Wähle die Disk, auf der Flynn OS installiert wird'))
+
+        self.disk_group = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        self._radio_first = None
+
+        for name, size, model in get_disks():
+            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+            row.add_css_class('disk-row')
+
+            rb = Gtk.CheckButton(label=f'/dev/{name}  ({size})')
+            rb.add_css_class('label')
+            if self._radio_first:
+                rb.set_group(self._radio_first)
+            else:
+                self._radio_first = rb
+                self.selected_disk = name
+                rb.set_active(True)
+
+            rb.connect('toggled', self._on_disk_select, name)
+
+            ml = Gtk.Label(label=model or 'Unknown')
+            ml.add_css_class('subtitle')
+            ml.set_hexpand(True); ml.set_xalign(1)
+
+            row.append(rb); row.append(ml)
+            self.disk_group.append(row)
+
+        scroll = Gtk.ScrolledWindow()
+        scroll.set_vexpand(True)
+        scroll.set_child(self.disk_group)
+        box.append(scroll)
+
+        btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        back = Gtk.Button(label='← Zurück')
+        nxt  = Gtk.Button(label='Weiter →')
+        back.connect('clicked', lambda _: self.stack.set_visible_child_name('welcome'))
+        nxt.connect('clicked',  lambda _: self._go_confirm())
+        btns.append(back); btns.append(nxt)
+        box.append(btns)
+        return box
+
+    def _on_disk_select(self, btn, name):
+        if btn.get_active():
+            self.selected_disk = name
+
+    def _go_confirm(self):
+        self._confirm_disk_lbl.set_text(f'/dev/{self.selected_disk}')
+        self.stack.set_visible_child_name('confirm')
+
+    # ── Page 3: Confirm ───────────────────────────────────────────────────────
+    def _page_confirm(self):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
+        box.set_margin_top(32); box.set_margin_start(48); box.set_margin_end(48)
+        box.append(self._header('Bestätigung', 'Bitte prüfe die Einstellungen vor der Installation'))
+
+        grid = Gtk.Grid(); grid.set_row_spacing(8); grid.set_column_spacing(16)
+        def row(g, r, k, v_widget):
+            lk = Gtk.Label(label=k); lk.add_css_class('label'); lk.set_xalign(0)
+            g.attach(lk, 0, r, 1, 1); g.attach(v_widget, 1, r, 1, 1)
+
+        self._confirm_disk_lbl = Gtk.Label(); self._confirm_disk_lbl.add_css_class('ok')
+        row(grid, 0, 'Ziel-Disk:', self._confirm_disk_lbl)
+        row(grid, 1, 'System:', Gtk.Label(label='Flynn OS Linux 3.0 (Arch)'))
+        row(grid, 2, 'Bootloader:', Gtk.Label(label='GRUB (Dual-Boot mit Windows)'))
+        box.append(grid)
+
+        warn = Gtk.Label(label='⚠ Die gewählte Disk wird verändert. Daten auf anderen Partitionen bleiben erhalten.')
+        warn.add_css_class('warn'); warn.set_xalign(0); warn.set_wrap(True)
+        box.append(warn)
+
+        btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        back  = Gtk.Button(label='← Zurück')
+        start = Gtk.Button(label='Flynn OS installieren')
+        start.add_css_class('danger')
+        back.connect('clicked',  lambda _: self.stack.set_visible_child_name('disk'))
+        start.connect('clicked', lambda _: self._start_install())
+        btns.append(back); btns.append(start)
+        box.append(btns)
+        return box
+
+    # ── Page 4: Installing ────────────────────────────────────────────────────
+    def _page_install(self):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
+        box.set_margin_top(48); box.set_margin_start(48); box.set_margin_end(48)
+        box.append(self._header('Installiere Flynn OS', 'Bitte nicht ausschalten...'))
+
+        self.prog = Gtk.ProgressBar()
+        self.prog.set_pulse_step(0.05)
+        box.append(self.prog)
+
+        self.install_log = Gtk.TextView()
+        self.install_log.set_editable(False)
+        self.install_log.set_monospace(True)
+        self.install_log.get_buffer().set_text('')
+
+        scroll = Gtk.ScrolledWindow(); scroll.set_vexpand(True)
+        scroll.set_child(self.install_log)
+        box.append(scroll)
+        return box
+
+    def _start_install(self):
+        self.stack.set_visible_child_name('install')
+        threading.Thread(target=self._run_install, daemon=True).start()
+
+    def _run_install(self):
+        disk = f'/dev/{self.selected_disk}'
+        script = '/opt/flynn/install/install-to-disk.sh'
+        try:
+            proc = subprocess.Popen(
+                ['bash', script, disk],
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, bufsize=1)
+
+            for line in proc.stdout:
+                GLib.idle_add(self._append_log, line)
+                GLib.idle_add(self.prog.pulse)
+
+            proc.wait()
+            success = proc.returncode == 0
+        except Exception as e:
+            GLib.idle_add(self._append_log, f'ERROR: {e}\n')
+            success = False
+
+        GLib.idle_add(self._install_done, success)
+
+    def _append_log(self, text):
+        buf = self.install_log.get_buffer()
+        buf.insert(buf.get_end_iter(), text)
+        adj = self.install_log.get_vadjustment()
+        adj.set_value(adj.get_upper())
+
+    def _install_done(self, success):
+        self.prog.set_fraction(1.0)
+        status = self._done_status_lbl
+        if success:
+            status.set_markup('<span foreground="#00ff88" font_family="JetBrains Mono">'
+                              '✓ Installation erfolgreich! ISO entfernen und neu starten.</span>')
+        else:
+            status.set_markup('<span foreground="#ff4400" font_family="JetBrains Mono">'
+                              '✗ Fehler — Details im Log oben.</span>')
+        self.stack.set_visible_child_name('done')
+
+    # ── Page 5: Done ─────────────────────────────────────────────────────────
+    def _page_done(self):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=24)
+        box.set_margin_top(48); box.set_margin_start(48); box.set_margin_end(48)
+        box.append(self._header('Fertig', ''))
+
+        self._done_status_lbl = Gtk.Label()
+        self._done_status_lbl.set_xalign(0); self._done_status_lbl.set_wrap(True)
+        box.append(self._done_status_lbl)
+
+        btn = Gtk.Button(label='System neu starten')
+        btn.connect('clicked', lambda _: os.system('reboot'))
+        box.append(btn)
+        return box
+
+class App(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id='os.flynnos.installer')
+        self.connect('activate', lambda a: FlynnInstaller(a).present())
+
+App().run(sys.argv[:1])

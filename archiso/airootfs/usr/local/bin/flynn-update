@@ -1,0 +1,122 @@
+#!/bin/bash
+# Flynn OS — Live OTA Update
+# Zieht alle Flynn-Scripts direkt vom GitHub-Repo und wendet sie an.
+# Keine ISO-Neubuild nötig — live auf dem laufenden System.
+
+CY='\e[1;36m' GN='\e[1;32m' YL='\e[0;33m' RD='\e[0;31m' DIM='\e[2;36m' RST='\e[0m'
+
+REPO="JoshuaForster02/antigravity-linux"
+REPO_URL="https://github.com/$REPO.git"
+CACHE="/var/cache/flynnos/repo"
+LOG="/var/log/flynn-update.log"
+
+print_header() {
+  printf "${CY}╔══════════════════════════════════════════════════╗\n"
+  printf "║  Flynn OS — Live OTA Update                      ║\n"
+  printf "║  Repo: %-42s║\n" "$REPO"
+  printf "╚══════════════════════════════════════════════════╝${RST}\n\n"
+}
+
+log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG"; }
+
+print_header
+mkdir -p "$CACHE" /var/log
+
+# ── 1. Pakete updaten ─────────────────────────────────────────────────────────
+printf "${CY}[1/4] Arch-Pakete aktualisieren...${RST}\n"
+if pacman -Syu --noconfirm 2>&1 | grep -q "there is nothing to do"; then
+  printf "  ${DIM}Pakete bereits aktuell${RST}\n"
+else
+  printf "  ${GN}✓ Pakete aktualisiert${RST}\n"
+fi
+echo ""
+
+# ── 2. Repo klonen / updaten ──────────────────────────────────────────────────
+printf "${CY}[2/4] Flynn OS Scripts von GitHub holen...${RST}\n"
+if [ -d "$CACHE/.git" ]; then
+  cd "$CACHE"
+  OLD=$(git rev-parse --short HEAD 2>/dev/null)
+  git fetch origin main --depth=1 -q 2>/dev/null && git reset --hard origin/main -q
+  NEW=$(git rev-parse --short HEAD 2>/dev/null)
+  if [ "$OLD" != "$NEW" ]; then
+    printf "  ${GN}✓ $OLD → $NEW (neue Commits)${RST}\n"
+  else
+    printf "  ${DIM}Bereits aktuell ($NEW)${RST}\n"
+  fi
+else
+  printf "  Klone Repository...\n"
+  git clone --depth=1 "$REPO_URL" "$CACHE" -q 2>/dev/null
+  NEW=$(cd "$CACHE" && git rev-parse --short HEAD 2>/dev/null)
+  printf "  ${GN}✓ Geklont ($NEW)${RST}\n"
+fi
+echo ""
+
+# ── 3. Dateien anwenden ───────────────────────────────────────────────────────
+printf "${CY}[3/4] Aktualisierungen anwenden...${RST}\n"
+UPDATED=0
+
+apply() {
+  local src="$CACHE/$1" dst="$2"
+  [ -f "$src" ] || return
+  if ! diff -q "$src" "$dst" &>/dev/null; then
+    mkdir -p "$(dirname "$dst")"
+    cp "$src" "$dst"
+    [ -x "$src" ] && chmod +x "$dst"
+    printf "  ${GN}✓ %s${RST}\n" "$(basename $dst)"
+    UPDATED=$((UPDATED+1))
+  fi
+}
+
+# Flynn scripts
+for f in $(ls "$CACHE/archiso/airootfs/usr/local/bin/" 2>/dev/null); do
+  apply "archiso/airootfs/usr/local/bin/$f" "/usr/local/bin/$f"
+done
+
+# Flynn opt/
+for f in $(find "$CACHE/archiso/airootfs/opt/flynn" -type f 2>/dev/null | sed "s|$CACHE/archiso/airootfs||"); do
+  apply "archiso/airootfs$f" "$f"
+done
+
+# Sway/Waybar/Mako configs
+for conf in \
+  "archiso/airootfs/root/.config/sway/config:/root/.config/sway/config" \
+  "archiso/airootfs/root/.config/waybar/config:/root/.config/waybar/config" \
+  "archiso/airootfs/root/.config/waybar/style.css:/root/.config/waybar/style.css" \
+  "archiso/airootfs/root/.config/mako/config:/root/.config/mako/config"; do
+  src="${conf%%:*}"; dst="${conf##*:}"
+  apply "$src" "$dst"
+done
+
+if [ $UPDATED -eq 0 ]; then
+  printf "  ${DIM}Keine Änderungen${RST}\n"
+else
+  printf "\n  ${GN}$UPDATED Datei(en) aktualisiert${RST}\n"
+fi
+echo ""
+
+# ── 4. Services neu starten wenn nötig ───────────────────────────────────────
+printf "${CY}[4/4] Services aktualisieren...${RST}\n"
+if [ $UPDATED -gt 0 ]; then
+  systemctl is-active --quiet flynn-daemon && systemctl restart flynn-daemon \
+    && printf "  ${GN}✓ Flynn daemon neu gestartet${RST}\n"
+  # Waybar neu laden (Wayland)
+  if [ -n "$WAYLAND_DISPLAY" ]; then
+    pkill waybar 2>/dev/null
+    sleep 0.3
+    waybar -c /root/.config/waybar/config -s /root/.config/waybar/style.css &
+    printf "  ${GN}✓ Waybar neu gestartet${RST}\n"
+    # Mako neu laden
+    pkill mako 2>/dev/null
+    mako --config /root/.config/mako/config &
+  fi
+fi
+
+# Sway config neu laden wenn aktiv
+if pgrep -x sway &>/dev/null && [ $UPDATED -gt 0 ]; then
+  swaymsg reload 2>/dev/null && printf "  ${GN}✓ Sway config neu geladen${RST}\n"
+fi
+
+VERSION=$(cd "$CACHE" 2>/dev/null && git log -1 --format="%h %s" 2>/dev/null || echo "unknown")
+printf "\n${GN}Flynn OS Update abgeschlossen.${RST}\n"
+printf "${DIM}Version: %s${RST}\n" "$VERSION"
+log "OTA completed — $UPDATED files updated — $VERSION"

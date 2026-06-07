@@ -357,7 +357,7 @@ while true; do
         vpn-status|ts-status)    tailscale status ;;
         anki)                    anki 2>/dev/null & echo "  Starting Anki..." ;;
         disk|df|storage)         cmd_disk ;;
-        install)                 cmd_install ;;
+        install|flynn-install)   cmd_install ;;
         startx|gui|x11)          startx -- -nolisten tcp 2>/dev/null || printf "  \e[0;33mstartx not available\e[0m\n" ;;
         session|wayland)         exec /usr/local/bin/flynn-session ;;
         compositor)              /usr/local/bin/flynn-compositor-build ;;
@@ -366,7 +366,8 @@ while true; do
         game)                    /usr/local/bin/game-mode-switch.sh game ;;
         study)                   /usr/local/bin/game-mode-switch.sh study ;;
         fastfetch|neofetch|fetch) fastfetch 2>/dev/null || uname -a ;;
-        update)                  pacman -Syu --noconfirm ;;
+        update)                  /usr/local/bin/flynn-update ;;
+        update-packages)         pacman -Syu --noconfirm ;;
         pacman)                  pacman $ARG1 $ARG2 $ARG3 2>&1 | head -30 ;;
         daemon)                  cmd_daemon ;;
         ssh-info|ssh)            cmd_ssh_info ;;

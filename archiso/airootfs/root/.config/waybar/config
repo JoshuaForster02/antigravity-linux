@@ -1,0 +1,72 @@
+{
+  "layer": "top",
+  "position": "bottom",
+  "height": 36,
+  "spacing": 4,
+  "modules-left":   ["sway/workspaces", "sway/mode", "sway/window"],
+  "modules-center": ["clock"],
+  "modules-right":  ["custom/flynn", "network", "pulseaudio", "cpu", "memory", "battery", "tray"],
+
+  "sway/workspaces": {
+    "disable-scroll": true,
+    "all-outputs": true,
+    "format": "{name}"
+  },
+
+  "sway/mode": {
+    "format": "  {}"
+  },
+
+  "sway/window": {
+    "max-length": 50
+  },
+
+  "clock": {
+    "format": "  {:%H:%M}   {:%a %d.%m.%Y}",
+    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+    "interval": 10
+  },
+
+  "cpu": {
+    "format": "CPU {usage}%",
+    "interval": 3,
+    "tooltip": false
+  },
+
+  "memory": {
+    "format": "MEM {}%",
+    "interval": 5
+  },
+
+  "battery": {
+    "states": { "warning": 30, "critical": 15 },
+    "format": "BAT {capacity}%",
+    "format-charging": "CHG {capacity}%",
+    "format-plugged": "PWR {capacity}%",
+    "format-unknown": "BAT --"
+  },
+
+  "network": {
+    "format-wifi":          " {signalStrength}%",
+    "format-ethernet":      " {ifname}",
+    "format-disconnected":  "⚠ disconnected",
+    "tooltip-format": "{ifname}  {ipaddr}/{cidr}",
+    "on-click": "nm-connection-editor"
+  },
+
+  "pulseaudio": {
+    "format": "VOL {volume}%",
+    "format-muted": "MUTE",
+    "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle"
+  },
+
+  "tray": {
+    "spacing": 8
+  },
+
+  "custom/flynn": {
+    "format": " GRID",
+    "tooltip": false,
+    "on-click": "exec /usr/local/bin/flynn-dashboard"
+  }
+}

@@ -55,6 +55,8 @@ printf "      Pakete werden in ${CACHE} gecached\n\n"
 docker run --rm \
     --privileged \
     --platform linux/amd64 \
+    --shm-size=512m \
+    --tmpfs /work:exec,size=3g \
     -v "$(pwd):/build" \
     -v "$OUTPUT:/output" \
     -v "$CACHE:/var/cache/pacman/pkg" \

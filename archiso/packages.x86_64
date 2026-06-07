@@ -84,19 +84,10 @@ xf86-input-libinput
 wayland
 wayland-protocols
 xdg-desktop-portal
-xdg-desktop-portal-wlr
-wlroots
-seatd
-libdrm
-libxkbcommon
-libinput
-pixman
 
 # GPU — AMD RX 6800 (RDNA2 = amdgpu)
 mesa
-lib32-mesa
 vulkan-radeon
-lib32-vulkan-radeon
 libva-mesa-driver
 ocl-icd
 
@@ -111,14 +102,12 @@ dunst
 tint2
 scrot
 xdotool
-xorg-xsetroot
 xorg-xrdb
 xorg-xset
 nm-connection-editor
 capitaine-cursors
 gtk3
 gtk4
-lib32-gtk3
 
 # Fonts
 ttf-dejavu
@@ -129,8 +118,7 @@ noto-fonts-emoji
 # File manager + apps
 thunar
 mousepad
-viewnior
-mpv
+webkit2gtk-4.1
 
 # Python (for Flynn daemon + wallpaper + Notion/Anki sync)
 python
@@ -142,14 +130,10 @@ python-paho-mqtt
 python-psutil
 python-xlib
 python-gobject
-gtk4
 
 # Gaming
-steam
 gamemode
-lib32-gamemode
 mangohud
-lib32-mangohud
 
 # Dev tools + compositor build chain
 git
@@ -169,3 +153,21 @@ parted
 e2fsprogs
 dosfstools
 btrfs-progs
+
+# Wayland desktop (Sway session)
+sway
+swaybg
+swaylock
+swayidle
+waybar
+mako
+grim
+slurp
+wl-clipboard
+xdg-desktop-portal-wlr
+
+# Phase 5: ANTIGRAVITY Layer Shell
+gtk-layer-shell
+python-pillow
+
+# Phase 6: First-boot wizard deps

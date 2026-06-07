@@ -37,6 +37,8 @@ jobs:
       - name: Build ISO inside archlinux container
         run: |
           docker run --rm --privileged \
+            --shm-size=512m \
+            --tmpfs /work:exec,size=4g \
             -v "${{ github.workspace }}/archiso:/build" \
             -v "${{ github.workspace }}/archiso/output:/output" \
             archlinux:latest \

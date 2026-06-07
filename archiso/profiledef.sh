@@ -21,7 +21,7 @@ file_permissions=(
     ["/usr/local/bin/flynn-wallpaper"]="0:0:755"
     ["/usr/local/bin/flynn-boot-chime"]="0:0:755"
     ["/usr/local/bin/game-mode-switch.sh"]="0:0:755"
-    ["/usr/local/bin/install"]="0:0:755"
+    ["/usr/local/bin/flynn-install"]="0:0:755"
     ["/usr/local/bin/proton-ge-install"]="0:0:755"
     ["/usr/local/bin/flynn-compositor-build"]="0:0:755"
     ["/usr/local/bin/flynn-session"]="0:0:755"
@@ -33,6 +33,8 @@ file_permissions=(
     ["/root/.config/openbox/autostart"]="0:0:755"
     ["/etc/flynn/"]="0:0:755"
     ["/usr/local/bin/flynn-config"]="0:0:755"
+    ["/usr/local/bin/flynn-browser"]="0:0:755"
+    ["/usr/local/bin/flynn-update"]="0:0:755"
     ["/opt/flynn/notion_anki_sync.py"]="0:0:755"
     ["/opt/flynn/pi-control/pi_agent.py"]="0:0:755"
 )

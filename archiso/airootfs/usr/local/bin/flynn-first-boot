@@ -1,0 +1,230 @@
+#!/usr/bin/env python3
+"""
+Flynn OS — First Boot Setup Wizard
+GTK4: runs once on first login, guides through network + accounts + Pi setup.
+"""
+import gi, os, subprocess, json, threading
+gi.require_version("Gtk", "4.0")
+from gi.repository import Gtk, GLib
+
+DONE_FLAG = "/etc/flynnos/.first-boot-done"
+CONFIG    = "/etc/flynnos/user.json"
+
+CSS = b"""
+window    { background: #000810; }
+.title    { color:#00e5ff; font-family:"JetBrains Mono"; font-size:22px; font-weight:bold; letter-spacing:3px; }
+.subtitle { color:#004466; font-family:"JetBrains Mono"; font-size:11px; letter-spacing:2px; }
+.step     { color:#00aacc; font-family:"JetBrains Mono"; font-size:13px; font-weight:bold; }
+.label    { color:#80c8d8; font-family:"JetBrains Mono"; font-size:12px; }
+.small    { color:#004466; font-family:"JetBrains Mono"; font-size:10px; }
+entry     { background:#000e1a; color:#00e5ff; border:1px solid #004466;
+            border-radius:0; font-family:"JetBrains Mono"; font-size:12px; padding:6px; }
+entry:focus { border-color:#00e5ff; }
+button    { background:#000e1a; color:#00aacc; border:1px solid #002233;
+            border-radius:0; font-family:"JetBrains Mono"; font-size:12px; padding:8px 20px; }
+button:hover { background:#001a2a; color:#00e5ff; border-color:#00e5ff; }
+button.primary { border-color:#00e5ff; color:#00e5ff; }
+button.skip    { color:#002233; border-color:#001020; }
+checkbutton label { color:#80c8d8; font-family:"JetBrains Mono"; font-size:12px; }
+"""
+
+STEPS = ["WELCOME", "NETWORK", "ACCOUNTS", "PI BRIDGE", "DONE"]
+
+class SetupWizard(Gtk.ApplicationWindow):
+    def __init__(self, app):
+        super().__init__(application=app, title="Flynn OS Setup")
+        self.set_default_size(720, 500)
+        self.set_resizable(False)
+        self._step = 0
+        self._cfg = {}
+
+        p = Gtk.CssProvider(); p.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_display(
+            self.get_display(), p, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+        self._build()
+
+    def _build(self):
+        self._root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self._root.set_margin_top(32); self._root.set_margin_bottom(24)
+        self._root.set_margin_start(48); self._root.set_margin_end(48)
+        self.set_child(self._root)
+        self._show_step()
+
+    def _clear(self):
+        while True:
+            ch = self._root.get_first_child()
+            if ch is None: break
+            self._root.remove(ch)
+
+    def _show_step(self):
+        self._clear()
+        steps = [self._step_welcome, self._step_network,
+                 self._step_accounts, self._step_pi, self._step_done]
+        steps[self._step]()
+
+    def _header(self, title, subtitle=""):
+        t = Gtk.Label(label=title); t.add_css_class("title"); t.set_halign(Gtk.Align.START)
+        self._root.append(t)
+        if subtitle:
+            s = Gtk.Label(label=subtitle); s.add_css_class("subtitle"); s.set_halign(Gtk.Align.START)
+            self._root.append(s)
+        # Step indicator
+        ind = Gtk.Label(label="  ·  ".join(
+            f"[{s}]" if i == self._step else s for i, s in enumerate(STEPS)))
+        ind.add_css_class("small"); ind.set_halign(Gtk.Align.START)
+        ind.set_margin_top(8); ind.set_margin_bottom(20)
+        self._root.append(ind)
+
+    def _nav(self, next_label="NEXT →", skip=True):
+        bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        bar.set_margin_top(24); bar.set_valign(Gtk.Align.END); bar.set_vexpand(True)
+        if skip:
+            sb = Gtk.Button(label="SKIP"); sb.add_css_class("skip")
+            sb.connect("clicked", lambda _: self._next())
+            bar.append(sb)
+        nb = Gtk.Button(label=next_label); nb.add_css_class("primary")
+        nb.connect("clicked", lambda _: self._next())
+        bar.append(nb)
+        self._root.append(bar)
+        return nb
+
+    def _next(self):
+        self._step += 1
+        self._show_step()
+
+    # ── Steps ──────────────────────────────────────────────────────────────────
+    def _step_welcome(self):
+        self._header("WELCOME TO FLYNN OS", "ARCH LINUX  ·  linux-zen  ·  THE GRID")
+        for line in [
+            "This wizard will configure your system.",
+            "It runs once — you can re-run it with:  flynn-first-boot",
+            "",
+            "What's included:",
+            "  ·  Sway (Wayland) desktop with TRON theme",
+            "  ·  Steam + Proton-GE for gaming  (RX 6800 optimized)",
+            "  ·  Notion  ·  Anki  ·  Amboss via built-in browser",
+            "  ·  Pi Bridge — control this PC from your Raspberry Pi",
+            "  ·  ANTIGRAVITY overlay — focus mode + command palette",
+        ]:
+            l = Gtk.Label(label=line); l.add_css_class("label"); l.set_halign(Gtk.Align.START)
+            self._root.append(l)
+        self._nav("START SETUP →", skip=False)
+
+    def _step_network(self):
+        self._header("NETWORK", "CONNECT TO WIFI OR VERIFY ETHERNET")
+        status_lbl = Gtk.Label(label="Checking…"); status_lbl.add_css_class("step")
+        status_lbl.set_halign(Gtk.Align.START); status_lbl.set_margin_bottom(12)
+        self._root.append(status_lbl)
+
+        def check():
+            try:
+                r = subprocess.run(["ping","-c1","-W2","8.8.8.8"], capture_output=True)
+                ok = r.returncode == 0
+            except: ok = False
+            GLib.idle_add(status_lbl.set_label,
+                          "✓ NETWORK ONLINE" if ok else "✗ OFFLINE — connect with NetworkManager")
+
+        threading.Thread(target=check, daemon=True).start()
+
+        open_nm = Gtk.Button(label="OPEN NETWORK MANAGER"); open_nm.add_css_class("primary")
+        open_nm.connect("clicked", lambda _: subprocess.Popen(["nm-connection-editor"]))
+        self._root.append(open_nm)
+        self._nav()
+
+    def _step_accounts(self):
+        self._header("ACCOUNTS", "OPTIONAL — SKIP IF NOT NEEDED NOW")
+
+        def row(label, placeholder):
+            r = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12); r.set_margin_bottom(8)
+            l = Gtk.Label(label=label); l.add_css_class("label"); l.set_width_chars(18); l.set_halign(Gtk.Align.START)
+            e = Gtk.Entry(); e.set_placeholder_text(placeholder); e.set_hexpand(True)
+            r.append(l); r.append(e); self._root.append(r)
+            return e
+
+        self._notion_entry  = row("Notion Token",  "secret_xxxx…")
+        self._notion_entry.set_visibility(False)
+        self._pi_entry      = row("Pi IP / Tailscale", "100.74.204.71")
+
+        nb = self._nav("SAVE & NEXT →")
+        nb.disconnect_by_func(lambda _: self._next())
+        nb.connect("clicked", self._save_accounts)
+
+    def _save_accounts(self, _):
+        token = self._notion_entry.get_text().strip()
+        pi    = self._pi_entry.get_text().strip() or "100.74.204.71"
+        self._cfg["notion_token"] = token
+        self._cfg["pi_ip"]        = pi
+        # Persist
+        os.makedirs("/etc/flynnos", exist_ok=True)
+        with open(CONFIG, "w") as f: json.dump(self._cfg, f, indent=2)
+        if token:
+            # Write to flynn-config
+            subprocess.run(["/usr/local/bin/flynn-config", "set", "notion_token", token],
+                           capture_output=True)
+        self._next()
+
+    def _step_pi(self):
+        self._header("PI BRIDGE", "CONNECT YOUR RASPBERRY PI AS AI BRAIN")
+        for line in [
+            "Your Pi (100.74.204.71) can:",
+            "  ·  Wake this PC remotely (Wake-on-LAN)",
+            "  ·  Sync Notion → Anki cards automatically",
+            "  ·  Run local AI via Ollama (llama3)",
+            "  ·  Detect your phone's presence via Bluetooth",
+            "",
+            "To deploy the Pi agent, open a terminal and run:",
+            "  bash /opt/flynn/pi-control/deploy-to-pi.sh",
+        ]:
+            l = Gtk.Label(label=line); l.add_css_class("label"); l.set_halign(Gtk.Align.START)
+            self._root.append(l)
+
+        deploy_btn = Gtk.Button(label="DEPLOY PI AGENT NOW"); deploy_btn.add_css_class("primary")
+        deploy_btn.set_margin_top(12)
+        deploy_btn.connect("clicked", lambda _: subprocess.Popen(
+            ["foot", "-e", "bash", "/opt/flynn/pi-control/deploy-to-pi.sh"]))
+        self._root.append(deploy_btn)
+        self._nav()
+
+    def _step_done(self):
+        self._header("SETUP COMPLETE", "THE GRID IS ONLINE")
+        for line in [
+            "Flynn OS is ready.",
+            "",
+            "Key shortcuts (Sway / Wayland):",
+            "  Super+Return  →  New terminal",
+            "  Super+D       →  App launcher",
+            "  Super+G       →  Game Mode (Steam Big Picture)",
+            "  Super+N       →  Notion",
+            "  Super+A       →  Anki",
+            "  Super+P       →  Flynn Dashboard",
+            "  Super+Q       →  Close window",
+            "  Super+Shift+E →  Exit session",
+            "",
+            "Install to disk (dual-boot):  Super+P → INSTALL TO HD",
+        ]:
+            l = Gtk.Label(label=line); l.add_css_class("label"); l.set_halign(Gtk.Align.START)
+            self._root.append(l)
+
+        # Mark done
+        os.makedirs("/etc/flynnos", exist_ok=True)
+        open(DONE_FLAG, "w").close()
+
+        nb = self._nav("LAUNCH DESKTOP →", skip=False)
+        nb.disconnect_by_func(lambda _: self._next())
+        nb.connect("clicked", lambda _: self.close())
+
+
+class SetupApp(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="org.flynnos.setup")
+    def do_activate(self):
+        SetupWizard(self).present()
+
+
+if __name__ == "__main__":
+    import sys
+    if os.path.exists(DONE_FLAG) and "--force" not in sys.argv:
+        print("First boot already completed. Run with --force to re-run.")
+        sys.exit(0)
+    SetupApp().run(sys.argv)

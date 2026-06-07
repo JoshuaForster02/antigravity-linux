@@ -1,0 +1,134 @@
+#!/usr/bin/env python3
+"""
+Flynn Browser — Minimaler WebKit Browser im TRON-Look
+Für Notion, Amboss, und andere Web-Apps als Floating Panel.
+Usage: flynn-browser [URL] [--title TITLE] [--width W] [--height H]
+"""
+import sys, os, argparse
+
+try:
+    import gi
+    gi.require_version('Gtk', '4.0')
+    gi.require_version('WebKit', '6.0')
+    from gi.repository import Gtk, WebKit, GLib, Gdk
+except ImportError:
+    # Fallback: öffne im Standard-Browser
+    url = sys.argv[1] if len(sys.argv) > 1 else 'https://notion.so'
+    os.execvp('xdg-open', ['xdg-open', url])
+    sys.exit(0)
+
+p = argparse.ArgumentParser()
+p.add_argument('url', nargs='?', default='https://notion.so')
+p.add_argument('--title', default='Flynn Browser')
+p.add_argument('--width', type=int, default=1200)
+p.add_argument('--height', type=int, default=800)
+args = p.parse_args()
+
+CSS = b"""
+window {
+    background: #000810;
+}
+headerbar {
+    background: #000810;
+    border-bottom: 1px solid #00334d;
+    color: #00e5ff;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    min-height: 32px;
+    padding: 0 8px;
+}
+headerbar .title { color: #00e5ff; font-size: 12px; }
+headerbar button {
+    background: transparent;
+    border: 1px solid #00334d;
+    color: #00a0c0;
+    border-radius: 3px;
+    min-width: 0;
+    padding: 2px 8px;
+}
+headerbar button:hover { border-color: #00e5ff; color: #00e5ff; }
+entry {
+    background: #001520;
+    color: #00e5ff;
+    border: 1px solid #00334d;
+    border-radius: 3px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    caret-color: #00e5ff;
+}
+entry:focus { border-color: #00e5ff; }
+"""
+
+class FlynnBrowser(Gtk.ApplicationWindow):
+    def __init__(self, app):
+        super().__init__(application=app, title=args.title)
+        self.set_default_size(args.width, args.height)
+
+        # CSS
+        provider = Gtk.CssProvider()
+        provider.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(), provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+        # Headerbar
+        hb = Gtk.HeaderBar()
+        hb.set_show_title_buttons(True)
+
+        back = Gtk.Button(label='◀')
+        fwd  = Gtk.Button(label='▶')
+        ref  = Gtk.Button(label='↻')
+
+        self.url_bar = Gtk.Entry()
+        self.url_bar.set_hexpand(True)
+        self.url_bar.set_text(args.url)
+        self.url_bar.connect('activate', self._navigate)
+
+        hb.pack_start(back)
+        hb.pack_start(fwd)
+        hb.pack_start(ref)
+        hb.set_title_widget(self.url_bar)
+        self.set_titlebar(hb)
+
+        # WebView
+        wv_settings = WebKit.Settings()
+        wv_settings.set_enable_javascript(True)
+        wv_settings.set_enable_media(True)
+        wv_settings.set_hardware_acceleration_policy(
+            WebKit.HardwareAccelerationPolicy.NEVER)
+
+        self.wv = WebKit.WebView(settings=wv_settings)
+        self.wv.set_vexpand(True)
+        self.wv.load_uri(args.url)
+        self.wv.connect('notify::uri', self._uri_changed)
+        self.wv.connect('notify::title', self._title_changed)
+
+        back.connect('clicked', lambda _: self.wv.go_back())
+        fwd.connect('clicked',  lambda _: self.wv.go_forward())
+        ref.connect('clicked',  lambda _: self.wv.reload())
+
+        self.set_child(self.wv)
+
+    def _navigate(self, entry):
+        url = entry.get_text()
+        if not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+        self.wv.load_uri(url)
+
+    def _uri_changed(self, wv, _):
+        self.url_bar.set_text(wv.get_uri() or '')
+
+    def _title_changed(self, wv, _):
+        t = wv.get_title()
+        if t: self.set_title(t[:60])
+
+class App(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id='os.flynnos.browser')
+        self.connect('activate', self._on_activate)
+
+    def _on_activate(self, app):
+        win = FlynnBrowser(app)
+        win.present()
+
+App().run(sys.argv[:1])

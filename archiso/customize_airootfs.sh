@@ -47,8 +47,14 @@ export HOME=/root
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 export TERM=xterm-256color
 export HISTSIZE=1000
+export HISTFILE=/root/.bash_history
 
-# Start Flynn UI shell
+# ── Auto-start TRON desktop on tty1 ──────────────────────────────────────────
+if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
+    exec startx -- -nolisten tcp >/tmp/startx.log 2>&1
+fi
+
+# ── Fallback: Flynn UI shell ──────────────────────────────────────────────────
 exec /usr/local/bin/flynn-ui
 PROFILE
 
@@ -75,6 +81,20 @@ xterm -bg "#000810" -fg "#00e5ff" -fa "JetBrains Mono" -fs 11 \
 exec openbox --config-file /root/.config/openbox/rc.xml
 XINITRC
 chmod +x /root/.xinitrc
+
+# ── New scripts (Sway / Phase 5+6) ──────────────────────────────────────────
+find /usr/local/bin -type f -exec chmod +x {} \;
+chmod +x /opt/flynn/agd/antigravity.py 2>/dev/null || true
+find /opt/flynn -name "*.py" -exec chmod +x {} \;
+
+# ── /etc/flynnos config dir ──────────────────────────────────────────────────
+mkdir -p /etc/flynnos
+cat > /etc/flynnos/defaults.conf << 'CONF'
+PI_IP=100.74.204.71
+FLYNN_DAEMON_PORT=7777
+GRID_COLOR=#00e5ff
+CONF
+echo "  ✓ /etc/flynnos config dir"
 
 # ── Xresources: TRON xterm colors ─────────────────────────────────────────────
 cat > /root/.Xresources << 'XRES'
@@ -248,6 +268,8 @@ cat > /root/.config/openbox/rc.xml << 'OBRC'
     <keybind key="Super-h"><action name="Execute"><command>/usr/local/bin/game-mode-switch.sh study</command></action></keybind>
     <keybind key="Super-g"><action name="Execute"><command>/usr/local/bin/game-mode-switch.sh game</command></action></keybind>
     <keybind key="Super-Tab"><action name="NextWindow"><dialog>no</dialog></action></keybind>
+    <keybind key="Super-space"><action name="Execute"><command>python3 /opt/flynn/agd/antigravity.py --palette</command></action></keybind>
+    <keybind key="Super-d"><action name="Execute"><command>python3 /opt/flynn/agd/antigravity.py --focus-toggle</command></action></keybind>
     <keybind key="A-F4"><action name="Close"/></keybind>
     <keybind key="Super-Left"><action name="MoveResizeTo"><x>0</x><y>0</y><width>50%</width><height>100%</height></action></keybind>
     <keybind key="Super-Right"><action name="MoveResizeTo"><x>50%</x><y>0</y><width>50%</width><height>100%</height></action></keybind>
@@ -267,6 +289,9 @@ cat > /root/.config/openbox/menu.xml << 'OBMENU'
   <menu id="root-menu" label="FLYNN OS">
     <item label="[ Terminal ]"><action name="Execute"><command>xterm -bg "#000810" -fg "#00e5ff" -fa "JetBrains Mono" -fs 11 -e /usr/local/bin/flynn-ui</command></action></item>
     <item label="[ File Manager ]"><action name="Execute"><command>thunar</command></action></item>
+    <item label="[ Notion ]"><action name="Execute"><command>/usr/local/bin/flynn-browser https://notion.so --title Notion</command></action></item>
+    <item label="[ Amboss ]"><action name="Execute"><command>/usr/local/bin/flynn-browser https://amboss.com --title Amboss</command></action></item>
+    <item label="[ Anki ]"><action name="Execute"><command>anki</command></action></item>
     <item label="[ Steam ]"><action name="Execute"><command>steam</command></action></item>
     <separator/>
     <item label="[ Game Mode ON ]"><action name="Execute"><command>/usr/local/bin/game-mode-switch.sh game</command></action></item>
@@ -333,6 +358,7 @@ systemctl enable bluetooth.service    2>/dev/null || true
 systemctl enable seatd                2>/dev/null || true
 systemctl enable tailscaled           2>/dev/null || true
 systemctl enable flynn-daemon.service 2>/dev/null || true
+systemctl enable flynn-update.timer    2>/dev/null || true
 echo "  ✓ systemd services"
 
 # ── Flynn daemon Python deps ───────────────────────────────────────────────────
@@ -413,12 +439,16 @@ cat > /etc/motd << 'MOTD'
   █████╗  ██║   ╚████╔╝ ██╔██╗ ██║██╔██╗ ██║    ██║   ██║███████╗
   ╚═╝     ╚══════╝╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═══╝    ╚═════╝ ╚══════╝
 
-  Flynn OS Linux 3.0  |  Arch · linux-zen  |  The Grid
+  Flynn OS Linux 3.0  ·  Arch Linux  ·  linux-zen  ·  The Grid
 
-  Commands:  help    status    matrix    scan    wifi    services
-  GUI:       startx                (launches Openbox + TRON desktop)
-  Game Mode: Super+G               (inside X11)
-  Install:   install               (dual-boot installer for PC)
+  Shell commands:  help · status · matrix · scan · wifi · services · disk
+  Desktop:         Sway (Wayland) starts automatically on tty1
+  Shortcuts:       Super+Return=terminal  Super+D=launcher  Super+P=dashboard
+                   Super+G=GameMode  Super+N=Notion  Super+A=Anki
+                   Super+U=update    Super+Q=close    Super+Shift+E=exit
+  OTA update:      flynn-update      (pulls latest from GitHub live)
+  Install to disk: flynn-install     (dual-boot, keeps Windows)
+  Pi control:      pi status|sync|wakepc
 
 MOTD
 echo "  ✓ MOTD"

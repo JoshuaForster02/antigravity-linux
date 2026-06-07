@@ -1,0 +1,166 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║   F L Y N N   O S  —  Sway Config  (TRON Edition)          ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# ── Modifier ──────────────────────────────────────────────────────────────────
+set $mod Mod4
+set $left  h
+set $down  j
+set $up    k
+set $right l
+
+# ── Terminal + Launcher ───────────────────────────────────────────────────────
+set $term  foot
+set $menu  rofi -show drun -theme /root/.config/rofi/tron.rasi
+
+# ── TRON Colors ───────────────────────────────────────────────────────────────
+set $bg      #000810
+set $cyan    #00e5ff
+set $dcyan   #004466
+set $border  #00e5ff
+set $dborder #002233
+set $text    #e0f8ff
+set $urgent  #ff3300
+
+# ── Wallpaper ─────────────────────────────────────────────────────────────────
+output * bg /root/.config/sway/tron-bg.png fill
+
+# Fallback if PNG not generated yet
+exec_always swaybg -o '*' -i /root/.config/sway/tron-bg.png -m fill 2>/dev/null \
+  || swaybg -o '*' -c '#000810'
+
+# ── Window appearance ─────────────────────────────────────────────────────────
+# class                  border   bg       text    indicator child_border
+client.focused           $cyan    $bg      $text   $cyan     $cyan
+client.focused_inactive  $dborder $bg      $dcyan  $dborder  $dborder
+client.unfocused         $dborder $bg      $dcyan  $dborder  $dborder
+client.urgent            $urgent  $bg      $text   $urgent   $urgent
+
+default_border pixel 2
+default_floating_border pixel 2
+gaps inner 8
+gaps outer 4
+smart_gaps on
+smart_borders on
+
+# ── Font ──────────────────────────────────────────────────────────────────────
+font pango:JetBrains Mono 11
+
+# ── Input ─────────────────────────────────────────────────────────────────────
+input type:keyboard {
+    xkb_layout  de
+    xkb_options caps:escape
+    repeat_delay 250
+    repeat_rate  40
+}
+input type:touchpad {
+    tap enabled
+    natural_scroll enabled
+    dwt enabled
+}
+
+# ── Startup ───────────────────────────────────────────────────────────────────
+exec_always {
+    pkill waybar; waybar -c /root/.config/waybar/config -s /root/.config/waybar/style.css
+    pkill mako;   mako --config /root/.config/mako/config
+}
+exec {
+    pipewire
+    wireplumber
+    /usr/local/bin/flynn-boot-chime
+    /usr/local/bin/flynn-daemon 2>/dev/null
+    /usr/local/bin/flynn-wallpaper-sway
+    nm-applet --indicator 2>/dev/null
+}
+# Auto-open Flynn terminal on boot
+# First-boot wizard (runs once)
+exec bash -c '[ ! -f /etc/flynnos/.first-boot-done ] && sleep 2 && /usr/local/bin/flynn-first-boot'
+
+exec python3 /opt/flynn/agd/antigravity.py
+
+exec foot -e /usr/local/bin/flynn-ui
+
+# ── Key bindings ──────────────────────────────────────────────────────────────
+# Core
+bindsym $mod+Return      exec $term
+bindsym $mod+q           kill
+bindsym $mod+d           exec $menu
+bindsym $mod+Shift+r     reload
+bindsym $mod+Shift+e     exec swaymsg exit
+
+# Flynn-specific
+bindsym $mod+g           exec /usr/local/bin/game-mode-switch.sh toggle
+bindsym $mod+n           exec /usr/local/bin/flynn-browser https://notion.so
+bindsym $mod+a           exec /usr/local/bin/flynn-browser http://localhost:8765
+bindsym $mod+s           exec steam -bigpicture 2>/dev/null
+bindsym $mod+p           exec /usr/local/bin/flynn-dashboard
+bindsym $mod+u           exec /usr/local/bin/flynn-update
+
+# Screenshot
+bindsym Print            exec grim ~/screenshot-$(date +%s).png
+bindsym $mod+Print       exec grim -g "$(slurp)" ~/screenshot-$(date +%s).png
+
+# Focus
+bindsym $mod+$left       focus left
+bindsym $mod+$down       focus down
+bindsym $mod+$up         focus up
+bindsym $mod+$right      focus right
+bindsym $mod+Left        focus left
+bindsym $mod+Down        focus down
+bindsym $mod+Up          focus up
+bindsym $mod+Right       focus right
+
+# Move
+bindsym $mod+Shift+$left   move left
+bindsym $mod+Shift+$down   move down
+bindsym $mod+Shift+$up     move up
+bindsym $mod+Shift+$right  move right
+
+# Workspaces
+bindsym $mod+1  workspace number 1
+bindsym $mod+2  workspace number 2
+bindsym $mod+3  workspace number 3
+bindsym $mod+4  workspace number 4
+bindsym $mod+5  workspace number 5
+bindsym $mod+Shift+1  move container to workspace number 1
+bindsym $mod+Shift+2  move container to workspace number 2
+bindsym $mod+Shift+3  move container to workspace number 3
+bindsym $mod+Shift+4  move container to workspace number 4
+bindsym $mod+Shift+5  move container to workspace number 5
+
+# Layout
+bindsym $mod+b  splith
+bindsym $mod+v  splitv
+bindsym $mod+e  layout toggle split
+bindsym $mod+f  fullscreen
+bindsym $mod+Shift+space  floating toggle
+bindsym $mod+space        focus mode_toggle
+bindsym $mod+Tab          layout tabbed
+
+# Resize mode
+mode "resize" {
+    bindsym $left   resize shrink width  40px
+    bindsym $down   resize grow   height 40px
+    bindsym $up     resize shrink height 40px
+    bindsym $right  resize grow   width  40px
+    bindsym Return  mode "default"
+    bindsym Escape  mode "default"
+}
+bindsym $mod+r mode "resize"
+
+# Volume
+bindsym XF86AudioRaiseVolume  exec pactl set-sink-volume @DEFAULT_SINK@ +5%
+bindsym XF86AudioLowerVolume  exec pactl set-sink-volume @DEFAULT_SINK@ -5%
+bindsym XF86AudioMute         exec pactl set-sink-mute @DEFAULT_SINK@ toggle
+bindsym XF86MonBrightnessUp   exec brightnessctl set +10%
+bindsym XF86MonBrightnessDown exec brightnessctl set 10%-
+
+# Floating rules
+for_window [app_id="flynn-dashboard"]  floating enable, resize set 800 500
+for_window [app_id="nm-connection-editor"] floating enable
+for_window [title="Flynn Browser"]    floating enable, resize set 1200 800
+
+# Drag floating windows
+floating_modifier $mod normal
+
+include /etc/sway/config.d/*
