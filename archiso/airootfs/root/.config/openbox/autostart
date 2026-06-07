@@ -6,13 +6,16 @@ pipewire &
 sleep 0.3
 wireplumber &
 
+# Boot chime (once per session)
+/usr/local/bin/flynn-boot-chime &
+
 # Compositor — TRON cyan glow on window borders
 picom --config /root/.config/picom/picom.conf --daemon 2>/dev/null &
 
 # TRON wallpaper (static draw, fast)
 /usr/local/bin/flynn-wallpaper 2>/dev/null || xsetroot -solid "#000810"
 
-# Notifications
+# Notifications (TRON-styled dunst)
 dunst &
 
 # Panel (tint2 — TRON-themed taskbar at bottom)
@@ -21,9 +24,7 @@ tint2 -c /root/.config/tint2/tint2rc 2>/dev/null &
 # Network manager tray
 nm-applet 2>/dev/null &
 
-# Flynn daemon REST API :7777
-[ -f /opt/flynn/daemon/flynn_daemon.py ] && \
-    python3 /opt/flynn/daemon/flynn_daemon.py >/var/log/flynn-daemon.log 2>&1 &
+# Flynn daemon started via systemd (flynn-daemon.service)
 
 # Main Flynn terminal — opens automatically with TRON splash
 sleep 0.8

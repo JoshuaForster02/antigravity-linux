@@ -9,8 +9,12 @@ intel-ucode
 
 # Boot
 grub
+syslinux
 efibootmgr
 mtools
+mkinitcpio
+mkinitcpio-archiso
+mkinitcpio-nfs-utils
 
 # System tools
 systemd
@@ -36,6 +40,7 @@ ncdu
 
 # Network
 networkmanager
+network-manager-applet
 iwd
 dhcpcd
 openssh
@@ -46,6 +51,15 @@ wget
 rsync
 iproute2
 iputils
+reflector
+
+# Bluetooth — controllers + AirPods
+bluez
+bluez-utils
+blueman
+
+# Boot experience
+plymouth
 
 # Audio — PipeWire stack
 pipewire
@@ -60,6 +74,7 @@ xorg-server
 xorg-xinit
 xorg-xrandr
 xorg-xsetroot
+xf86-video-amdgpu
 xf86-video-vmware
 xf86-video-vesa
 xf86-video-fbdev
@@ -84,6 +99,7 @@ openbox
 obconf
 picom
 xterm
+foot
 feh
 rofi
 dunst
@@ -94,6 +110,10 @@ xorg-xsetroot
 xorg-xrdb
 xorg-xset
 nm-connection-editor
+capitaine-cursors
+gtk3
+gtk4
+lib32-gtk3
 
 # Fonts
 ttf-dejavu
@@ -111,6 +131,7 @@ mpv
 python
 python-pip
 python-flask
+python-flask-cors
 python-requests
 python-paho-mqtt
 python-psutil
@@ -138,4 +159,3 @@ parted
 e2fsprogs
 dosfstools
 btrfs-progs
-calamares

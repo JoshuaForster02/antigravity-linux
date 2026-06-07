@@ -1,6 +1,7 @@
 
   ╔══════════════════════════════════════════════════════════════╗
   ║   F L Y N N   O S   ·   Arch Linux   ·   The Grid   v3.0  ║
-  ║   ssh root@<ip>  ·  password: flynn  ·  startx = GUI       ║
+  ║   Login: root / flynn  ·  GUI auto-starts on tty1           ║
+  ║   API: http://localhost:7777/api/status                     ║
+  ║   Install: bash /opt/flynn/install/install-to-disk.sh      ║
   ╚══════════════════════════════════════════════════════════════╝
-

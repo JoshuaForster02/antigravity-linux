@@ -5,6 +5,9 @@ on:
     branches: [ main, dev ]
     paths:
       - 'archiso/**'
+      - 'daemon/**'
+      - 'phase2/**'
+      - 'phase4/**'
       - '.github/workflows/build-arch-iso.yml'
   workflow_dispatch:   # manual trigger from GitHub UI → Actions tab
 
@@ -46,6 +49,7 @@ jobs:
 
               echo '=== Setting permissions ==='
               chmod +x /build/customize_airootfs.sh
+              chmod +x /build/airootfs/opt/flynn/daemon/flynn_daemon.py 2>/dev/null || true
               chmod +x /build/airootfs/usr/local/bin/* 2>/dev/null || true
               chmod +x /build/airootfs/root/.xinitrc 2>/dev/null || true
               chmod +x /build/airootfs/root/.config/openbox/autostart 2>/dev/null || true

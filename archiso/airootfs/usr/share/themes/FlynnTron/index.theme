@@ -1,0 +1,7 @@
+[Icon Theme]
+Name=FlynnTron
+Comment=Flynn OS TRON GTK theme
+Inherits=Adwaita
+
+[GTK Theme]
+Name=FlynnTron

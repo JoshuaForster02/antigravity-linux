@@ -31,16 +31,16 @@ from flask_cors import CORS
 
 CONFIG_PATH = Path("/etc/flynn/daemon.conf")
 DEFAULTS = {
-    "mqtt_broker":        "localhost",
+    "mqtt_broker":        "100.74.204.71",   # Pi Tailscale IP
     "mqtt_port":          1883,
     "mqtt_prefix":        "flynn",
     "api_port":           7777,
     "notion_token":       "",
     "notion_database_id": "",
-    "steam_path":         "/root/.steam/steam/steam.sh",
+    "steam_path":         "/home/flynn/.steam/steam/steam.sh",
     "ollama_host":        "http://localhost:11434",
-    "ollama_model":       "qwen2.5:7b",
-    "pi_host":            "localhost",
+    "ollama_model":       "mistral",
+    "pi_host":            "100.74.204.71",  # Pi Tailscale IP
     "hostname":           socket.gethostname(),
 }
 

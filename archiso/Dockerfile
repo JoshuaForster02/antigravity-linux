@@ -21,11 +21,14 @@ WORKDIR /build
 COPY profiledef.sh       ./
 COPY packages.x86_64     ./
 COPY pacman.conf         ./
+COPY syslinux/           syslinux/
+COPY efiboot/            efiboot/
 COPY customize_airootfs.sh airootfs/
 COPY airootfs/           airootfs/
 
 # ── Set permissions ────────────────────────────────────────────────────────────
 RUN chmod +x airootfs/customize_airootfs.sh \
+             airootfs/opt/flynn/daemon/flynn_daemon.py \
              airootfs/usr/local/bin/* \
              airootfs/root/.xinitrc \
              airootfs/root/.config/openbox/autostart \

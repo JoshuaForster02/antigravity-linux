@@ -248,7 +248,7 @@ cmd_ssh_info() {
     echo ""; hline "─" "$DIM"; printf "  ${LCY}SSH ACCESS${RST}\n\n"
     printf "  ${DIM}From LAN:        ${WHT}ssh root@%s${RST}\n" "$(get_ip||echo 'unknown')"
     printf "  ${DIM}Password:        ${LCY}flynn${RST}\n\n"
-    printf "  ${DIM}Via Pi Tailscale: ${WHT}ssh root@100.74.204.71${DIM}  (Pi relay)${RST}\n"
+    printf "  ${DIM}Via Pi (optional): ${WHT}ssh root@<pi-ip>${DIM}  (MQTT relay)${RST}\n"
     hline "─" "$DIM"; echo ""
 }
 
@@ -264,7 +264,7 @@ cmd_install() {
     printf "  ${RED}Confirm: type YES to erase /dev/%s: ${WHT}" "$target"; read -r confirm; printf "${RST}"
     [ "$confirm" != "YES" ] && echo "  Cancelled." && return
     printf "\n  ${CY}Installing Flynn OS to /dev/%s ...${RST}\n\n" "$target"
-    bash /opt/flynn/install/install-flynnos-full.sh --target "/dev/$target" 2>&1 | while IFS= read -r line; do printf "  %s\n" "$line"; done
+    bash /opt/flynn/install/install-to-disk.sh "/dev/$target" 2>&1 | while IFS= read -r line; do printf "  %s\n" "$line"; done
 }
 
 cmd_help() {

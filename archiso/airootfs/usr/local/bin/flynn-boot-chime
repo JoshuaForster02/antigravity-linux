@@ -1,0 +1,15 @@
+#!/bin/sh
+# Play TRON boot chime once per session (PipeWire / ALSA)
+CHIME=/usr/share/sounds/flynn/boot-chime.wav
+STAMP=/run/flynn-boot-chime.done
+
+[ -f "$STAMP" ] && exit 0
+[ ! -f "$CHIME" ] && exit 0
+
+touch "$STAMP"
+
+if command -v pw-play >/dev/null 2>&1; then
+    pw-play "$CHIME" >/dev/null 2>&1 &
+elif command -v aplay >/dev/null 2>&1; then
+    aplay -q "$CHIME" >/dev/null 2>&1 &
+fi

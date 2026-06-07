@@ -1,0 +1,16 @@
+[Unit]
+Description=Flynn OS Daemon (REST API + MQTT)
+After=network-online.target pipewire-pulse.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/flynn/daemon
+ExecStart=/usr/bin/python3 /opt/flynn/daemon/flynn_daemon.py
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

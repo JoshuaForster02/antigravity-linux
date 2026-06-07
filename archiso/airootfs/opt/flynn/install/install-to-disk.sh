@@ -154,6 +154,7 @@ rsync -aAX --info=progress2 \
     --exclude=/proc --exclude=/sys --exclude=/dev \
     --exclude=/tmp --exclude=/run --exclude=/mnt \
     --exclude=/media --exclude=/lost+found \
+    --exclude=/run/archiso --exclude=/var/cache/pacman/pkg \
     "$LIVE_ROOT" "$MNTROOT/" 2>/dev/null || true
 
 ok "Rootfs copied"
@@ -174,49 +175,39 @@ FSTAB
 
 ok "fstab written"
 
-# ── Install GRUB ──────────────────────────────────────────────────────────────
-info "Installing GRUB bootloader..."
+# ── Install GRUB + initramfs (Arch) ───────────────────────────────────────────
+info "Configuring bootloader for installed system..."
+
 mount --bind /dev  "${MNTROOT}/dev"
 mount --bind /proc "${MNTROOT}/proc"
 mount --bind /sys  "${MNTROOT}/sys"
+mount --bind /run  "${MNTROOT}/run" 2>/dev/null || true
+
+# Remove live-ISO-only mkinitcpio config
+rm -f "${MNTROOT}/etc/mkinitcpio.conf.d/archiso.conf"
+cat > "${MNTROOT}/etc/mkinitcpio.d/linux-zen.preset" << 'PRESET'
+PRESETS=('default')
+ALL_config='/etc/mkinitcpio.conf'
+ALL_kver='/boot/vmlinuz-linux-zen'
+default_image='/boot/initramfs-linux-zen.img'
+PRESET
+
+chroot "$MNTROOT" mkinitcpio -P linux-zen 2>&1 | tail -5
 
 chroot "$MNTROOT" grub-install --target=x86_64-efi --efi-directory=/boot/efi \
     --bootloader-id=FlynnOS --recheck 2>&1 | tail -3
 
-# GRUB config with TRON theme enabled
-cat > "${MNTROOT}/boot/grub/grub.cfg" << GRUBCFG
-set default=0
-set timeout=5
+# BIOS fallback for older machines
+chroot "$MNTROOT" grub-install --target=i386-pc "$TARGET" 2>/dev/null || true
 
-# ── TRON gfx theme (works on real hardware) ───────────────────────────────────
-insmod all_video
-if loadfont /boot/grub/fonts/unicode.pf2; then
-    set gfxmode=1920x1080,1280x720,auto
-    insmod gfxterm
-    terminal_output gfxterm
-fi
-if [ -d /boot/grub/themes/flynnos ]; then
-    set theme=/boot/grub/themes/flynnos/theme.txt
-    export theme
-fi
+chroot "$MNTROOT" grub-mkconfig -o /boot/grub/grub.cfg 2>&1 | tail -3
 
-menuentry "Flynn OS Linux 2.0  //  The Grid" {
-    linux  /boot/vmlinuz root=UUID=${ROOT_UUID} rw quiet splash
-    initrd /boot/initrd.img
-}
-$([ "$MODE" = "dualboot" ] && echo '
-menuentry "Windows (on '"$EFI_PART"')" {
-    insmod chain
-    chainloader '"$EFI_PART"'
-}')
-menuentry "Flynn OS  [recovery]" {
-    linux  /boot/vmlinuz root=UUID=${ROOT_UUID} rw init=/bin/sh
-    initrd /boot/initrd.img
-}
-GRUBCFG
+# Enable services on installed system
+chroot "$MNTROOT" systemctl enable NetworkManager flynn-daemon sshd 2>/dev/null || true
 
+umount "${MNTROOT}/run" 2>/dev/null || true
 umount "${MNTROOT}/dev" "${MNTROOT}/proc" "${MNTROOT}/sys"
-ok "GRUB installed"
+ok "GRUB + initramfs configured"
 
 # ── Cleanup ───────────────────────────────────────────────────────────────────
 umount "${MNTROOT}/boot/efi"
