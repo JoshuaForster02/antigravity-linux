@@ -31,7 +31,7 @@ zsh
 tmux
 htop
 btop
-neofetch
+fastfetch
 tree
 file
 lsof
@@ -75,7 +75,6 @@ xorg-xinit
 xorg-xrandr
 xorg-xsetroot
 xf86-video-amdgpu
-xf86-video-vmware
 xf86-video-vesa
 xf86-video-fbdev
 xf86-input-libinput
@@ -91,12 +90,11 @@ lib32-mesa
 vulkan-radeon
 lib32-vulkan-radeon
 libva-mesa-driver
-mesa-vdpau
-opencl-rusticl-mesa
+opencl-mesa
 
 # Window manager + desktop environment
 openbox
-obconf
+obconf-qt
 picom
 xterm
 foot
