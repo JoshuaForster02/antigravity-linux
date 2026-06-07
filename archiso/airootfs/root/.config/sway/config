@@ -23,7 +23,7 @@ set $text    #e0f8ff
 set $urgent  #ff3300
 
 # ── Wallpaper ─────────────────────────────────────────────────────────────────
-output * bg /root/.config/sway/tron-bg.png fill
+output * bg #000810 solid_color
 
 # Fallback if PNG not generated yet
 exec_always swaybg -o '*' -i /root/.config/sway/tron-bg.png -m fill 2>/dev/null \

@@ -1,0 +1,3 @@
+#!/bin/bash
+# Flynn OS — Start the Flynn Daemon (REST API + MQTT + Pi bridge)
+exec python3 /opt/flynn/daemon/flynn_daemon.py "$@"

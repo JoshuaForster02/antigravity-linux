@@ -4,7 +4,7 @@ configuration {
     modi:            "drun,run,window";
     show-icons:      true;
     icon-theme:      "Papirus-Dark";
-    terminal:        "xterm";
+    terminal:        "foot";
     font:            "JetBrains Mono 12";
     case-sensitive:  false;
     cycle:           true;

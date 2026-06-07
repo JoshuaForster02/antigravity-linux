@@ -48,6 +48,10 @@ else
 fi
 
 # ── 2. ISO bauen ─────────────────────────────────────────────────────────────
+# Free up Docker overlay space before build
+printf "${CY}[1.5] Docker-Overlay bereinigen (freed space)...${RST}\n"
+docker system prune -f --filter "until=24h" 2>/dev/null | tail -2 || true
+
 printf "${CY}[2/3] Flynn OS ISO bauen...${RST}\n"
 printf "      ${YL}Erster Build: ~20-30 min | Folgebuilds: ~5-8 min${RST}\n"
 printf "      Pakete werden in ${CACHE} gecached\n\n"
@@ -56,7 +60,6 @@ docker run --rm \
     --privileged \
     --platform linux/amd64 \
     --shm-size=512m \
-    --tmpfs /work:exec,size=6g \
     --tmpfs /isoout:exec,size=2g \
     -v "$(pwd):/build" \
     -v "$OUTPUT:/output" \

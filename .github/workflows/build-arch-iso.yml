@@ -38,7 +38,6 @@ jobs:
         run: |
           docker run --rm --privileged \
             --shm-size=512m \
-            --tmpfs /work:exec,size=6g \
             --tmpfs /isoout:exec,size=2g \
             -v "${{ github.workspace }}/archiso:/build" \
             -v "${{ github.workspace }}/archiso/output:/output" \

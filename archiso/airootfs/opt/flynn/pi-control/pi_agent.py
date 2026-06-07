@@ -201,7 +201,23 @@ def _bluetooth_scan_loop():
             log.info("Presence: device left")
         elif found and not _presence.get("_was_present"):
             log.info(f"Presence: {_presence['device']} detected")
+            # Auto Wake-on-LAN — wake PC when phone arrives
+            if CFG.get("auto_wol", False)  # default OFF — enable via macOS app or /config endpoint and CFG.get("pc_mac"):
+                try:
+                    send_wol(CFG["pc_mac"])
+                    log.info(f"Auto WoL sent to {CFG['pc_mac']}")
+                    _presence["auto_wol_sent"] = time.time()
+                except Exception as e:
+                    log.warning(f"Auto WoL failed: {e}")
         _presence["_was_present"] = found
+
+        # Cool-down: don't spam WoL — only once per 5 min
+        last_wol = _presence.get("auto_wol_sent", 0)
+        if found and (time.time() - last_wol) < 300:
+            _presence["wol_cooldown"] = True
+        else:
+            _presence["wol_cooldown"] = False
+
         time.sleep(15)
 
 # ─── NOTION → ANKI SYNC ──────────────────────────────────────────────────────

@@ -453,6 +453,10 @@ cat > /etc/motd << 'MOTD'
 MOTD
 echo "  ✓ MOTD"
 
+# ── Pre-generate TRON wallpaper for Sway ───────────────────────────────────────
+mkdir -p /root/.config/sway
+python3 /usr/local/bin/flynn-wallpaper-sway 2>/dev/null   && echo "  ✓ TRON wallpaper pre-generated"   || echo "  ⚠ wallpaper will generate on first boot"
+
 # ── Flynn version ─────────────────────────────────────────────────────────────
 echo "Flynn OS Linux 3.0 (Arch) — $(date +%Y-%m-%d)" > /etc/flynnos-release
 
