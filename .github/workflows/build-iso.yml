@@ -8,11 +8,16 @@ on:
       - '.github/workflows/build-iso.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build Flynn OS ISO
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
