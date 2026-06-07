@@ -2,6 +2,10 @@
 # Flynn OS — Interactive disk installer
 # Installs Flynn OS alongside Windows (dual-boot) or standalone
 
+if [ "$#" -gt 0 ] || [ ! -t 0 ]; then
+    exec /usr/bin/install "$@"
+fi
+
 printf "\e[1;36m"
 cat << 'BANNER'
   ╔══════════════════════════════════════════════════════╗
