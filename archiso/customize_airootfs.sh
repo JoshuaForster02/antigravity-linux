@@ -145,12 +145,37 @@ mkdir -p /root/.config/gtk-3.0 /root/.config/gtk-4.0 /root/.icons
 cat > /root/.config/gtk-3.0/settings.ini << 'GTK'
 [Settings]
 gtk-theme-name=Adwaita-dark
-gtk-icon-theme-name=Adwaita
+gtk-icon-theme-name=Papirus-Dark
+gtk-cursor-theme-name=capitaine-cursors-white
+gtk-cursor-theme-size=24
 gtk-font-name=JetBrains Mono 11
 gtk-application-prefer-dark-theme=1
+gtk-button-images=0
+gtk-menu-images=1
 GTK
 cp /root/.config/gtk-3.0/settings.ini /root/.config/gtk-4.0/settings.ini
-echo "  ✓ GTK dark theme"
+echo "  ✓ GTK dark theme + Papirus-Dark icons"
+
+# ── Ensure all new config dirs exist ─────────────────────────────────────────
+mkdir -p /root/.config/fuzzel
+mkdir -p /root/.config/swaylock
+mkdir -p /root/.config/sway
+mkdir -p /root/screenshots
+echo "  ✓ config dirs"
+
+# ── XDG user dirs ─────────────────────────────────────────────────────────────
+mkdir -p /root/Downloads /root/Documents /root/Pictures /root/Music /root/Videos
+cat > /root/.config/user-dirs.dirs << 'XDG'
+XDG_DESKTOP_DIR="$HOME"
+XDG_DOWNLOAD_DIR="$HOME/Downloads"
+XDG_DOCUMENTS_DIR="$HOME/Documents"
+XDG_PICTURES_DIR="$HOME/Pictures"
+XDG_MUSIC_DIR="$HOME/Music"
+XDG_VIDEOS_DIR="$HOME/Videos"
+XDG_PUBLICSHARE_DIR="$HOME"
+XDG_TEMPLATES_DIR="$HOME"
+XDG
+echo "  ✓ XDG user dirs"
 
 # ── tint2 panel config (TRON style) ───────────────────────────────────────────
 mkdir -p /root/.config/tint2
@@ -466,7 +491,8 @@ cat > /etc/motd << 'MOTD'
 MOTD
 echo "  ✓ MOTD"
 
-# ── Pre-generate TRON wallpaper for Sway ───────────────────────────────────────
+# ── Pre-generate TRON wallpaper for Sway (runs during build, PIL available) ────
+mkdir -p /root/.config/sway
 mkdir -p /root/.config/sway
 python3 /usr/local/bin/flynn-wallpaper-sway 2>/dev/null   && echo "  ✓ TRON wallpaper pre-generated"   || echo "  ⚠ wallpaper will generate on first boot"
 

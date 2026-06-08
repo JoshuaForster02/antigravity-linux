@@ -3,7 +3,7 @@
    ══════════════════════════════════════════════════════════════════════════════ */
 
 * {
-    font-family: "JetBrains Mono", monospace;
+    font-family: "JetBrains Mono", "Symbols Nerd Font", monospace;
     font-size:   11px;
     font-weight: 500;
     min-height:  0;
@@ -15,56 +15,62 @@
 
 /* ── Bar ──────────────────────────────────────────────────────────────────── */
 window#waybar {
-    background:    rgba(0, 6, 14, 0.94);
-    border-bottom: 1px solid rgba(0, 229, 255, 0.12);
-    color:         rgba(0, 200, 230, 0.80);
+    background:    rgba(0, 4, 12, 0.92);
+    border-bottom: 1px solid rgba(0, 229, 255, 0.10);
+    color:         rgba(0, 180, 210, 0.75);
 }
 
 /* ── Logo ─────────────────────────────────────────────────────────────────── */
 #custom-logo {
-    color:        rgba(0, 229, 255, 0.90);
-    font-weight:  700;
-    padding:      0 16px;
-    letter-spacing: 0.5px;
-    border-right: 1px solid rgba(0, 229, 255, 0.10);
+    color:          rgba(0, 220, 255, 0.88);
+    font-weight:    700;
+    font-size:      11px;
+    letter-spacing: 1.5px;
+    padding:        0 18px;
+    border-right:   1px solid rgba(0, 229, 255, 0.09);
 }
 #custom-logo:hover {
-    color: #00e5ff;
+    color:      #00e5ff;
     background: rgba(0, 229, 255, 0.05);
 }
 
 /* ── Workspaces ───────────────────────────────────────────────────────────── */
 #workspaces {
-    padding: 0 6px;
+    padding: 0 4px;
 }
 #workspaces button {
-    padding:       0 10px;
-    color:         rgba(0, 100, 130, 0.70);
-    background:    transparent;
-    border-bottom: 2px solid transparent;
-    font-size:     10px;
-    letter-spacing: 1px;
-    transition:    all 0.12s ease;
-    min-width:     28px;
+    padding:        0 12px;
+    color:          rgba(0, 90, 120, 0.65);
+    background:     transparent;
+    border-bottom:  2px solid transparent;
+    font-size:      10px;
+    letter-spacing: 1.5px;
+    min-width:      28px;
+    transition:     all 0.10s ease;
 }
 #workspaces button:hover {
-    color: rgba(0, 200, 230, 0.90);
+    color:      rgba(0, 190, 220, 0.85);
+    background: rgba(0, 229, 255, 0.04);
 }
 #workspaces button.focused {
-    color:         #00e5ff;
-    border-bottom: 2px solid rgba(0, 229, 255, 0.70);
+    color:         rgba(0, 229, 255, 0.95);
+    border-bottom: 2px solid rgba(0, 229, 255, 0.65);
 }
 #workspaces button.urgent {
-    color: #ff4422;
+    color:      #ff4422;
+    background: rgba(255, 50, 30, 0.08);
 }
 
-/* ── Clock (center) ───────────────────────────────────────────────────────── */
+/* ── Clock (center, prominent) ────────────────────────────────────────────── */
 #clock {
-    color:         rgba(0, 229, 255, 0.95);
-    font-size:     13px;
-    font-weight:   700;
-    letter-spacing: 2px;
-    padding:       0 24px;
+    color:          rgba(0, 229, 255, 0.92);
+    font-size:      12px;
+    font-weight:    700;
+    letter-spacing: 3px;
+    padding:        0 28px;
+}
+#clock:hover {
+    color: #00e5ff;
 }
 
 /* ── Right modules ────────────────────────────────────────────────────────── */
@@ -73,26 +79,26 @@ window#waybar {
 #pulseaudio,
 #network,
 #tray {
-    padding:     0 10px;
-    color:       rgba(0, 160, 190, 0.70);
-    font-size:   10px;
+    padding:        0 11px;
+    color:          rgba(0, 150, 180, 0.65);
+    font-size:      10px;
     letter-spacing: 0.5px;
-    border-left: 1px solid rgba(0, 229, 255, 0.06);
+    border-left:    1px solid rgba(0, 229, 255, 0.06);
 }
 
 #cpu:hover,
 #memory:hover,
 #pulseaudio:hover,
 #network:hover {
-    color:      rgba(0, 229, 255, 0.90);
+    color:      rgba(0, 220, 255, 0.90);
     background: rgba(0, 229, 255, 0.04);
 }
 
-#cpu.warning  { color: rgba(255, 180, 0, 0.85); }
-#cpu.critical { color: rgba(255, 60, 30, 0.95); }
-#pulseaudio.muted  { color: rgba(0, 80, 100, 0.50); }
+#cpu.warning         { color: rgba(255, 185, 0,  0.85); }
+#cpu.critical        { color: rgba(255, 60,  30, 0.95); }
+#pulseaudio.muted    { color: rgba(0,  70,  95, 0.45); }
 #network.disconnected { color: rgba(255, 60, 30, 0.80); }
 
 #tray {
-    padding: 0 12px;
+    padding: 0 14px;
 }

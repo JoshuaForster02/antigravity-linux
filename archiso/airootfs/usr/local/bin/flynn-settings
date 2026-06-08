@@ -1,0 +1,243 @@
+#!/usr/bin/env python3
+"""
+Flynn OS Settings — Simple GTK4 settings panel
+Audio · Display · Keyboard · About
+"""
+import gi, subprocess, os
+gi.require_version('Gtk', '4.0')
+from gi.repository import Gtk, Gdk, GLib
+
+CSS = b"""
+window {
+    background: rgba(0, 8, 18, 0.97);
+    color: #00d8f0;
+}
+.settings-header {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: rgba(0, 150, 180, 0.55);
+    padding: 14px 20px 6px;
+}
+.section-title {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: rgba(0, 180, 210, 0.60);
+    padding: 12px 20px 4px;
+}
+.setting-row {
+    padding: 8px 20px;
+    border-radius: 6px;
+    margin: 1px 8px;
+}
+.setting-row:hover { background: rgba(0, 229, 255, 0.06); }
+.setting-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: rgba(180, 220, 235, 0.85);
+}
+.setting-sub {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    color: rgba(0, 130, 160, 0.55);
+}
+button {
+    background:    rgba(0, 229, 255, 0.08);
+    border:        1px solid rgba(0, 229, 255, 0.20);
+    border-radius: 8px;
+    color:         rgba(0, 200, 230, 0.80);
+    font-family:   "JetBrains Mono", monospace;
+    font-size:     11px;
+    padding:       4px 14px;
+}
+button:hover { background: rgba(0, 229, 255, 0.16); color: #00e5ff; }
+scale trough { background: rgba(0, 229, 255, 0.08); min-height: 4px; }
+scale highlight { background: rgba(0, 229, 255, 0.65); }
+scale slider { background: #00e5ff; min-width: 14px; min-height: 14px; border-radius: 50%; }
+separator { background: rgba(0, 229, 255, 0.08); min-height: 1px; margin: 4px 16px; }
+"""
+
+def run(cmd): subprocess.Popen(cmd, shell=True)
+def run_out(cmd):
+    try: return subprocess.check_output(cmd, shell=True, text=True).strip()
+    except: return ""
+
+class SettingsApp(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id='os.flynnos.settings')
+        self.connect('activate', self._activate)
+
+    def _activate(self, app):
+        win = Gtk.ApplicationWindow(application=app, title='Flynn OS Settings')
+        win.set_decorated(False)
+        win.set_default_size(480, 580)
+
+        prov = Gtk.CssProvider()
+        prov.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(), prov,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+        scroll = Gtk.ScrolledWindow()
+        scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+
+        # ── Header
+        hdr = Gtk.Label(label='SETTINGS')
+        hdr.add_css_class('settings-header')
+        hdr.set_halign(Gtk.Align.START)
+        box.append(hdr)
+
+        box.append(self._sep())
+
+        # ── Audio
+        box.append(self._section('AUDIO'))
+        box.append(self._vol_row())
+        box.append(self._row('Mute Toggle', 'Space: pactl set-sink-mute @DEFAULT_SINK@ toggle',
+                              lambda: run('pactl set-sink-mute @DEFAULT_SINK@ toggle')))
+
+        box.append(self._sep())
+
+        # ── Display
+        box.append(self._section('DISPLAY'))
+        box.append(self._brightness_row())
+        box.append(self._row('Lock Screen', 'Lock immediately',
+                              lambda: run('swaylock -i /root/.config/sway/tron-bg.png --scaling fill')))
+
+        box.append(self._sep())
+
+        # ── Keyboard
+        box.append(self._section('KEYBOARD'))
+        box.append(self._row('Layout: US', 'Change to German (DE)',
+                              lambda: run("swaymsg 'input type:keyboard xkb_layout de'")))
+        box.append(self._row('Layout: DE', 'Change to English (US)',
+                              lambda: run("swaymsg 'input type:keyboard xkb_layout us'")))
+
+        box.append(self._sep())
+
+        # ── Network
+        box.append(self._section('NETWORK'))
+        box.append(self._row('Network Manager', 'Open WiFi/Ethernet config',
+                              lambda: run('nm-connection-editor')))
+        ip = run_out("ip route get 1 | awk '{print $7; exit}' 2>/dev/null")
+        box.append(self._info_row('Local IP', ip or 'Not connected'))
+
+        box.append(self._sep())
+
+        # ── System
+        box.append(self._section('SYSTEM'))
+        box.append(self._row('Reload Desktop', 'Restart Waybar + Sway config',
+                              lambda: run('swaymsg reload')))
+        box.append(self._row('OTA Update', 'Pull latest Flynn OS',
+                              lambda: run('foot -e /usr/local/bin/flynn-update')))
+        box.append(self._row('Shutdown', 'Power off system',
+                              lambda: run('systemctl poweroff')))
+        box.append(self._row('Reboot', 'Restart system',
+                              lambda: run('systemctl reboot')))
+
+        box.append(self._sep())
+
+        # ── About
+        box.append(self._section('ABOUT'))
+        kernel = run_out('uname -r')
+        box.append(self._info_row('Flynn OS Linux', 'v4.0 · The Grid'))
+        box.append(self._info_row('Kernel', kernel))
+        box.append(self._info_row('Desktop', 'Sway (Wayland)'))
+
+        # Close button
+        close_btn = Gtk.Button(label='CLOSE')
+        close_btn.set_margin_top(16)
+        close_btn.set_margin_bottom(20)
+        close_btn.set_margin_start(20)
+        close_btn.set_margin_end(20)
+        close_btn.connect('clicked', lambda _: win.close())
+        box.append(close_btn)
+
+        scroll.set_child(box)
+
+        # Title bar
+        root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        tb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        tb.set_margin_top(10); tb.set_margin_start(14)
+        for col, action in [('#FF5F57', win.close), ('#FEBC2E', None), ('#28C840', None)]:
+            btn = Gtk.Button()
+            btn.set_size_request(12, 12)
+            prov2 = Gtk.CssProvider()
+            prov2.load_from_data(f'button {{background:{col};border:none;border-radius:50%;padding:0;min-width:12px;min-height:12px;}}'.encode())
+            Gtk.StyleContext.add_provider(btn.get_style_context(), prov2, 999)
+            if action: btn.connect('clicked', lambda _, a=action: a())
+            tb.append(btn)
+            spc = Gtk.Label(label='  '); tb.append(spc)
+        root.append(tb)
+        root.append(scroll)
+        win.set_child(root)
+        win.present()
+
+    def _sep(self):
+        s = Gtk.Separator()
+        s.set_margin_top(4); s.set_margin_bottom(4)
+        return s
+
+    def _section(self, title):
+        lbl = Gtk.Label(label=title)
+        lbl.add_css_class('section-title')
+        lbl.set_halign(Gtk.Align.START)
+        return lbl
+
+    def _row(self, label, sub, action):
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        row.add_css_class('setting-row')
+        texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        texts.set_hexpand(True)
+        lbl = Gtk.Label(label=label); lbl.add_css_class('setting-label'); lbl.set_halign(Gtk.Align.START)
+        sl  = Gtk.Label(label=sub);   sl.add_css_class('setting-sub');   sl.set_halign(Gtk.Align.START)
+        texts.append(lbl); texts.append(sl)
+        btn = Gtk.Button(label='▶')
+        btn.connect('clicked', lambda _: action())
+        row.append(texts); row.append(btn)
+        return row
+
+    def _info_row(self, label, value):
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        row.add_css_class('setting-row')
+        lbl = Gtk.Label(label=label); lbl.add_css_class('setting-label'); lbl.set_halign(Gtk.Align.START)
+        lbl.set_hexpand(True)
+        val = Gtk.Label(label=value)
+        val.add_css_class('setting-sub')
+        row.append(lbl); row.append(val)
+        return row
+
+    def _vol_row(self):
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        row.add_css_class('setting-row')
+        lbl = Gtk.Label(label='Volume')
+        lbl.add_css_class('setting-label')
+        lbl.set_width_chars(10)
+        scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 5)
+        scale.set_hexpand(True)
+        try:
+            vol = int(run_out("pactl get-sink-volume @DEFAULT_SINK@ | awk '{print $5}' | tr -d '%'"))
+            scale.set_value(vol)
+        except: scale.set_value(40)
+        scale.connect('value-changed', lambda s: run(f'pactl set-sink-volume @DEFAULT_SINK@ {int(s.get_value())}%'))
+        row.append(lbl); row.append(scale)
+        return row
+
+    def _brightness_row(self):
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        row.add_css_class('setting-row')
+        lbl = Gtk.Label(label='Brightness')
+        lbl.add_css_class('setting-label')
+        lbl.set_width_chars(10)
+        scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 10, 100, 5)
+        scale.set_hexpand(True)
+        scale.set_value(80)
+        scale.connect('value-changed', lambda s: run(f'brightnessctl set {int(s.get_value())}%'))
+        row.append(lbl); row.append(scale)
+        return row
+
+SettingsApp().run([])

@@ -1,50 +1,117 @@
 #!/usr/bin/env python3
-"""Flynn OS — TRON Grid Wallpaper Generator für Sway/Wayland"""
-import subprocess, sys, os, math, random
-
+"""Flynn OS — TRON Grid Wallpaper Generator
+   Deep space aesthetic: dark background, glowing cyan grid,
+   data streams, node pulses — like looking at The Grid from inside.
+"""
+import subprocess, sys, os, random, math
 OUT = "/root/.config/sway/tron-bg.png"
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 
 try:
-    from PIL import Image, ImageDraw
-    W, H = 1920, 1080
-    img = Image.new("RGB", (W, H), (0, 8, 16))
-    d   = ImageDraw.Draw(img)
-
-    # Grid lines
-    GRID = 80
-    for x in range(0, W, GRID):
-        alpha = 30 if x % (GRID*4) != 0 else 60
-        d.line([(x,0),(x,H)], fill=(0, int(alpha*2.2), int(alpha*2.8)), width=1)
-    for y in range(0, H, GRID):
-        alpha = 30 if y % (GRID*4) != 0 else 60
-        d.line([(0,y),(W,y)], fill=(0, int(alpha*2.2), int(alpha*2.8)), width=1)
-
-    # Intersection dots
-    for x in range(0, W, GRID):
-        for y in range(0, H, GRID):
-            if random.random() < 0.15:
-                d.ellipse([x-2,y-2,x+2,y+2], fill=(0,120,150))
-
-    # Energy traces (random horizontal lines)
-    random.seed(42)
-    for _ in range(18):
-        y   = random.randint(0, H)
-        x1  = random.randint(0, W//2)
-        x2  = random.randint(W//2, W)
-        d.line([(x1,y),(x2,y)], fill=(0, 229, 255), width=1)
-
-    # Glow dots on traces
-    for _ in range(60):
-        x = random.randint(0, W)
-        y = random.randint(0, H)
-        r = random.randint(1, 3)
-        d.ellipse([x-r,y-r,x+r,y+r], fill=(0,200,220))
-
-    img.save(OUT, "PNG")
-    print(f"Wallpaper saved: {OUT}")
-    # Reload via swaymsg (sway's exec_always swaybg is already running; tell it to switch)
-    subprocess.Popen(["swaymsg", f"output * bg {OUT} fill"], stderr=subprocess.DEVNULL)
+    from PIL import Image, ImageDraw, ImageFilter
 except ImportError:
-    print("PIL not available, using solid background")
-    sys.exit(1)
+    print("[wallpaper] PIL not available — using solid color fallback")
+    subprocess.Popen(["swaymsg", "output * bg #000810 solid_color"],
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    sys.exit(0)
+
+W, H = 1920, 1080
+GRID = 80
+rng  = random.Random(2049)   # seeded for reproducible look
+
+# ── Base layer: deep blue-black gradient ─────────────────────────────────────
+img = Image.new("RGB", (W, H), (0, 0, 0))
+d   = ImageDraw.Draw(img)
+
+# Radial-ish gradient from center (simulate depth)
+for y in range(0, H, 2):
+    ratio = 1.0 - abs(y - H//2) / (H * 0.75)
+    b = max(0, min(255, int(ratio * 14)))
+    g = max(0, min(255, int(ratio * 10)))
+    d.line([(0, y), (W, y)], fill=(0, g, b))
+
+# ── Grid lines ────────────────────────────────────────────────────────────────
+def grid_color(major):
+    if major:
+        return (0, 55, 75)   # brighter major grid
+    return (0, 22, 32)       # dim minor grid
+
+for x in range(0, W+1, GRID):
+    major = (x % (GRID * 4) == 0)
+    col   = grid_color(major)
+    w     = 1
+    d.line([(x, 0), (x, H)], fill=col, width=w)
+
+for y in range(0, H+1, GRID):
+    major = (y % (GRID * 4) == 0)
+    col   = grid_color(major)
+    d.line([(0, y), (W, y)], fill=col, width=1)
+
+# ── Grid intersection nodes ───────────────────────────────────────────────────
+for gx in range(0, W+1, GRID):
+    for gy in range(0, H+1, GRID):
+        major = (gx % (GRID*4)==0) and (gy % (GRID*4)==0)
+        if major:
+            r = 3
+            d.ellipse([gx-r, gy-r, gx+r, gy+r], fill=(0, 100, 140))
+        elif rng.random() < 0.08:
+            r = 1
+            d.ellipse([gx-r, gy-r, gx+r, gy+r], fill=(0, 60, 85))
+
+# ── Data stream lines (horizontal, fast-moving data packets) ─────────────────
+for _ in range(22):
+    gy  = rng.choice(range(0, H+1, GRID))
+    gx1 = rng.choice(range(0, W//2, GRID))
+    gx2 = rng.choice(range(W//2, W+1, GRID))
+    # Dim base line
+    d.line([(gx1, gy), (gx2, gy)], fill=(0, 45, 65), width=1)
+    # Bright data packet on it
+    px  = rng.randint(gx1, gx2)
+    pw  = rng.randint(2, 6) * GRID
+    px2 = min(px + pw, gx2)
+    d.line([(px, gy), (px2, gy)], fill=(0, 180, 220), width=1)
+
+# A few vertical streams too
+for _ in range(8):
+    gx  = rng.choice(range(0, W+1, GRID))
+    gy1 = rng.choice(range(0, H//3, GRID))
+    gy2 = rng.choice(range(H//2, H+1, GRID))
+    d.line([(gx, gy1), (gx, gy2)], fill=(0, 35, 55), width=1)
+    py  = rng.randint(gy1, gy2)
+    ph  = rng.randint(1, 4) * GRID
+    d.line([(gx, py), (gx, min(py+ph, gy2))], fill=(0, 120, 160), width=1)
+
+# ── Glow spots — far-field light sources ─────────────────────────────────────
+for _ in range(4):
+    cx = rng.randint(0, W)
+    cy = rng.randint(0, H)
+    for r in range(60, 0, -4):
+        a = int(255 * (1 - r/60) * 0.04)
+        col = (0, min(255, a*6), min(255, a*8))
+        d.ellipse([cx-r, cy-r, cx+r, cy+r], fill=col)
+
+# ── Corner brackets (ENCOM HUD style) ────────────────────────────────────────
+BLEN = 40
+BW   = 2
+BCOL = (0, 200, 255)
+BOFF = 18
+for cx, cy, sx, sy in [
+    (BOFF, BOFF,       +1, +1),
+    (W-BOFF, BOFF,     -1, +1),
+    (BOFF, H-BOFF,     +1, -1),
+    (W-BOFF, H-BOFF,   -1, -1),
+]:
+    d.line([(cx, cy), (cx + sx*BLEN, cy)], fill=BCOL, width=BW)
+    d.line([(cx, cy), (cx, cy + sy*BLEN)], fill=BCOL, width=BW)
+
+# ── Subtle glow pass (gaussian blur on a copy, then blend) ──────────────────
+glow_layer = img.copy()
+glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(radius=2))
+img = Image.blend(img, glow_layer, alpha=0.18)
+
+# ── Save ─────────────────────────────────────────────────────────────────────
+img.save(OUT, "PNG", optimize=False)
+print(f"[wallpaper] saved: {OUT}")
+
+subprocess.Popen(["swaymsg", f"output * bg {OUT} fill"],
+                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

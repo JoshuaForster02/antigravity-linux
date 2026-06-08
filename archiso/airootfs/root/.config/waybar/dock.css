@@ -1,0 +1,90 @@
+/* Flynn OS — Waybar Dock
+   Floating pill at bottom center — ENCOM OS / TRON aesthetic
+   Icons: Nerd Fonts (ttf-nerd-fonts-symbols) */
+
+* {
+  font-family: "Symbols Nerd Font", "JetBrains Mono", monospace;
+  font-size: 17px;
+  min-height: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* ── Dock pill ─────────────────────────────────────────────────────────────── */
+window#waybar.dock {
+  background:    rgba(0, 6, 16, 0.88);
+  border:        1px solid rgba(0, 229, 255, 0.18);
+  border-radius: 18px;
+  color:         rgba(0, 180, 210, 0.70);
+}
+
+/* ── All icon buttons ─────────────────────────────────────────────────────── */
+.modules-center {
+  padding: 0 8px;
+}
+
+#custom-term,
+#custom-launcher,
+#custom-files,
+#custom-browser,
+#custom-anki,
+#custom-steam,
+#custom-volume,
+#custom-wifi,
+#custom-settings,
+#custom-lock {
+  padding:       10px 13px;
+  border-radius: 12px;
+  color:         rgba(0, 180, 210, 0.65);
+  transition:    all 0.15s ease;
+}
+
+#custom-term:hover,
+#custom-launcher:hover,
+#custom-files:hover,
+#custom-browser:hover,
+#custom-anki:hover,
+#custom-steam:hover,
+#custom-volume:hover,
+#custom-wifi:hover,
+#custom-settings:hover {
+  background: rgba(0, 229, 255, 0.10);
+  color:      #00e5ff;
+}
+
+/* ── Separators ────────────────────────────────────────────────────────────── */
+#custom-sep1,
+#custom-sep2 {
+  color:     rgba(0, 229, 255, 0.10);
+  padding:   0 1px;
+  font-size: 12px;
+}
+
+/* ── Lock — red on hover (danger action) ──────────────────────────────────── */
+#custom-lock {
+  padding:       10px 13px;
+  color:         rgba(0, 120, 150, 0.50);
+  border-radius: 12px;
+  transition:    all 0.15s ease;
+}
+#custom-lock:hover {
+  color:      rgba(255, 80, 50, 0.85);
+  background: rgba(255, 50, 30, 0.08);
+}
+
+/* ── Settings highlight ───────────────────────────────────────────────────── */
+#custom-settings {
+  color: rgba(0, 160, 190, 0.55);
+}
+
+/* ── Tooltip ───────────────────────────────────────────────────────────────── */
+tooltip {
+  font-family:   "JetBrains Mono", monospace;
+  font-size:     10px;
+  background:    rgba(0, 6, 16, 0.96);
+  border:        1px solid rgba(0, 229, 255, 0.20);
+  border-radius: 8px;
+  color:         rgba(0, 200, 230, 0.90);
+  padding:       4px 10px;
+}

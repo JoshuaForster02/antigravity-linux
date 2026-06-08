@@ -1,0 +1,77 @@
+ ╔══════════════════════════════════════════════════════════════════════════╗
+ ║   F L Y N N   O S  —  Keyboard Shortcuts & Commands                    ║
+ ╚══════════════════════════════════════════════════════════════════════════╝
+
+ DESKTOP (Super = Win / ⌘ key)
+ ──────────────────────────────────────────────────────────────────────────
+  Super+Return      Open terminal
+  Super+D           App launcher (Rofi)
+  Super+Q           Close window
+  Super+F           Fullscreen toggle
+  Super+Shift+Space Float/tile toggle
+  Super+Tab         Tabbed layout
+  Super+R           Resize mode
+  Super+V           Clipboard history picker
+  Super+Shift+R     Reload Sway config
+  Super+Shift+E     Exit Sway (logout)
+
+ APPS
+ ──────────────────────────────────────────────────────────────────────────
+  Super+N           Open Notion (browser)
+  Super+A           Open Anki
+  Super+S           Steam Big Picture
+  Super+P           Flynn Dashboard
+  Super+,           Settings panel
+  Super+?           This help page
+
+ SCREENSHOTS
+ ──────────────────────────────────────────────────────────────────────────
+  Print             Screenshot to ~/screenshots/
+  Super+Print       Region screenshot + copy to clipboard
+  Super+Shift+Print Region to clipboard only
+
+ AUDIO / BRIGHTNESS
+ ──────────────────────────────────────────────────────────────────────────
+  F1 / F2           Volume down / up (media keys)
+  Mute              Toggle mute
+  Brightness keys   +/- screen brightness
+
+ WORKSPACES  (1–5)
+ ──────────────────────────────────────────────────────────────────────────
+  Super+1..5        Switch to workspace
+  Super+Shift+1..5  Move window to workspace
+
+ FOCUS / MOVE
+ ──────────────────────────────────────────────────────────────────────────
+  Super+h/j/k/l     Focus left/down/up/right
+  Super+Shift+h..l  Move window in direction
+  Arrow keys        Also work for focus/move
+
+ FLYNN FEATURES
+ ──────────────────────────────────────────────────────────────────────────
+  Super+G           Toggle Game Mode (GameMode + MangoHud)
+  Super+Shift+S     Sunshine streaming status
+  Super+Shift+A     Ambient sound toggle
+  Super+F1          Health & timer status
+  Super+Shift+F     Face ID test
+
+ SHELL COMMANDS (from terminal)
+ ──────────────────────────────────────────────────────────────────────────
+  help              Show this help
+  status            Live system dashboard
+  matrix            Matrix rain effect
+  scan              LAN device scanner
+  wifi              WiFi manager (nmtui)
+  services          Active systemd services
+  disk              Disk usage
+  flynn-update      OTA update from GitHub
+  flynn-install     Install Flynn OS to disk
+
+ DOCK (bottom bar)
+ ──────────────────────────────────────────────────────────────────────────
+  Click icons       Launch apps
+  Scroll on 🔊      Volume up/down
+  Right-click       Secondary action (see tooltip)
+
+ ──────────────────────────────────────────────────────────────────────────
+ Press any key to close...

@@ -1,0 +1,102 @@
+{
+  "layer": "bottom",
+  "position": "bottom",
+  "height": 60,
+  "margin-bottom": 10,
+  "exclusive": true,
+  "name": "dock",
+  "passthrough": false,
+
+  "modules-center": [
+    "custom/term",
+    "custom/launcher",
+    "custom/files",
+    "custom/browser",
+    "custom/anki",
+    "custom/sep1",
+    "custom/steam",
+    "custom/sep2",
+    "custom/volume",
+    "custom/wifi",
+    "custom/settings",
+    "custom/lock"
+  ],
+
+  "custom/term": {
+    "format": "",
+    "tooltip": "Terminal  (Super+Return)",
+    "on-click": "foot -e /usr/local/bin/flynn-ui"
+  },
+
+  "custom/launcher": {
+    "format": "",
+    "tooltip": "App Launcher  (Super+D)",
+    "on-click": "rofi -show drun -theme /root/.config/rofi/tron.rasi"
+  },
+
+  "custom/files": {
+    "format": "",
+    "tooltip": "File Manager",
+    "on-click": "thunar"
+  },
+
+  "custom/browser": {
+    "format": "",
+    "tooltip": "Notion  |  right-click: Amboss",
+    "on-click": "/usr/local/bin/flynn-browser https://notion.so --title Notion",
+    "on-right-click": "/usr/local/bin/flynn-browser https://amboss.com --title Amboss"
+  },
+
+  "custom/anki": {
+    "format": "",
+    "tooltip": "Anki  (Super+A)",
+    "on-click": "anki 2>/dev/null || /usr/local/bin/flynn-browser http://localhost:8765 --title Anki"
+  },
+
+  "custom/sep1": {
+    "format": " ",
+    "tooltip": false
+  },
+
+  "custom/steam": {
+    "format": "",
+    "tooltip": "Steam  |  right-click: toggle GameMode",
+    "on-click": "steam -bigpicture 2>/dev/null",
+    "on-right-click": "/usr/local/bin/game-mode-switch.sh toggle"
+  },
+
+  "custom/sep2": {
+    "format": " ",
+    "tooltip": false
+  },
+
+  "custom/volume": {
+    "format": "",
+    "tooltip": "Volume  |  scroll: adjust  |  click: mixer",
+    "on-click": "pavucontrol",
+    "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +5%",
+    "on-scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -5%",
+    "on-right-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle"
+  },
+
+  "custom/wifi": {
+    "format": "",
+    "tooltip": "Network  |  click: nmtui  |  right-click: settings",
+    "on-click": "foot -e nmtui",
+    "on-right-click": "nm-connection-editor"
+  },
+
+  "custom/settings": {
+    "format": "",
+    "tooltip": "Settings  (Super+,)",
+    "on-click": "foot --app-id=flynn-settings -e /usr/local/bin/flynn-settings",
+    "on-right-click": "nm-connection-editor"
+  },
+
+  "custom/lock": {
+    "format": "",
+    "tooltip": "Lock  |  right-click: Logout",
+    "on-click": "swaylock --config /root/.config/swaylock/config",
+    "on-right-click": "swaymsg exit"
+  }
+}

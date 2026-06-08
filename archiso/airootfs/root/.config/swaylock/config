@@ -1,39 +1,35 @@
-# Flynn OS — Swaylock TRON lockscreen
-# Uses pre-generated TRON grid wallpaper as background
+# Flynn OS — Swaylock TRON Lock Screen
 image=/root/.config/sway/tron-bg.png
 scaling=fill
 color=00050f
 
 font=JetBrains Mono
-font-size=13
-letter-spacing=4
+font-size=14
+letter-spacing=3
 
-# Ring — thin, subtle TRON circle
-indicator-radius=60
+indicator-radius=52
 indicator-thickness=3
-ring-color=00395266
+ring-color=003040
 ring-ver-color=00e5ff
-ring-clear-color=002233
-ring-wrong-color=ff3322
+ring-clear-color=001828
+ring-wrong-color=ff2200
 
-# Highlight flash on keypress
-key-hl-color=00e5ff88
-bs-hl-color=003344
+key-hl-color=00e5ff
+bs-hl-color=ff3300
 separator-color=00000000
 
-# Text labels
-text-color=00a8c8aa
+text-color=00c8e8
 text-ver-color=00e5ff
-text-clear-color=004455
-text-wrong-color=ff4433
+text-clear-color=00a0c0
+text-wrong-color=ff4422
 
-# Interior of circle
-inside-color=00050fbb
-inside-ver-color=000c1acc
-inside-clear-color=00050fbb
-inside-wrong-color=150003bb
+inside-color=000810cc
+inside-ver-color=000c18dd
+inside-clear-color=000810cc
+inside-wrong-color=180004cc
 
 line-uses-ring
 grace=2
-fade-in=0.2
+fade-in=0.15
 indicator
+ignore-empty-password

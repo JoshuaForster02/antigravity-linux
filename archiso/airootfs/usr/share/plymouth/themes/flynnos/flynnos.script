@@ -1,44 +1,41 @@
-# Flynn OS Plymouth Theme — TRON minimal
-# No Arch Linux branding. Just Flynn OS text + spinner.
+# Flynn OS Plymouth Theme — TRON boot animation
+# No Arch branding. FLYNN OS + THE GRID text + progress bar.
 
-Window.SetBackgroundTopColor(0.0, 0.031, 0.063);
-Window.SetBackgroundBottomColor(0.0, 0.031, 0.063);
+Window.SetBackgroundTopColor(0.0, 0.031, 0.055);
+Window.SetBackgroundBottomColor(0.0, 0.016, 0.031);
 
-# TRON cyan color
 cx = 0.0; cy = 0.898; cz = 1.0;
+cx_dim = 0.0; cy_dim = 0.25; cz_dim = 0.35;
 
-# Logo text (drawn as simple spinner ring)
-logo_sprite = Sprite();
-logo_sprite.SetX(Window.GetWidth() / 2 - 80);
-logo_sprite.SetY(Window.GetHeight() / 2 - 60);
+W = Window.GetWidth();
+H = Window.GetHeight();
 
 logo_img = Image.Text("FLYNN  OS", cx, cy, cz, 1.0);
+logo_sprite = Sprite();
 logo_sprite.SetImage(logo_img);
-logo_sprite.SetOpacity(1.0);
+logo_sprite.SetX((W - logo_img.GetWidth()) / 2);
+logo_sprite.SetY(H / 2 - 80);
 
-sub_img = Image.Text("THE  GRID  ·  linux-zen", cx * 0.4, cy * 0.4, cz * 0.5, 1.0);
+sub_img = Image.Text("THE  GRID", cx_dim, cy_dim, cz_dim, 1.0);
 sub_sprite = Sprite();
 sub_sprite.SetImage(sub_img);
-sub_sprite.SetX(Window.GetWidth() / 2 - 100);
-sub_sprite.SetY(Window.GetHeight() / 2 - 20);
-
-# Spinner
-spin_img = SpriteImage("/usr/share/plymouth/themes/spinner/animation-0001.png") if File.Exists("/usr/share/plymouth/themes/spinner/animation-0001.png");
+sub_sprite.SetX((W - sub_img.GetWidth()) / 2);
+sub_sprite.SetY(H / 2 - 45);
 
 progress_bar = Sprite();
-bar_x = Window.GetWidth() / 2 - 80;
-bar_y = Window.GetHeight() / 2 + 40;
+bar_x = (W - 200) / 2;
+bar_y = H / 2 + 20;
+progress_bar.SetX(bar_x);
+progress_bar.SetY(bar_y);
 
-fun refresh_callback() {
-    theta = Math.Pi * 2.0 * (Plymouth.GetBootProgress());
-}
+fun refresh_callback() {}
 Plymouth.SetRefreshFunction(refresh_callback);
 
 fun boot_progress_callback(time, progress) {
-    bar_img = Image(160, 3);
-    bar_img.Scale(160 * progress, 3);
+    bar_w = Math.Int(200 * progress);
+    if (bar_w < 1) { bar_w = 1; }
+    bar_img = Image(bar_w, 2);
     progress_bar.SetImage(bar_img);
-    progress_bar.SetX(bar_x);
-    progress_bar.SetY(bar_y);
+    progress_bar.SetOpacity(0.9);
 }
 Plymouth.SetBootProgressFunction(boot_progress_callback);
