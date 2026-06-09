@@ -1,7 +1,7 @@
 {
   "layer": "top",
   "position": "top",
-  "height": 32,
+  "height": 26,
   "spacing": 0,
   "exclusive": true,
   "modules-left": [
@@ -24,7 +24,7 @@
     "custom/power"
   ],
   "custom/logo": {
-    "format": "  \uf0e7  FLYNN OS  ",
+    "format": "  FLYNN // SOLAROS  ",
     "tooltip": "App Launcher  (Super+D)",
     "on-click": "fuzzel"
   },
@@ -50,14 +50,14 @@
     "on-click": "/usr/local/bin/game-mode-switch.sh toggle"
   },
   "clock": {
-    "format": "\uf017  {:%H:%M}",
-    "format-alt": "\uf073  {:%a %d %b  %H:%M:%S}",
+    "format": "{:%H:%M:%S}",
+    "format-alt": "SYS // {:%Y-%m-%d}",
     "tooltip-format": "<tt><small>{calendar}</small></tt>",
     "interval": 1,
     "on-click": "exec sh -c 'swaymsg output - dpms toggle'"
   },
   "cpu": {
-    "format": "\uf4bc {usage}%",
+    "format": "CPU {usage}%",
     "interval": 3,
     "tooltip-format": "CPU {usage}%",
     "states": {
@@ -66,7 +66,7 @@
     }
   },
   "memory": {
-    "format": "\uf538 {percentage}%",
+    "format": "MEM {percentage}%",
     "interval": 5,
     "tooltip-format": "{used:0.1f}G / {total:0.1f}G"
   },
@@ -95,8 +95,8 @@
     "on-click": "foot -e upower -i $(upower -e | grep BAT | head -1)"
   },
   "pulseaudio": {
-    "format": "\uf028 {volume}%",
-    "format-muted": "\uf6a9",
+    "format": "AUD {volume}%",
+    "format-muted": "MUTE",
     "on-click": "pavucontrol",
     "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
     "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +3%",
@@ -123,7 +123,7 @@
     "icon-size": 16
   },
   "custom/power": {
-    "format": "\uf011",
+    "format": "PWR",
     "tooltip": "Power  (Super+Escape)",
     "on-click": "/usr/local/bin/flynn-power"
   }

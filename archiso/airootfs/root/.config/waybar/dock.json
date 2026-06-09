@@ -1,8 +1,8 @@
 {
   "layer": "bottom",
   "position": "bottom",
-  "height": 64,
-  "margin-bottom": 14,
+  "height": 36,
+  "margin-bottom": 0,
   "exclusive": true,
   "name": "dock",
   "passthrough": false,
@@ -22,28 +22,28 @@
     "custom/lock"
   ],
   "custom/term": {
-    "format": "\uf120",
+    "format": "TERM",
     "tooltip": "Terminal  (Super+Return)",
     "on-click": "foot --app-id=flynn-ui -e /usr/local/bin/flynn-ui"
   },
   "custom/launcher": {
-    "format": "\uf002",
+    "format": "LAUNCH",
     "tooltip": "App Launcher  (Super+D)",
     "on-click": "fuzzel"
   },
   "custom/files": {
-    "format": "\uf07c",
+    "format": "FILES",
     "tooltip": "File Manager",
     "on-click": "thunar"
   },
   "custom/browser": {
-    "format": "\uf0ac",
+    "format": "NET",
     "tooltip": "Notion  |  right-click: Amboss",
     "on-click": "/usr/local/bin/flynn-browser https://notion.so --title Notion",
     "on-right-click": "/usr/local/bin/flynn-browser https://amboss.com --title Amboss"
   },
   "custom/anki": {
-    "format": "\uf5da",
+    "format": "ANKI",
     "tooltip": "Anki  (Super+A)",
     "on-click": "anki 2>/dev/null || /usr/local/bin/flynn-browser http://localhost:8765 --title Anki"
   },
@@ -52,7 +52,7 @@
     "tooltip": false
   },
   "custom/steam": {
-    "format": "\uf1b6",
+    "format": "GAME",
     "tooltip": "Steam  |  right-click: toggle GameMode",
     "on-click": "bash -c 'command -v steam >/dev/null && steam -bigpicture || foot -e bash -c \"Run flynn-setup for Steam\"; read'",
     "on-right-click": "/usr/local/bin/game-mode-switch.sh toggle"
@@ -62,7 +62,7 @@
     "tooltip": false
   },
   "custom/volume": {
-    "format": "\uf028",
+    "format": "AUD",
     "tooltip": "Volume  |  scroll: adjust  |  click: mixer",
     "on-click": "pavucontrol",
     "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +5%",
@@ -70,25 +70,25 @@
     "on-right-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle"
   },
   "custom/wifi": {
-    "format": "\uf1eb",
+    "format": "LINK",
     "tooltip": "Network  |  click: nmtui  |  right-click: settings",
     "on-click": "foot -e nmtui",
     "on-right-click": "nm-connection-editor"
   },
   "custom/settings": {
-    "format": "\uf013",
+    "format": "CFG",
     "tooltip": "Settings  (Super+,)",
     "on-click": "foot --app-id=flynn-settings -e /usr/local/bin/flynn-settings",
     "on-right-click": "nm-connection-editor"
   },
   "custom/lock": {
-    "format": "\uf023",
+    "format": "PWR",
     "tooltip": "Power menu  |  right-click: Lock",
     "on-click": "/usr/local/bin/flynn-power",
     "on-right-click": "/usr/local/bin/flynn-lock"
   },
   "custom/mode": {
-    "format": "\uf11b",
+    "format": "MODE",
     "tooltip": "Game / Study mode  (Super+G)",
     "on-click": "/usr/local/bin/game-mode-switch.sh toggle",
     "on-right-click": "/usr/local/bin/flynn-study"

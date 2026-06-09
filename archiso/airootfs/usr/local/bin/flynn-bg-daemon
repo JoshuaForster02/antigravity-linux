@@ -27,13 +27,13 @@ import cairo
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 BG       = (0.0,  0.031, 0.063)   # #000810
-GRID_COL = (0.0,  0.18,  0.28)    # dim cyan grid
-LINE_COL = (0.0,  0.55,  0.70)    # bright grid accent lines
+GRID_COL = (0.0,  0.28,  0.42)    # dim cyan grid
+LINE_COL = (0.0,  0.72,  0.88)    # bright grid accent lines
 CYAN     = (0.0,  0.898, 1.0)     # #00e5ff — full TRON cyan
 DCYAN    = (0.0,  0.40,  0.60)    # dim cyan for nodes
 
 GRID     = 72          # grid cell size px
-FPS      = 20
+FPS      = 30
 INTERVAL = 1000 // FPS
 
 W, H     = 1920, 1080  # updated from display at runtime

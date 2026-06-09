@@ -1,0 +1,4 @@
+#!/bin/bash
+[ -f /run/flynn-boot-seq.done ] && exit 0
+touch /run/flynn-boot-seq.done
+notify-send -a "Flynn OS" -u low -t 2200 -c "Flynn OS"   "SOLAROS 4.0" "GRID ONLINE  //  SECURE LINE ESTABLISHED" 2>/dev/null || true

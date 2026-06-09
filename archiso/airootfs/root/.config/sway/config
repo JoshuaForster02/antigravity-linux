@@ -14,7 +14,7 @@ set $term  foot
 set $menu  fuzzel
 
 # ── TRON Colors ───────────────────────────────────────────────────────────────
-set $bg      #000810
+set $bg       #000000
 set $cyan    #00e5ff
 set $dcyan   #004466
 set $border  #00e5ff
@@ -23,7 +23,7 @@ set $text    #e0f8ff
 set $urgent  #ff3300
 
 # ── Background — solid color only (live TRON grid handled by flynn-bg-daemon) ──
-output * bg #000810 solid_color
+output * bg #000000 solid_color
 
 # ── Window appearance ─────────────────────────────────────────────────────────
 # class                  border   bg       text    indicator child_border
@@ -34,7 +34,7 @@ client.urgent            $urgent  $bg      $text   $urgent   $urgent
 
 default_border pixel 1
 default_floating_border pixel 1
-gaps inner 16
+gaps inner 12
 gaps outer 8
 smart_gaps on
 smart_borders on
@@ -43,7 +43,7 @@ smart_borders on
 workspace_layout default
 
 # ── Font ──────────────────────────────────────────────────────────────────────
-font pango:JetBrains Mono 11
+font pango:JetBrains Mono 10
 
 # ── Input ─────────────────────────────────────────────────────────────────────
 input type:keyboard {
@@ -80,6 +80,7 @@ exec wl-paste --type text --watch cliphist store
 exec wl-paste --type image --watch cliphist store
 
 # VM clipboard (UTM/QEMU)
+exec bash -c 'sleep 0.5 && /usr/local/bin/flynn-chrome 2>/tmp/chrome.log'
 exec bash -c 'sleep 0.8 && /usr/local/bin/flynn-bg-daemon 2>/tmp/bg-daemon.log'
 exec bash -c 'sleep 0.6 && swaymsg rename workspace number 1 GRID && swaymsg rename workspace number 2 STUDY && swaymsg rename workspace number 3 ANKI && swaymsg rename workspace number 4 GAME && swaymsg rename workspace number 5 SYS'
 
@@ -91,7 +92,7 @@ exec_always sh -c 'pkill -f "waybar.*dock.json"     2>/dev/null; sleep 0.4; wayb
 exec_always sh -c 'pkill -x mako 2>/dev/null; sleep 0.3; mako --config /root/.config/mako/config 2>/dev/null &'
 
 # ── TRON wallpaper (pre-generated during build, re-applies on reload)
-exec_always bash -c 'sleep 0.2 && swaymsg "output * bg /root/.config/sway/tron-bg.png fill" 2>/dev/null || swaymsg "output * bg #000810 solid_color"'
+exec_always bash -c 'sleep 0.2 && swaymsg "output * bg /root/.config/sway/tron-bg.png fill" 2>/dev/null || swaymsg "output * bg #000000 solid_color"'
 
 # ── Flynn daemon (REST API + system monitor)
 exec bash -c 'sleep 1.0 && /usr/local/bin/flynn-daemon 2>/tmp/daemon.log'

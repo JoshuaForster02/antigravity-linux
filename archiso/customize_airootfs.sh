@@ -156,7 +156,7 @@ GTK
 cp /root/.config/gtk-3.0/settings.ini /root/.config/gtk-4.0/settings.ini
 cp /usr/share/themes/FlynnTron/gtk-3.0/gtk.css /root/.config/gtk-3.0/gtk.css 2>/dev/null || true
 cp /usr/share/themes/FlynnTron/gtk-4.0/gtk.css /root/.config/gtk-4.0/gtk.css 2>/dev/null || true
-chmod +x /usr/local/bin/flynn-power /usr/local/bin/flynn-welcome /usr/local/bin/flynn-lock /usr/local/bin/flynn-notify /usr/local/bin/flynn-palette 2>/dev/null || true
+chmod +x /usr/local/bin/flynn-power /usr/local/bin/flynn-welcome /usr/local/bin/flynn-lock /usr/local/bin/flynn-notify /usr/local/bin/flynn-palette /usr/local/bin/flynn-chrome /usr/local/bin/flynn-boot-seq 2>/dev/null || true
 echo "  ✓ GTK FlynnTron theme + Papirus-Dark icons"
 
 # ── Ensure all new config dirs exist ─────────────────────────────────────────

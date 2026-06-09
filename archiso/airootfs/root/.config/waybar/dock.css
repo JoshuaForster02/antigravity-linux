@@ -1,66 +1,61 @@
-/* Flynn OS — Floating Dock (macOS × TRON) */
+/* Flynn OS command rail */
+
+@keyframes dock-glow {
+  0%, 100% { border-top-color: rgba(126, 232, 255, 0.18); }
+  50%      { border-top-color: rgba(232, 248, 255, 0.42); }
+}
 
 * {
-    font-family: "Symbols Nerd Font", "JetBrains Mono", monospace;
-    font-size: 18px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
     min-height: 0;
     border: none;
+    border-radius: 0;
     padding: 0;
     margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
 window#waybar.dock {
-    background: rgba(0, 6, 18, 0.90);
-    border: 1px solid rgba(0, 229, 255, 0.22);
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 24px rgba(0, 229, 255, 0.08);
-    color: rgba(0, 180, 210, 0.72);
+    background: rgba(0, 0, 0, 0.94);
+    border-top: 1px solid rgba(126, 232, 255, 0.22);
+    border-radius: 0;
+    box-shadow: none;
+    color: rgba(140, 200, 220, 0.65);
+    animation: dock-glow 5s ease-in-out infinite;
+    margin-bottom: 0;
 }
 
-.modules-center { padding: 0 10px; }
+.modules-center { padding: 0 12px; }
 
 #custom-term, #custom-launcher, #custom-files, #custom-browser,
 #custom-anki, #custom-mode, #custom-steam, #custom-volume, #custom-wifi,
 #custom-settings, #custom-lock {
-    padding: 11px 14px;
-    border-radius: 14px;
-    color: rgba(0, 175, 205, 0.62);
-    transition: all 0.15s ease;
+    padding: 10px 18px;
+    border-radius: 0;
+    color: rgba(120, 175, 195, 0.58);
+    border-right: 1px solid rgba(126, 232, 255, 0.05);
+    transition: color 0.12s linear, background 0.12s linear;
 }
 
 #custom-term:hover, #custom-launcher:hover, #custom-files:hover,
 #custom-browser:hover, #custom-anki:hover, #custom-mode:hover,
 #custom-steam:hover, #custom-volume:hover, #custom-wifi:hover,
 #custom-settings:hover {
-    background: rgba(0, 229, 255, 0.12);
-    color: #00e5ff;
-    text-shadow: 0 0 14px rgba(0, 229, 255, 0.45);
-    padding: 13px 16px;
+    color: #e8f8ff;
+    background: rgba(126, 232, 255, 0.06);
 }
 
-#custom-sep1, #custom-sep2 {
-    color: rgba(0, 229, 255, 0.12);
-    padding: 0 2px;
-    font-size: 10px;
-}
-
-#custom-lock {
-    color: rgba(0, 110, 140, 0.50);
-}
-#custom-lock:hover {
-    color: rgba(255, 90, 60, 0.90);
-    background: rgba(255, 50, 30, 0.10);
-    text-shadow: 0 0 10px rgba(255, 60, 40, 0.35);
-}
-
-#custom-mode { color: rgba(0, 200, 120, 0.55); font-size: 16px; }
+#custom-sep1, #custom-sep2 { color: rgba(126, 232, 255, 0.08); padding: 0 4px; }
+#custom-lock:hover { color: #ff6040; background: rgba(255, 64, 48, 0.06); }
 
 tooltip {
     font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
-    background: rgba(0, 6, 16, 0.96);
-    border: 1px solid rgba(0, 229, 255, 0.20);
-    border-radius: 8px;
-    color: rgba(0, 200, 230, 0.90);
-    padding: 5px 10px;
+    font-size: 8px;
+    text-transform: uppercase;
+    background: #000;
+    border: 1px solid rgba(126, 232, 255, 0.35);
+    border-radius: 0;
+    color: #b8e8f8;
 }

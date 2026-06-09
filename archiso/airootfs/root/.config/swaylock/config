@@ -1,40 +1,18 @@
-# Flynn OS — TRON Lock Screen
 image=/root/.config/sway/tron-bg.png
 scaling=fill
-color=00050f
-
+color=000000
 font=JetBrains Mono
-font-size=13
-letter-spacing=4
-
+font-size=12
+letter-spacing=5
 clock=true
-timestr=%H:%M
-datestr=%a %d %B
-
-indicator-radius=56
-indicator-thickness=3
-ring-color=003040
-ring-ver-color=00e5ff
-ring-clear-color=001828
-ring-wrong-color=ff2200
-
-key-hl-color=00e5ff
-bs-hl-color=ff3300
-separator-color=00000000
-
-text-color=00c8e8
-text-ver-color=00e5ff
-text-clear-color=00a0c0
-text-wrong-color=ff4422
-
-inside-color=000810cc
-inside-ver-color=000c18dd
-inside-clear-color=000810cc
-inside-wrong-color=180004cc
-
-line-uses-ring
-grace=2
-fade-in=0.2
+timestr=%H:%M:%S
+datestr=SOLAROS // %Y-%m-%d
+indicator-radius=54
+indicator-thickness=2
+ring-color=1a3a48
+ring-ver-color=e8f8ff
+text-color=b8e8f8
+inside-color=000000cc
+fade-in=0.25
 indicator
 show-failed-attempts
-ignore-empty-password
