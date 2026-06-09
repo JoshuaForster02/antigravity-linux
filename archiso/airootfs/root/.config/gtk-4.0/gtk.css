@@ -1,176 +1,324 @@
-/* ══════════════════════════════════════════════════════════════════════════════
-   Flynn OS — GTK4  (ENCOM OS / ANTIGRAVITY aesthetic)
-   Frosted glass panels, rounded corners, soft TRON palette
-   ══════════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Flynn OS  —  GTK4 TRON Theme
+   Install: copy to ~/.config/gtk-4.0/gtk.css
+            OR /usr/share/themes/FlynnTron/gtk-4.0/gtk.css
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-* {
-    font-family: "JetBrains Mono", "SF Mono", monospace;
-    -gtk-icon-style: regular;
-}
+/* ─── Color tokens ─────────────────────────────────────────────────────────── */
+@define-color bg_dark          #06091a;
+@define-color bg_base          #0a0f1a;
+@define-color bg_raised        #0d1624;
+@define-color bg_hover         #111d2e;
+@define-color bg_selected      #0d2233;
 
-/* ── Window / panel ───────────────────────────────────────────────────────── */
+@define-color border_dim       #1a3344;
+@define-color border_normal    #22446655;
+@define-color border_bright    #22aacc66;
+
+@define-color fg_dim           #335566;
+@define-color fg_normal        #7799aa;
+@define-color fg_bright        #aaddee;
+@define-color fg_white         #ddeeff;
+
+@define-color accent_cyan      #22aacc;
+@define-color accent_bright    #33ddff;
+@define-color accent_glow      rgba(34, 170, 204, 0.15);
+
+@define-color success_color    #22cc88;
+@define-color warning_color    #ccaa22;
+@define-color error_color      #ee4455;
+
+/* ─── Root window ──────────────────────────────────────────────────────────── */
 window {
-    background:    rgba(0, 10, 22, 0.94);
-    color:         rgba(0, 210, 240, 0.90);
-    border-radius: 12px;
+  background-color: @bg_base;
+  color: @fg_bright;
 }
 
-window.dialog {
-    border: 1px solid rgba(0, 229, 255, 0.22);
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.70),
-                0  0  0 1px rgba(0, 229, 255, 0.08);
+.background {
+  background-color: @bg_dark;
 }
 
-/* ── Header bar ───────────────────────────────────────────────────────────── */
+/* ─── Headerbar / Titlebar ─────────────────────────────────────────────────── */
 headerbar {
-    background:    rgba(0, 6, 16, 0.96);
-    border-bottom: 1px solid rgba(0, 229, 255, 0.12);
-    color:         rgba(0, 200, 230, 0.85);
-    box-shadow:    none;
-    border-radius: 12px 12px 0 0;
-    min-height:    36px;
-    padding:       0 12px;
+  background-color: @bg_dark;
+  border-bottom: 1px solid @border_dim;
+  color: @fg_bright;
+  padding: 4px 8px;
+  min-height: 36px;
 }
-
 headerbar .title {
-    font-weight: 600;
-    font-size:   12px;
-    color:       rgba(0, 229, 255, 0.90);
-    letter-spacing: 1px;
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: @accent_cyan;
+  letter-spacing: 1px;
 }
+headerbar button {
+  background: transparent;
+  border: 1px solid @border_dim;
+  color: @fg_dim;
+  border-radius: 4px;
+  padding: 4px 8px;
+  min-height: 0;
+  font-size: 11px;
+}
+headerbar button:hover {
+  background-color: @bg_hover;
+  border-color: @border_bright;
+  color: @accent_cyan;
+}
+headerbar .close { color: #ee4455; border-color: #ee445533; }
+headerbar .minimize { color: @warning_color; border-color: #ccaa2233; }
+headerbar .maximize { color: @success_color; border-color: #22cc8833; }
 
-/* ── Buttons ──────────────────────────────────────────────────────────────── */
+/* ─── Buttons ──────────────────────────────────────────────────────────────── */
 button {
-    background:    rgba(0, 229, 255, 0.06);
-    border:        1px solid rgba(0, 229, 255, 0.15);
-    color:         rgba(0, 200, 230, 0.80);
-    border-radius: 8px;
-    padding:       5px 14px;
-    transition:    all 0.12s ease;
+  background-color: @bg_raised;
+  color: @fg_bright;
+  border: 1px solid @border_dim;
+  border-radius: 5px;
+  padding: 6px 14px;
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: 11px;
+  transition: background-color 150ms, border-color 150ms, color 150ms;
 }
 button:hover {
-    background: rgba(0, 229, 255, 0.12);
-    border-color: rgba(0, 229, 255, 0.40);
-    color: #00e5ff;
+  background-color: @bg_hover;
+  border-color: @accent_cyan;
+  color: @accent_bright;
+  box-shadow: 0 0 8px @accent_glow;
 }
 button:active {
-    background: rgba(0, 229, 255, 0.20);
+  background-color: @bg_selected;
+  color: @accent_bright;
 }
 button.suggested-action {
-    background:  rgba(0, 229, 255, 0.18);
-    border-color: rgba(0, 229, 255, 0.55);
-    color:        #00e5ff;
+  background-color: #0d2233;
+  border-color: @accent_cyan;
+  color: @accent_bright;
+}
+button.suggested-action:hover {
+  background-color: #1a3344;
+  box-shadow: 0 0 12px rgba(34, 170, 204, 0.3);
 }
 button.destructive-action {
-    background:  rgba(255, 60, 30, 0.12);
-    border-color: rgba(255, 60, 30, 0.40);
-    color:        #ff4422;
+  background-color: #220a0a;
+  border-color: @error_color;
+  color: @error_color;
 }
 
-/* ── Entry / text field ───────────────────────────────────────────────────── */
+/* ─── Entry / TextField ────────────────────────────────────────────────────── */
 entry {
-    background:    rgba(0, 8, 18, 0.80);
-    border:        1px solid rgba(0, 229, 255, 0.18);
-    color:         rgba(0, 220, 255, 0.90);
-    border-radius: 8px;
-    padding:       6px 12px;
-    caret-color:   #00e5ff;
+  background-color: @bg_raised;
+  color: @fg_bright;
+  border: 1px solid @border_dim;
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: 12px;
+  caret-color: @accent_cyan;
 }
 entry:focus {
-    border-color:  rgba(0, 229, 255, 0.60);
-    box-shadow:    0 0 0 2px rgba(0, 229, 255, 0.10);
-    outline:       none;
+  border-color: @accent_cyan;
+  box-shadow: 0 0 0 2px @accent_glow;
+  outline: none;
 }
-entry placeholder {
-    color: rgba(0, 140, 170, 0.45);
+entry placeholder { color: @fg_dim; }
+entry selection { background-color: @bg_selected; color: @fg_white; }
+
+/* ─── Lists & rows ─────────────────────────────────────────────────────────── */
+listview,
+treeview,
+columnview {
+  background-color: @bg_base;
+  color: @fg_normal;
+  border: 1px solid @border_dim;
+  border-radius: 6px;
+}
+listview > row,
+treeview > row,
+columnview > row {
+  padding: 6px 10px;
+  border-bottom: 1px solid @bg_raised;
+  font-size: 11px;
+}
+listview > row:selected,
+treeview > row:selected,
+columnview > row:selected {
+  background-color: @bg_selected;
+  color: @accent_bright;
+}
+listview > row:hover,
+treeview > row:hover {
+  background-color: @bg_hover;
+  color: @fg_bright;
 }
 
-/* ── Lists ────────────────────────────────────────────────────────────────── */
-listview, list {
-    background: transparent;
-    color:      rgba(0, 190, 220, 0.80);
-}
-row {
-    border-radius: 6px;
-    margin:        1px 4px;
-    padding:       4px 8px;
-    transition:    background 0.10s ease;
-}
-row:hover {
-    background: rgba(0, 229, 255, 0.07);
-}
-row:selected {
-    background: rgba(0, 229, 255, 0.14);
-    color:      #00e5ff;
-}
-
-/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+/* ─── Scrollbar ────────────────────────────────────────────────────────────── */
 scrollbar {
-    background: transparent;
-}
-scrollbar trough {
-    background: rgba(0, 229, 255, 0.05);
-    min-width:  4px;
-    border-radius: 4px;
+  background-color: @bg_dark;
+  border: none;
 }
 scrollbar slider {
-    background:    rgba(0, 160, 190, 0.35);
-    border-radius: 4px;
-    min-width:     4px;
+  background-color: @border_dim;
+  border-radius: 4px;
+  min-width: 6px;
+  min-height: 6px;
 }
-scrollbar slider:hover {
-    background: rgba(0, 229, 255, 0.65);
-}
+scrollbar slider:hover { background-color: @accent_cyan; }
 
-/* ── Popover / menu ───────────────────────────────────────────────────────── */
+/* ─── Notebook (tabs) ──────────────────────────────────────────────────────── */
+notebook {
+  background-color: @bg_base;
+  border: 1px solid @border_dim;
+}
+notebook header {
+  background-color: @bg_dark;
+  border-bottom: 1px solid @border_dim;
+}
+notebook tab {
+  padding: 6px 14px;
+  color: @fg_dim;
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: 11px;
+  border: none;
+}
+notebook tab:checked {
+  color: @accent_cyan;
+  border-bottom: 2px solid @accent_cyan;
+  background-color: @bg_raised;
+}
+notebook tab:hover { color: @fg_bright; }
+
+/* ─── Popover / Menu ───────────────────────────────────────────────────────── */
 popover {
-    background:    rgba(0, 10, 24, 0.96);
-    border:        1px solid rgba(0, 229, 255, 0.18);
-    border-radius: 10px;
-    box-shadow:    0 16px 48px rgba(0,0,0,0.60);
-    padding:       6px;
+  background-color: @bg_raised;
+  border: 1px solid @border_bright;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+menu {
+  background-color: @bg_raised;
+  color: @fg_bright;
+  border: 1px solid @border_dim;
+  border-radius: 6px;
+}
+menuitem {
+  padding: 6px 14px;
+  font-size: 12px;
+}
+menuitem:hover {
+  background-color: @bg_selected;
+  color: @accent_bright;
 }
 
-/* ── Tooltip ──────────────────────────────────────────────────────────────── */
-tooltip {
-    background:    rgba(0, 12, 26, 0.95);
-    color:         rgba(0, 210, 240, 0.90);
-    border:        1px solid rgba(0, 229, 255, 0.20);
-    border-radius: 6px;
-    padding:       4px 10px;
-    font-size:     10px;
+/* ─── Progress / Scale ─────────────────────────────────────────────────────── */
+progressbar trough { background-color: @bg_raised; border-radius: 4px; }
+progressbar progress {
+  background-color: @accent_cyan;
+  border-radius: 4px;
+  box-shadow: 0 0 6px rgba(34, 170, 204, 0.4);
+}
+scale trough { background-color: @bg_raised; }
+scale highlight { background-color: @accent_cyan; }
+scale slider {
+  background-color: @accent_bright;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(34, 170, 204, 0.5);
 }
 
-/* ── Switch ───────────────────────────────────────────────────────────────── */
+/* ─── Checkboxes / Switches ────────────────────────────────────────────────── */
+checkbutton check {
+  background-color: @bg_raised;
+  border: 1px solid @border_dim;
+  border-radius: 3px;
+}
+checkbutton:checked check {
+  background-color: @accent_cyan;
+  border-color: @accent_bright;
+  color: @bg_dark;
+}
 switch {
-    background:    rgba(0, 229, 255, 0.10);
-    border:        1px solid rgba(0, 229, 255, 0.25);
-    border-radius: 999px;
+  background-color: @bg_raised;
+  border: 1px solid @border_dim;
+  border-radius: 14px;
 }
 switch:checked {
-    background: rgba(0, 229, 255, 0.30);
-    border-color: rgba(0, 229, 255, 0.60);
+  background-color: #0d2233;
+  border-color: @accent_cyan;
+  box-shadow: 0 0 6px @accent_glow;
 }
 switch slider {
-    background:    rgba(0, 200, 230, 0.90);
-    border-radius: 999px;
-    margin:        2px;
+  background-color: @fg_dim;
+  border-radius: 50%;
+}
+switch:checked slider { background-color: @accent_bright; }
+
+/* ─── Labels ───────────────────────────────────────────────────────────────── */
+label { color: @fg_bright; }
+label.dim-label, label.caption { color: @fg_dim; font-size: 10px; }
+label.title-1 { font-size: 24px; font-weight: 700; color: @accent_bright; }
+label.title-2 { font-size: 18px; font-weight: 600; color: @fg_white; }
+label.heading  { font-size: 13px; font-weight: 600; color: @fg_white; letter-spacing: 1px; }
+label.monospace { font-family: "SF Mono", "Fira Code", monospace; }
+
+/* ─── Separators ───────────────────────────────────────────────────────────── */
+separator { background-color: @border_dim; min-height: 1px; min-width: 1px; }
+
+/* ─── Statusbar ────────────────────────────────────────────────────────────── */
+statusbar {
+  background-color: @bg_dark;
+  border-top: 1px solid @border_dim;
+  color: @fg_dim;
+  font-size: 10px;
+  font-family: "SF Mono", "Fira Code", monospace;
 }
 
-/* ── Progress bar ─────────────────────────────────────────────────────────── */
-progressbar trough {
-    background:    rgba(0, 229, 255, 0.08);
-    border-radius: 4px;
-    min-height:    4px;
-}
-progressbar progress {
-    background:    rgba(0, 229, 255, 0.75);
-    border-radius: 4px;
+/* ─── Toolbar ──────────────────────────────────────────────────────────────── */
+toolbar {
+  background-color: @bg_dark;
+  border-bottom: 1px solid @border_dim;
+  padding: 4px;
 }
 
-/* ── Separator ────────────────────────────────────────────────────────────── */
-separator {
-    background: rgba(0, 229, 255, 0.10);
-    min-height: 1px;
-    min-width:  1px;
+/* ─── Terminal-like widgets ────────────────────────────────────────────────── */
+.terminal,
+textview {
+  background-color: @bg_dark;
+  color: @fg_bright;
+  font-family: "SF Mono", "Fira Code", "Courier New", monospace;
+  font-size: 12px;
+  caret-color: @accent_cyan;
+  padding: 8px;
 }
+textview selection { background-color: @bg_selected; }
+
+/* ─── Tooltips ─────────────────────────────────────────────────────────────── */
+tooltip {
+  background-color: @bg_raised;
+  color: @fg_bright;
+  border: 1px solid @border_bright;
+  border-radius: 4px;
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: 11px;
+}
+
+/* ─── Dialogs ──────────────────────────────────────────────────────────────── */
+dialog {
+  background-color: @bg_base;
+  border: 1px solid @border_bright;
+  border-radius: 10px;
+}
+dialog .dialog-action-area {
+  border-top: 1px solid @border_dim;
+  padding: 8px;
+}
+
+/* ─── Sidebar ──────────────────────────────────────────────────────────────── */
+.sidebar {
+  background-color: @bg_dark;
+  border-right: 1px solid @border_dim;
+}
+.sidebar row { padding: 8px 14px; color: @fg_normal; border-radius: 4px; }
+.sidebar row:selected { background-color: @bg_selected; color: @accent_bright; }
+.sidebar row:hover { background-color: @bg_hover; }

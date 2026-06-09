@@ -48,7 +48,7 @@ tron_splash() {
     center "╚═╝     ╚══════╝╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═══╝" "$DIM"
     echo ""; center "O  S   ·   L I N U X   2 . 0   ·   T H E   G R I D" "$DIM"; echo ""
     hline "═" "$DIM"; echo ""
-    local items=("KERNEL:Linux $(uname -r 2>/dev/null|cut -d- -f1||echo '6.x')" "ARCH:$(uname -m)  ·  $(nproc 2>/dev/null||echo 1) core(s)" "MEMORY:$(get_mem_str)  ·  load $(get_load)" "NETWORK:$(get_ip||echo 'acquiring...')  via $(get_iface)" "SSH:port 22  ·  user root  ·  pass flynn" "DAEMON:REST API  ·  port 7777" "SYSTEM:The Grid is online")
+    local items=("KERNEL:Linux $(uname -r 2>/dev/null|cut -d- -f1||echo '6.x')" "ARCH:$(uname -m)  ·  $(nproc 2>/dev/null||echo 1) core(s)" "MEMORY:$(get_mem_str)  ·  load $(get_load)" "NETWORK:$(get_ip||echo 'acquiring...')  via $(get_iface)" "SSH:port 22  ·  user root  ·  pass tron" "DAEMON:REST API  ·  port 7777" "SYSTEM:The Grid is online")
     local n=${#items[@]}
     for ((i=0; i<n; i++)); do
         local k="${items[$i]%%:*}" v="${items[$i]#*:}"
@@ -79,7 +79,7 @@ cmd_status() {
     printf "  ${DIM}HOSTNAME  ${WHT}%-22s${DIM}  KERNEL  ${WHT}%s${RST}\n" "$(hostname)" "$(uname -r 2>/dev/null)"
     printf "  ${DIM}UPTIME    ${CY}%-22s${DIM}  ARCH    ${WHT}%s${RST}\n" "$(uptime_str)" "$(uname -m)"
     printf "  ${DIM}IP ADDR   ${CY}%-22s${DIM}  GW      ${WHT}%s${RST}\n" "$(get_ip||echo none)" "$(get_gw||echo none)"
-    printf "  ${DIM}SSH       ${LGN}%-22s${DIM}  DAEMON  " "port 22 (root/flynn)"
+    printf "  ${DIM}SSH       ${LGN}%-22s${DIM}  DAEMON  " "port 22 (root/tron)"
     pgrep -f 'flynn_daemon' &>/dev/null && printf "${LGN}running :7777${RST}\n" || printf "${YEL}offline${RST}\n"
     echo ""; hline "─" "$DIM"; echo ""
     printf "  ${LCY}TOP PROCESSES${RST}\n\n"
@@ -247,7 +247,7 @@ cmd_daemon() {
 cmd_ssh_info() {
     echo ""; hline "─" "$DIM"; printf "  ${LCY}SSH ACCESS${RST}\n\n"
     printf "  ${DIM}From LAN:        ${WHT}ssh root@%s${RST}\n" "$(get_ip||echo 'unknown')"
-    printf "  ${DIM}Password:        ${LCY}flynn${RST}\n\n"
+    printf "  ${DIM}Password:        ${LCY}tron${RST}\n\n"
     printf "  ${DIM}Via Pi (optional): ${WHT}ssh root@<pi-ip>${DIM}  (MQTT relay)${RST}\n"
     hline "─" "$DIM"; echo ""
 }

@@ -1,104 +1,120 @@
-/* ══════════════════════════════════════════════════════════════════════════════
-   Flynn OS — Waybar  (macOS menu-bar aesthetic, TRON palette)
-   ══════════════════════════════════════════════════════════════════════════════ */
+/* Flynn OS — Waybar top bar (TRON / ENCOM) */
 
 * {
     font-family: "JetBrains Mono", "Symbols Nerd Font", monospace;
-    font-size:   11px;
+    font-size: 11px;
     font-weight: 500;
-    min-height:  0;
-    border:      none;
+    min-height: 0;
+    border: none;
     border-radius: 0;
-    padding:     0;
-    margin:      0;
+    padding: 0;
+    margin: 0;
 }
 
-/* ── Bar ──────────────────────────────────────────────────────────────────── */
 window#waybar {
-    background:    rgba(0, 4, 12, 0.92);
-    border-bottom: 1px solid rgba(0, 229, 255, 0.10);
-    color:         rgba(0, 180, 210, 0.75);
+    background: linear-gradient(180deg, rgba(0, 8, 20, 0.96) 0%, rgba(0, 4, 12, 0.92) 100%);
+    border-bottom: 1px solid rgba(0, 229, 255, 0.14);
+    box-shadow: 0 1px 12px rgba(0, 229, 255, 0.06);
+    color: rgba(0, 180, 210, 0.78);
 }
 
-/* ── Logo ─────────────────────────────────────────────────────────────────── */
 #custom-logo {
-    color:          rgba(0, 220, 255, 0.88);
-    font-weight:    700;
-    font-size:      11px;
-    letter-spacing: 1.5px;
-    padding:        0 18px;
-    border-right:   1px solid rgba(0, 229, 255, 0.09);
+    color: rgba(0, 229, 255, 0.95);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 0 16px;
+    border-right: 1px solid rgba(0, 229, 255, 0.10);
 }
 #custom-logo:hover {
-    color:      #00e5ff;
+    color: #00e5ff;
+    background: rgba(0, 229, 255, 0.06);
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.35);
+}
+
+#workspaces {
+    padding: 0 6px;
+}
+#workspaces button {
+    padding: 0 14px;
+    min-width: 32px;
+    color: rgba(0, 100, 130, 0.55);
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    font-size: 14px;
+    transition: all 0.12s ease;
+}
+#workspaces button:hover {
+    color: rgba(0, 200, 230, 0.90);
+    background: rgba(0, 229, 255, 0.05);
+}
+#workspaces button.focused {
+    color: #00e5ff;
+    border-bottom: 2px solid rgba(0, 229, 255, 0.75);
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.40);
+}
+#workspaces button.urgent {
+    color: #ff5533;
+    background: rgba(255, 50, 30, 0.10);
+}
+
+#custom-mode {
+    padding: 0 12px;
+    color: rgba(0, 160, 190, 0.70);
+    font-size: 10px;
+    letter-spacing: 1px;
+    border-left: 1px solid rgba(0, 229, 255, 0.06);
+}
+#custom-mode:hover {
+    color: #00e5ff;
     background: rgba(0, 229, 255, 0.05);
 }
 
-/* ── Workspaces ───────────────────────────────────────────────────────────── */
-#workspaces {
-    padding: 0 4px;
-}
-#workspaces button {
-    padding:        0 12px;
-    color:          rgba(0, 90, 120, 0.65);
-    background:     transparent;
-    border-bottom:  2px solid transparent;
-    font-size:      10px;
-    letter-spacing: 1.5px;
-    min-width:      28px;
-    transition:     all 0.10s ease;
-}
-#workspaces button:hover {
-    color:      rgba(0, 190, 220, 0.85);
-    background: rgba(0, 229, 255, 0.04);
-}
-#workspaces button.focused {
-    color:         rgba(0, 229, 255, 0.95);
-    border-bottom: 2px solid rgba(0, 229, 255, 0.65);
-}
-#workspaces button.urgent {
-    color:      #ff4422;
-    background: rgba(255, 50, 30, 0.08);
-}
-
-/* ── Clock (center, prominent) ────────────────────────────────────────────── */
 #clock {
-    color:          rgba(0, 229, 255, 0.92);
-    font-size:      12px;
-    font-weight:    700;
-    letter-spacing: 3px;
-    padding:        0 28px;
+    color: rgba(0, 229, 255, 0.95);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 0 24px;
+    text-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
 }
-#clock:hover {
-    color: #00e5ff;
-}
+#clock:hover { color: #ffffff; }
 
-/* ── Right modules ────────────────────────────────────────────────────────── */
-#cpu,
-#memory,
-#pulseaudio,
-#network,
-#tray {
-    padding:        0 11px;
-    color:          rgba(0, 150, 180, 0.65);
-    font-size:      10px;
-    letter-spacing: 0.5px;
-    border-left:    1px solid rgba(0, 229, 255, 0.06);
+#cpu, #memory, #temperature, #battery, #pulseaudio, #bluetooth, #network, #tray, #custom-power {
+    padding: 0 10px;
+    font-size: 11px;
+    color: rgba(0, 150, 180, 0.68);
+    border-left: 1px solid rgba(0, 229, 255, 0.05);
 }
-
-#cpu:hover,
-#memory:hover,
-#pulseaudio:hover,
-#network:hover {
-    color:      rgba(0, 220, 255, 0.90);
+#cpu:hover, #memory:hover, #temperature:hover, #battery:hover,
+#pulseaudio:hover, #bluetooth:hover, #network:hover, #custom-power:hover {
+    color: rgba(0, 230, 255, 0.95);
     background: rgba(0, 229, 255, 0.04);
 }
 
-#cpu.warning         { color: rgba(255, 185, 0,  0.85); }
-#cpu.critical        { color: rgba(255, 60,  30, 0.95); }
-#pulseaudio.muted    { color: rgba(0,  70,  95, 0.45); }
-#network.disconnected { color: rgba(255, 60, 30, 0.80); }
+#cpu.warning, #memory.warning, #temperature.warning, #battery.warning { color: #ffcc44; }
+#cpu.critical, #memory.critical, #temperature.critical, #battery.critical { color: #ff4422; }
+#pulseaudio.muted { color: rgba(0, 70, 95, 0.45); }
+#network.disconnected { color: rgba(255, 60, 30, 0.85); }
 
-#tray {
+#custom-power {
     padding: 0 14px;
+    font-size: 13px;
+    color: rgba(0, 120, 150, 0.55);
+}
+#custom-power:hover {
+    color: rgba(255, 80, 60, 0.90);
+    background: rgba(255, 40, 20, 0.08);
+}
+
+#tray { padding: 0 12px; }
+
+tooltip {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    background: rgba(0, 6, 16, 0.97);
+    border: 1px solid rgba(0, 229, 255, 0.22);
+    border-radius: 8px;
+    color: rgba(0, 210, 240, 0.92);
+    padding: 6px 12px;
 }

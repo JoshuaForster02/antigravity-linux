@@ -100,11 +100,11 @@ window {
 # ── App definitions ───────────────────────────────────────────────────────────
 APPS = [
     ("▶",  "TERM",    "foot -e /usr/local/bin/flynn-ui"),
-    ("⬡",  "LAUNCH",  "rofi -show drun -theme /root/.config/rofi/tron.rasi"),
+    ("⬡",  "LAUNCH",  "fuzzel"),
     ("≡",  "NOTION",  "/usr/local/bin/flynn-browser https://notion.so --title Notion"),
     ("◈",  "ANKI",    "/usr/local/bin/flynn-browser http://localhost:8765 --title Anki"),
     ("⊞",  "FILES",   "thunar"),
-    ("◉",  "STEAM",   "steam -bigpicture 2>/dev/null"),
+    ("◉",  "STEAM",   "bash -c 'command -v steam >/dev/null && steam -bigpicture || foot -e bash -c "Run flynn-setup for Steam"; read'"),
     ("⊛",  "NET",     "nm-connection-editor"),
 ]
 

@@ -20,7 +20,11 @@ bash build-local.sh    # Docker Desktop required
 # → output/flynnos-YYYY.MM-x86_64.iso
 ```
 
-Login: **root** / **flynn** — Sway (Wayland) starts automatically on tty1.
+Login: **root** / **tron** — Sway (Wayland) starts automatically on tty1.
+
+### Download ISO (CI)
+
+GitHub Releases cap at 2 GB. Download: **Actions → latest run → Artifacts**.
 
 ### Test in UTM (Apple Silicon)
 
@@ -28,11 +32,11 @@ Login: **root** / **flynn** — Sway (Wayland) starts automatically on tty1.
 2. RAM 4GB, 4 CPU cores, Display: virtio-gpu
 3. Boot ISO → Flynn OS loads directly into Wayland
 
-### Install to disk (from live session)
+### Post-install (live session)
 
 ```bash
-bash /usr/local/bin/flynn-install
-# Dual-boot with Windows is detected automatically
+flynn-setup          # Steam, Anki, Proton-GE, GPU tuning
+flynn-install        # Install to disk (dual-boot)
 ```
 
 ## Architecture
@@ -44,11 +48,11 @@ macOS ANTIGRAVITY App  ◄─── REST / MQTT ───►  Flynn OS Linux (PC
 
 Flynn OS Desktop Stack:
   Sway (Wayland WM)
-    └─ ANTIGRAVITY Background Daemon  ← live animated TRON grid
-    └─ Waybar TRON Control Panel      ← bottom bar with glow + animations
-    └─ Picom Compositor               ← cyan glow shadows, rounded corners
-    └─ foot terminal + AGD palette    ← ⌘K command palette
-    └─ Flynn Daemon :7777             ← REST API for macOS app
+    └─ flynn-bg-daemon     ← animated TRON grid (GTK layer shell)
+    └─ Waybar + Dock       ← top HUD + floating dock (Nerd Font icons)
+    └─ fuzzel              ← TRON app launcher
+    └─ foot + AGD palette  ← Super+Space command palette
+    └─ Flynn Daemon :7777  ← REST API for macOS app
 ```
 
 ## Roadmap
@@ -56,35 +60,38 @@ Flynn OS Desktop Stack:
 | Phase | Status | Inhalt |
 |-------|--------|--------|
 | 1 Foundation       | ✅ | Arch ISO · linux-zen · BIOS/UEFI · Sway Wayland |
-| 2 Boot Experience  | ✅ | Plymouth Spinner · Boot-Chime · Quiet Boot |
-| 3 TRON Visual Core | ✅ | Live Grid Background · Picom Glow · Waybar Control Panel · Cyan Borders |
-| 4 Core Apps        | ✅ | foot · GTK4 TRON · Steam/Gaming · MangoHud · WebKit Browser |
-| 5 ANTIGRAVITY Shell| 🔨 | AGD Layer Shell · ⌘K Palette · Focus Mode · Flow Timer |
-| 6 FaceID + Health  | 🔨 | Howdy FaceID · Health Timer · Ambient Sound · Sunshine Streaming |
-| 7 TRON UX Polish   | 📋 | App-launch animations · Window materialisation effect · TRON cursor |
-| 8 Installer        | 📋 | Calamares GUI installer · OTA updates · Hardware QA |
-| 9 The Grid Vision  | 📋 | Full ANTIGRAVITY shell replaces Sway tiling · Program-metaphor app model |
+| 2 Boot Experience  | ✅ | Plymouth TRON · Boot-Chime · Quiet Boot |
+| 3 TRON Visual Core | ✅ | Live Grid · Waybar HUD · FlynnTron GTK · Cyan borders |
+| 4 Core Apps        | ✅ | foot · fuzzel · Browser · flynn-setup (Steam/Anki) |
+| 5 ANTIGRAVITY Shell| 🔨 | AGD Layer Shell · ⌘K Palette · Focus Mode |
+| 6 FaceID + Health  | 🔨 | Howdy FaceID · Health Timer · Ambient · Sunshine |
+| 7 TRON UX Polish   | 🔨 | Named workspaces · Power menu · Welcome OSD · Lock screen |
+| 8 Installer        | 📋 | Calamares GUI · OTA updates · Hardware QA |
+| 9 The Grid Vision  | 📋 | ANTIGRAVITY shell replaces tiling · Program metaphor |
 
 **Legend:** ✅ Done · 🔨 In Progress · 📋 Planned
 
-## What Phase 9 (The Grid) looks like
+## Workspaces
 
-Instead of a traditional tiling desktop:
-- The **ANTIGRAVITY daemon IS the desktop** — no taskbar, no Sway tiles
-- Apps open as "Programs" that materialise onto the grid with a light-trail animation
-- Workspace switching = traversing grid sectors (animated camera move)
-- System stats are HUD overlays, not a taskbar
-- Everything lives inside the TRON universe metaphor
+| Key | Sector | Purpose |
+|-----|--------|---------|
+| Super+1 | GRID | Home terminal + dashboard |
+| Super+2 | STUDY | Notion / Amboss |
+| Super+3 | ANKI | Flashcards |
+| Super+4 | GAME | Steam Big Picture |
+| Super+5 | SYS | Tools / settings |
 
 ## Current Desktop Stack
 
 | Component | What it does |
 |-----------|-------------|
-| `flynn-bg-daemon` | Animated TRON grid background — data packets, node pulses, 20fps via Cairo+GTK4 layer shell |
-| `waybar` | TRON Control Panel — pulsing border, segment-display clock, glowing modules |
-| `picom` | Cyan glow shadows on all windows, rounded corners, smooth fade animations |
-| `antigravity.py` | Layer shell HUD — flow timer, ⌘K command palette, focus mode |
-| `sway` | Wayland WM — floating terminal, workspace rules, TRON border colors |
+| `flynn-bg-daemon` | Animated TRON grid — data packets, node pulses, GTK4 layer shell |
+| `waybar` | Top HUD — CPU/RAM/temp/battery, named workspace icons |
+| `dock` | Floating bottom dock — macOS-style app launcher |
+| `fuzzel` | TRON-styled app launcher (Super+D) |
+| `flynn-power` | Power menu — lock, logout, reboot (Super+Escape) |
+| `antigravity.py` | Layer shell HUD — flow timer, ⌘K command palette |
+| `sway` | Wayland WM — workspace rules, TRON borders, floating Flynn UI |
 | `flynn-daemon` | REST API :7777 for macOS ANTIGRAVITY app |
 
 ## Key Bindings
@@ -92,16 +99,14 @@ Instead of a traditional tiling desktop:
 | Key | Action |
 |-----|--------|
 | `Super+Return` | Open terminal |
-| `Super+D` | TRON launcher (Rofi) |
-| `Super+Space` | ANTIGRAVITY command palette |
-| `Super+Q` | Close window |
-| `Super+F` | Fullscreen |
-| `Super+G` | Toggle GameMode |
-| `Super+N` | Notion browser |
-| `Super+A` | Anki browser |
+| `Super+D` | App launcher (Fuzzel) |
+| `Super+Escape` | Power menu |
+| `Super+Space` | ANTIGRAVITY command palette (AGD) |
+| `Super+Shift+V` | Clipboard history |
+| `Super+G` | Game / Study mode |
+| `Super+N` / `Super+A` | Notion / Anki |
+| `Super+?` | Help overlay |
 | `Super+F1` | Health status |
-| `Super+Shift+A` | Ambient sound toggle |
-| `Super+Shift+S` | Sunshine streaming status |
 
 ## Flynn Daemon API (:7777)
 

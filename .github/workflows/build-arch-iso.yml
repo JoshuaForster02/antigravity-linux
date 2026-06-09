@@ -55,8 +55,9 @@ jobs:
               pacman -S --noconfirm --needed archiso grub efibootmgr mtools squashfs-tools dosfstools
 
               echo '=== Validating package list ==='
+              pacman -Sy --noconfirm --config /build/pacman.conf
               grep -vE '^[[:space:]]*(#|$)' /build/packages.x86_64 \
-                | xargs pacman -Sp --config /build/pacman.conf --print-format '%n' \
+                | xargs pacman -Sp --noconfirm --config /build/pacman.conf --print-format '%n' \
                 | tail -5
 
               echo '=== Setting permissions ==='
@@ -90,40 +91,10 @@ jobs:
             archiso/output/*.sha256
           retention-days: 30
 
-      - name: Create GitHub Release (on tag)
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            archiso/output/*.iso
-            archiso/output/*.sha256
-          body: |
-            ## Flynn OS Linux ${{ github.ref_name }} — Arch Edition
-
-            **Base:** Arch Linux · linux-zen kernel · AMDGPU/Vulkan
-            **Size:** ${{ env.ISO_SIZE }}
-            **GPU:** AMD RX 6800 optimized (vulkan-radeon + mesa)
-            **Gaming:** Steam + Proton-GE + GameMode + MangoHud
-            **Audio:** PipeWire
-            **UI:** Openbox + TRON theme + Flynn UI Shell v2.0
-
-            ### Boot
-            ```bash
-            # QEMU (testing)
-            qemu-system-x86_64 -cdrom flynnos-*.iso -m 4G -smp 4 -vga virtio -boot d
-
-            # Real hardware: burn to USB
-            sudo dd if=flynnos-*.iso of=/dev/sdX bs=4M status=progress
-            ```
-
-            ### Install to disk (from live session)
-            ```bash
-            bash /opt/flynn/install/install-to-disk.sh
-            ```
-
-            ### Verify
-            ```bash
-            sha256sum -c flynnos-arch.iso.sha256
-            ```
-          draft: false
-          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}
+      # GitHub Releases cap assets at 2 GB — ISO downloads via Actions Artifacts.
+      - name: Build summary
+        run: |
+          echo "## Flynn OS ISO ready" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Size: ${{ env.ISO_SIZE }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Download: Actions → this run → Artifacts" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Login: root / tron" >> "$GITHUB_STEP_SUMMARY"

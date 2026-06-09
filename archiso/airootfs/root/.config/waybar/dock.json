@@ -1,18 +1,18 @@
 {
   "layer": "bottom",
   "position": "bottom",
-  "height": 60,
-  "margin-bottom": 10,
+  "height": 64,
+  "margin-bottom": 14,
   "exclusive": true,
   "name": "dock",
   "passthrough": false,
-
   "modules-center": [
     "custom/term",
     "custom/launcher",
     "custom/files",
     "custom/browser",
     "custom/anki",
+    "custom/mode",
     "custom/sep1",
     "custom/steam",
     "custom/sep2",
@@ -21,82 +21,76 @@
     "custom/settings",
     "custom/lock"
   ],
-
   "custom/term": {
-    "format": "",
+    "format": "\uf120",
     "tooltip": "Terminal  (Super+Return)",
-    "on-click": "foot -e /usr/local/bin/flynn-ui"
+    "on-click": "foot --app-id=flynn-ui -e /usr/local/bin/flynn-ui"
   },
-
   "custom/launcher": {
-    "format": "",
+    "format": "\uf002",
     "tooltip": "App Launcher  (Super+D)",
-    "on-click": "rofi -show drun -theme /root/.config/rofi/tron.rasi"
+    "on-click": "fuzzel"
   },
-
   "custom/files": {
-    "format": "",
+    "format": "\uf07c",
     "tooltip": "File Manager",
     "on-click": "thunar"
   },
-
   "custom/browser": {
-    "format": "",
+    "format": "\uf0ac",
     "tooltip": "Notion  |  right-click: Amboss",
     "on-click": "/usr/local/bin/flynn-browser https://notion.so --title Notion",
     "on-right-click": "/usr/local/bin/flynn-browser https://amboss.com --title Amboss"
   },
-
   "custom/anki": {
-    "format": "",
+    "format": "\uf5da",
     "tooltip": "Anki  (Super+A)",
     "on-click": "anki 2>/dev/null || /usr/local/bin/flynn-browser http://localhost:8765 --title Anki"
   },
-
   "custom/sep1": {
     "format": " ",
     "tooltip": false
   },
-
   "custom/steam": {
-    "format": "",
+    "format": "\uf1b6",
     "tooltip": "Steam  |  right-click: toggle GameMode",
-    "on-click": "steam -bigpicture 2>/dev/null",
+    "on-click": "bash -c 'command -v steam >/dev/null && steam -bigpicture || foot -e bash -c \"Run flynn-setup for Steam\"; read'",
     "on-right-click": "/usr/local/bin/game-mode-switch.sh toggle"
   },
-
   "custom/sep2": {
     "format": " ",
     "tooltip": false
   },
-
   "custom/volume": {
-    "format": "",
+    "format": "\uf028",
     "tooltip": "Volume  |  scroll: adjust  |  click: mixer",
     "on-click": "pavucontrol",
     "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +5%",
     "on-scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -5%",
     "on-right-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle"
   },
-
   "custom/wifi": {
-    "format": "",
+    "format": "\uf1eb",
     "tooltip": "Network  |  click: nmtui  |  right-click: settings",
     "on-click": "foot -e nmtui",
     "on-right-click": "nm-connection-editor"
   },
-
   "custom/settings": {
-    "format": "",
+    "format": "\uf013",
     "tooltip": "Settings  (Super+,)",
     "on-click": "foot --app-id=flynn-settings -e /usr/local/bin/flynn-settings",
     "on-right-click": "nm-connection-editor"
   },
-
   "custom/lock": {
-    "format": "",
-    "tooltip": "Lock  |  right-click: Logout",
-    "on-click": "swaylock --config /root/.config/swaylock/config",
-    "on-right-click": "swaymsg exit"
+    "format": "\uf023",
+    "tooltip": "Power menu  |  right-click: Lock",
+    "on-click": "/usr/local/bin/flynn-power",
+    "on-right-click": "/usr/local/bin/flynn-lock"
+  },
+  "custom/mode": {
+    "format": "\uf11b",
+    "tooltip": "Game / Study mode  (Super+G)",
+    "on-click": "/usr/local/bin/game-mode-switch.sh toggle",
+    "on-right-click": "/usr/local/bin/flynn-study"
   }
 }

@@ -1,0 +1,16 @@
+#!/bin/bash
+# Flynn OS — Lock Screen Launcher
+# Notifies, then engages swaylock with the TRON config
+
+# Brief "Locking..." notification
+notify-send -u low -t 800 \
+    "SECURITY" "LOCKING GRID..." 2>/dev/null || true
+
+sleep 0.3
+
+# Fallback: if tron-bg.png doesn't exist yet, generate it
+if [ ! -f /root/.config/sway/tron-bg.png ]; then
+    /usr/local/bin/flynn-wallpaper-sway 2>/dev/null || true
+fi
+
+exec swaylock --config /root/.config/swaylock/config

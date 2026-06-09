@@ -1,0 +1,68 @@
+#!/bin/bash
+# Flynn OS — Unified OSD Notification helper
+# Usage: flynn-notify <type> [value]
+# Types: volume | mute | brightness | mode | screenshot | clipboard | error
+
+TYPE="${1:-info}"
+VAL="${2:-}"
+
+case "$TYPE" in
+    volume)
+        [ -z "$VAL" ] && VAL=$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | grep -oP '\d+%' | head -1)
+        MUTED=$(pactl get-sink-mute @DEFAULT_SINK@ 2>/dev/null | grep -c yes)
+        if [ "$MUTED" -gt 0 ]; then
+            notify-send -h string:x-canonical-private-synchronous:osd \
+                -u low -t 1500 -i audio-volume-muted \
+                "MUTED" "─────────────────" 2>/dev/null
+        else
+            # Build ASCII bar
+            PCT=$(echo "$VAL" | tr -d '%')
+            BARS=$(( PCT / 5 ))
+            BAR=$(printf '█%.0s' $(seq 1 $BARS) 2>/dev/null || printf '%*s' "$BARS" '' | tr ' ' '█')
+            EMPTY=$(printf '░%.0s' $(seq 1 $((20-BARS))) 2>/dev/null || printf '%*s' "$((20-BARS))" '' | tr ' ' '░')
+            notify-send -h string:x-canonical-private-synchronous:osd \
+                -u low -t 1500 \
+                "VOLUME  ${VAL}" "${BAR}${EMPTY}" 2>/dev/null
+        fi
+        ;;
+    brightness)
+        [ -z "$VAL" ] && VAL=$(brightnessctl -m 2>/dev/null | cut -d, -f4 || echo "?")
+        PCT=$(echo "$VAL" | tr -d '%')
+        BARS=$(( PCT / 5 ))
+        BAR=$(printf '█%.0s' $(seq 1 $BARS) 2>/dev/null || printf '%*s' "$BARS" '' | tr ' ' '█')
+        EMPTY=$(printf '░%.0s' $(seq 1 $((20-BARS))) 2>/dev/null || printf '%*s' "$((20-BARS))" '' | tr ' ' '░')
+        notify-send -h string:x-canonical-private-synchronous:osd \
+            -u low -t 1500 \
+            "BRIGHTNESS  ${VAL}" "${BAR}${EMPTY}" 2>/dev/null
+        ;;
+    mute)
+        notify-send -h string:x-canonical-private-synchronous:osd \
+            -u low -t 1200 \
+            "MUTED" "Audio output silenced" 2>/dev/null
+        ;;
+    mode)
+        notify-send -h string:x-canonical-private-synchronous:osd \
+            -u low -t 2000 \
+            "${VAL}" "Flynn OS mode activated" 2>/dev/null
+        ;;
+    screenshot)
+        notify-send -u low -t 2000 \
+            "SCREENSHOT" "${VAL:-Saved to ~/screenshots/}" 2>/dev/null
+        ;;
+    clipboard)
+        notify-send -u low -t 1200 \
+            "CLIPBOARD" "${VAL:-Copied to clipboard}" 2>/dev/null
+        ;;
+    lock)
+        notify-send -u low -t 800 \
+            "SECURITY" "LOCKING GRID..." 2>/dev/null
+        ;;
+    error)
+        notify-send -u critical -t 4000 \
+            "ERROR" "${VAL:-An error occurred}" 2>/dev/null
+        ;;
+    *)
+        notify-send -u low -t 2000 \
+            "${TYPE}" "${VAL}" 2>/dev/null
+        ;;
+esac

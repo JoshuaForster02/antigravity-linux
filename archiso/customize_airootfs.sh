@@ -11,7 +11,7 @@ echo "╚═══════════════════════�
 
 # ── Root password ─────────────────────────────────────────────────────────────
 echo "root:tron" | chpasswd
-echo "  ✓ root password: flynn"
+echo "  ✓ root password: tron"
 
 # ── Locale + timezone ─────────────────────────────────────────────────────────
 sed -i 's/#en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen
@@ -144,7 +144,7 @@ XRES
 mkdir -p /root/.config/gtk-3.0 /root/.config/gtk-4.0 /root/.icons
 cat > /root/.config/gtk-3.0/settings.ini << 'GTK'
 [Settings]
-gtk-theme-name=Adwaita-dark
+gtk-theme-name=FlynnTron
 gtk-icon-theme-name=Papirus-Dark
 gtk-cursor-theme-name=capitaine-cursors-white
 gtk-cursor-theme-size=24
@@ -154,10 +154,15 @@ gtk-button-images=0
 gtk-menu-images=1
 GTK
 cp /root/.config/gtk-3.0/settings.ini /root/.config/gtk-4.0/settings.ini
-echo "  ✓ GTK dark theme + Papirus-Dark icons"
+cp /usr/share/themes/FlynnTron/gtk-3.0/gtk.css /root/.config/gtk-3.0/gtk.css 2>/dev/null || true
+cp /usr/share/themes/FlynnTron/gtk-4.0/gtk.css /root/.config/gtk-4.0/gtk.css 2>/dev/null || true
+chmod +x /usr/local/bin/flynn-power /usr/local/bin/flynn-welcome /usr/local/bin/flynn-lock /usr/local/bin/flynn-notify /usr/local/bin/flynn-palette 2>/dev/null || true
+echo "  ✓ GTK FlynnTron theme + Papirus-Dark icons"
 
 # ── Ensure all new config dirs exist ─────────────────────────────────────────
 mkdir -p /root/.config/fuzzel
+mkdir -p /root/.config/rofi
+[ -f /root/.config/rofi/config.rasi ] && cp /root/.config/rofi/config.rasi /root/.config/rofi/tron.rasi 2>/dev/null || true
 mkdir -p /root/.config/swaylock
 mkdir -p /root/.config/sway
 mkdir -p /root/screenshots

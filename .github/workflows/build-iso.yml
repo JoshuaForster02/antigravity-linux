@@ -1,11 +1,8 @@
-name: Flynn OS — Build Arch Linux ISO
+# Legacy alias — primary build is build-arch-iso.yml
+# Manual trigger only to avoid duplicate CI runs + 2GB release limit issues.
+name: Flynn OS — Build ISO (manual)
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'archiso/**'
-      - '.github/workflows/build-iso.yml'
   workflow_dispatch:
 
 permissions:
@@ -13,17 +10,14 @@ permissions:
 
 jobs:
   build:
-    name: Build Flynn OS ISO
+    name: Build Flynn OS ISO (manual)
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    permissions:
-      contents: write
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      - name: Build ISO (Arch Linux container, native x86_64)
+      - name: Build ISO
         run: |
           mkdir -p output
           docker run --rm --privileged \
@@ -31,58 +25,20 @@ jobs:
             -w /workspace/archiso \
             archlinux:latest \
             bash -c "
-              set -e
-              echo '=== Initializing pacman ==='
-              pacman-key --init
-              pacman-key --populate archlinux
-
-              echo '=== Installing archiso ==='
+              set -euo pipefail
+              pacman-key --init && pacman-key --populate archlinux
               pacman -Syu --noconfirm
               pacman -S --noconfirm archiso grub mtools squashfs-tools efibootmgr dosfstools
-
-              echo '=== Setting permissions ==='
-              find airootfs/usr/local/bin -type f -exec chmod +x {} \; 2>/dev/null || true
-              find airootfs/opt -name '*.py' -exec chmod +x {} \; 2>/dev/null || true
-              chmod +x customize_airootfs.sh airootfs/usr/local/bin/* 2>/dev/null || true
-
-              echo '=== Building Flynn OS ISO ==='
+              find airootfs/usr/local/bin -type f -exec chmod +x {} \;
+              chmod +x customize_airootfs.sh
               mkdir -p /work /workspace/output
               mkarchiso -v -w /work -o /workspace/output .
-
-              echo '=== ISO complete ==='
               ls -lh /workspace/output/*.iso
             "
 
-      - name: Upload ISO artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: flynn-os-linux-${{ github.run_number }}
+          name: flynn-os-linux-manual-${{ github.run_number }}
           path: output/*.iso
-          retention-days: 30
-
-      - name: Create GitHub Release
-        if: github.ref == 'refs/heads/main'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ github.run_number }}
-          name: "Flynn OS Linux — Build ${{ github.run_number }}"
-          body: |
-            ## Flynn OS Linux — The Grid
-
-            **Arch Linux · linux-zen · TRON Desktop · Steam · Openbox**
-
-            ### Boot
-            ```
-            # QEMU / UTM
-            qemu-system-x86_64 -cdrom flynnos-*.iso -m 4G -smp 4 -vga std -boot d
-            ```
-            **Login:** `root` / `flynn`
-            **GUI:** type `startx` after login
-            **Install to PC:** type `install`
-
-            ### Mac (UTM)
-            1. [Download UTM](https://mac.getutm.app) (free)
-            2. New VM → Emulate → Other → select ISO → 4GB RAM → Start
-          files: output/*.iso
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          retention-days: 14

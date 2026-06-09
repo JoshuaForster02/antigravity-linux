@@ -1,0 +1,16 @@
+#!/bin/bash
+# Flynn OS — ANTIGRAVITY Command Palette (Super+Space)
+RUNTIME="${XDG_RUNTIME_DIR:-/run/user/0}"
+SOCK="$RUNTIME/flynn-agd.sock"
+
+if [ -S "$SOCK" ]; then
+    python3 - "$SOCK" <<'PY' && exit 0
+import json, socket, sys
+sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+sock.connect(sys.argv[1])
+sock.sendall((json.dumps({"event": "palette_toggle", "payload": "open"}) + "\n").encode())
+sock.close()
+PY
+fi
+
+exec python3 /opt/flynn/agd/antigravity.py --palette

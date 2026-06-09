@@ -1,0 +1,9 @@
+#!/bin/bash
+# Flynn OS — Power menu (fuzzel)
+CHOICE=$(printf "Lock Grid\nLogout\nReboot\nShutdown\nCancel" | fuzzel --dmenu -p "POWER" -w 28)
+case "$CHOICE" in
+    "Lock Grid")  /usr/local/bin/flynn-lock ;;
+    Logout)       swaymsg exit ;;
+    Reboot)       systemctl reboot ;;
+    Shutdown)     systemctl poweroff ;;
+esac

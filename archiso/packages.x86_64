@@ -104,7 +104,6 @@ picom
 xterm
 foot
 feh
-rofi-wayland
 dunst
 tint2
 scrot
@@ -142,20 +141,13 @@ python-psutil
 python-xlib
 python-gobject
 
-# Gaming
-gamemode
-mangohud
-
-# Dev tools + compositor build chain
+# Dev tools (compositor build via flynn-setup post-install)
 git
 vim
 nano
 make
 gcc
 pkg-config
-meson
-ninja
-cmake
 
 # Arch install helpers
 arch-install-scripts
@@ -183,34 +175,12 @@ fuzzel
 gtk-layer-shell
 python-pillow
 
-# Phase 6: First-boot wizard deps
-# Gaming (post-ISO install via flynn-setup if needed)
-steam
-lib32-mesa
-lib32-vulkan-radeon
-lib32-gtk3
-lib32-gamemode
-lib32-mangohud
-
-# Productivity
-anki
-python-pyqt6
-python-pyqt6-webengine
+# Productivity (lightweight live ISO — Steam/Anki via flynn-setup)
 mpv
-viewnior
 brightnessctl
 
 # Wayland UX polish
-# wlogout — AUR only, install post-boot via: yay -S wlogout
 nwg-look
 papirus-icon-theme
-
-# Face-ID login (python-dlib is AUR-only, installed post-boot via pip/yay)
-python-numpy
-
-# Game streaming (Sunshine server)
-# sunshine is in AUR — installed via flynn-setup post-boot
-# libevdev needed for controller passthrough
 libevdev
-
-# TRON MangoHud custom config
+lm_sensors

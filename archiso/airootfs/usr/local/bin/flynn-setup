@@ -61,6 +61,7 @@ POSTINSTALL_PKGS=(
     lib32-gamemode lib32-mangohud
     anki python-pyqt6 python-pyqt6-webengine
     mpv
+    calamares
 )
 MISSING=()
 for pkg in "${POSTINSTALL_PKGS[@]}"; do

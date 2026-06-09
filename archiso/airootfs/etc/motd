@@ -4,35 +4,26 @@
   █████╗  ██║   ╚████╔╝ ██╔██╗ ██║██╔██╗ ██║    ██║   ██║███████╗
   ╚═╝     ╚══════╝╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═══╝    ╚═════╝ ╚══════╝
 
-  Flynn OS Linux 3.0  ·  Arch  ·  linux-zen  ·  The Grid
+  Flynn OS Linux 4.0  ·  Arch  ·  Sway Wayland  ·  The Grid
+
+  Login: root / tron  ·  Sway starts automatically on tty1
 
   ── DESKTOP ────────────────────────────────────────────────────────
-   startx          X11 + Openbox TRON desktop (UTM / VMware / PC)
-   session         Wayland compositor (real hardware with GPU)
-   flynn-setup     First-boot wizard (compositor, Proton-GE, Pi)
+   Super+D         App launcher (Fuzzel)
+   Super+?         Keyboard shortcuts help
+   flynn-setup     Install Steam, Anki, Proton-GE
+   startx          X11 fallback (Openbox)
+
+  ── WORKSPACES ─────────────────────────────────────────────────────
+   Super+1..5      GRID · STUDY · ANKI · GAME · SYS
 
   ── GAMING ─────────────────────────────────────────────────────────
-   game            Game Mode  (CPU→performance, Steam launches)
-   study           Study Mode (CPU→schedutil, Flynn layer back)
-   steam           Launch Steam
+   Super+G         Game / Study mode toggle
+   Super+S         Steam Big Picture (after flynn-setup)
    proton-ge       Install latest Proton-GE
 
-  ── INTEGRATION ────────────────────────────────────────────────────
-   config          View / set Notion token, Pi IP, Anki port
-   notion-sync     Sync Notion → Anki cards (runs on Pi)
-   pi              Pi status / sync / wakepc
-   pi-deploy       Deploy agent to Pi (100.74.204.71)
-
   ── SYSTEM ─────────────────────────────────────────────────────────
-   status          Live CPU / RAM / disk / network dashboard
-   services        Service status panel
-   scan [host]     LAN sweep or port scan
-   wifi            WiFi manager
-   update          Full system upgrade (pacman -Syu)
-   install         Dual-boot disk installer (for PC)
-
-  ── FUN ────────────────────────────────────────────────────────────
-   matrix          TRON matrix rain
-   fetch           System info (fastfetch)
+   status          Live system dashboard
+   flynn-install   Install Flynn OS to disk
+   flynn-update    OTA update from GitHub
    help            Full command list
-

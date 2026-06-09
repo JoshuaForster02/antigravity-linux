@@ -222,7 +222,7 @@ PALETTE_COMMANDS = [
     {'cat':'APPS',   'label':'Notion',            'icon':'≡', 'hint':'⌥N', 'desc':'Open workspace',        'action': lambda: launch_url('https://notion.so', 'Notion')},
     {'cat':'APPS',   'label':'Anki',              'icon':'◈', 'hint':'⌥A', 'desc':'Flashcard review',      'action': lambda: launch_url('http://localhost:8765', 'Anki')},
     {'cat':'APPS',   'label':'Files',             'icon':'⊞', 'hint':'',  'desc':'Thunar file manager',   'action': lambda: launch('thunar')},
-    {'cat':'APPS',   'label':'Steam',             'icon':'◉', 'hint':'',  'desc':'Gaming library',        'action': lambda: launch('steam -bigpicture')},
+    {'cat':'APPS',   'label':'Steam',             'icon':'◉', 'hint':'',  'desc':'Gaming library',        'action': lambda: launch("bash -c 'command -v steam >/dev/null && steam -bigpicture || foot -e bash -c \"Run flynn-setup for Steam\"; read'")},
     # ── Study ──
     {'cat':'STUDY',  'label':'Focus Mode',        'icon':'◎', 'hint':'⌥F', 'desc':'Dims all but active',   'action': lambda: ipc_send('mode_changed', 'focus')},
     {'cat':'STUDY',  'label':'Focus OFF',         'icon':'○', 'hint':'',  'desc':'Restore normal mode',   'action': lambda: ipc_send('mode_changed', 'normal')},
@@ -235,7 +235,8 @@ PALETTE_COMMANDS = [
     {'cat':'SYSTEM', 'label':'Network',           'icon':'⊛', 'hint':'',  'desc':'NetworkManager UI',     'action': lambda: launch('nm-connection-editor')},
     {'cat':'SYSTEM', 'label':'Game Mode ON',      'icon':'▶▶','hint':'⌥G', 'desc':'Boost CPU + close apps','action': lambda: launch('/usr/local/bin/game-mode-switch.sh game')},
     {'cat':'SYSTEM', 'label':'Study Mode ON',     'icon':'◑', 'hint':'⌥H', 'desc':'Quiet, focus layout',  'action': lambda: launch('/usr/local/bin/game-mode-switch.sh study')},
-    {'cat':'SYSTEM', 'label':'Lock Screen',       'icon':'⊗', 'hint':'',  'desc':'Swaylock',              'action': lambda: launch('swaylock')},
+    {'cat':'SYSTEM', 'label':'Lock Screen',       'icon':'⊗', 'hint':'',  'desc':'Swaylock',              'action': lambda: launch('/usr/local/bin/flynn-lock')},
+    {'cat':'SYSTEM', 'label':'Install to Disk',    'icon':'⬇', 'hint':'',  'desc':'Flynn disk installer',  'action': lambda: launch('foot -e /usr/local/bin/flynn-install')},
     {'cat':'SYSTEM', 'label':'OTA Update',        'icon':'↑', 'hint':'',  'desc':'Pull latest Flynn OS',  'action': lambda: launch('foot -e /usr/local/bin/flynn-update')},
     # ── Flynn ──
     {'cat':'FLYNN',  'label':'PC Status',         'icon':'⚡', 'hint':'',  'desc':'Flynn daemon :7777',    'action': lambda: launch("foot -e sh -c 'curl -s localhost:7777/api/status|python3 -m json.tool;read'")},
@@ -250,7 +251,7 @@ def launch(cmd: str):
 def launch_url(url: str, title: str):
     launch(f'/usr/local/bin/flynn-browser {url} --title {title}')
 
-CSS_PALETTE = b"""
+CSS_PALETTE = """
 window.palette-win {
     background: rgba(0, 6, 16, 0.97);
     border:        1px solid rgba(0, 229, 255, 0.30);
@@ -359,7 +360,7 @@ class CommandPalette(Gtk.Window):
 
     def _load_css(self):
         prov = Gtk.CssProvider()
-        prov.load_from_data(CSS_PALETTE)
+        prov.load_from_data(CSS_PALETTE.encode("utf-8"))
         Gtk.StyleContext.add_provider_for_display(
             Gdk.Display.get_default(), prov,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION + 10)
@@ -528,60 +529,106 @@ class CommandPalette(Gtk.Window):
                 break
 
 
-        # Listen to compositor IPC for palette toggle
-        self._start_ipc_listener()
+AGD_SOCK = os.path.join(
+    os.environ.get('XDG_RUNTIME_DIR', '/run/user/0'),
+    'flynn-agd.sock')
 
-        print('[agd] ANTIGRAVITY daemon online')
-        print(f'[agd] IPC socket: {IPC_SOCK}')
 
-    def _start_ipc_listener(self):
-        def listen():
-            while True:
-                sock = ipc_connect()
-                if not sock:
-                    time.sleep(2)
-                    continue
-                try:
-                    buf = b''
-                    while True:
-                        try:
-                            chunk = sock.recv(256)
-                            if not chunk:
-                                break
-                            buf += chunk
-                            while b'\n' in buf:
-                                line, buf = buf.split(b'\n', 1)
-                                msg = json.loads(line.decode())
-                                GLib.idle_add(self._handle_ipc, msg)
-                        except BlockingIOError:
-                            time.sleep(0.05)
-                except Exception:
-                    time.sleep(1)
-
-        t = threading.Thread(target=listen, daemon=True)
-        t.start()
-
-    def _handle_ipc(self, msg: dict):
-        event = msg.get('event', '')
-        if event == 'palette_toggle':
-            if msg.get('payload') == 'open':
-                self._show_palette()
-            else:
-                if self.palette:
-                    self.palette.close()
-                    self.palette = None
-        elif event == 'mode_changed':
-            pass  # update status bar indicator (future)
+def agd_send(event: str, payload: str = '') -> bool:
+    try:
+        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        s.connect(AGD_SOCK)
+        s.sendall((json.dumps({'event': event, 'payload': payload}) + '\n').encode())
+        s.close()
+        return True
+    except Exception:
         return False
 
-    def _show_palette(self):
-        if self.palette:
-            self.palette.close()
-        self.palette = CommandPalette(self)
-        self.palette.set_transient_for(self.status_bar)
-        self.palette.present()
-        self.palette.entry.grab_focus()
+
+class AGDApp(Gtk.Application):
+  """ANTIGRAVITY overlay daemon — status bar + command palette."""
+
+  def __init__(self):
+      super().__init__(application_id='org.flynnos.agd')
+      self.palette = None
+      self.status_bar = None
+      self._agd_server = None
+
+  def do_activate(self):
+      if self.status_bar is None:
+          self.status_bar = StatusBar(self)
+          self.status_bar.present()
+      self._start_agd_socket()
+      print('[agd] ANTIGRAVITY daemon online')
+      print(f'[agd] Control socket: {AGD_SOCK}')
+
+  def _start_agd_socket(self):
+      if self._agd_server is not None:
+          return
+      try:
+          if os.path.exists(AGD_SOCK):
+              os.unlink(AGD_SOCK)
+      except OSError:
+          pass
+      server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+      server.bind(AGD_SOCK)
+      os.chmod(AGD_SOCK, 0o666)
+      server.listen(4)
+      server.setblocking(False)
+      self._agd_server = server
+      GLib.timeout_add(120, self._poll_agd_socket)
+
+  def _poll_agd_socket(self):
+      if not self._agd_server:
+          return False
+      try:
+          conn, _ = self._agd_server.accept()
+          data = conn.recv(4096).decode().strip()
+          conn.close()
+          for line in data.splitlines():
+              if line:
+                  self._handle_ipc(json.loads(line))
+      except BlockingIOError:
+          pass
+      except Exception as exc:
+          print(f'[agd] socket error: {exc}')
+      return True
+
+  def _handle_ipc(self, msg: dict):
+      event = msg.get('event', '')
+      if event == 'palette_toggle':
+          if msg.get('payload') == 'close':
+              if self.palette:
+                  self.palette.close()
+                  self.palette = None
+          else:
+              self._show_palette()
+      elif event == 'mode_changed':
+          active = msg.get('payload') == 'focus'
+          if self.status_bar and hasattr(self.status_bar, 'focus_btn'):
+              self.status_bar.focus_btn.set_active(active)
+      return False
+
+  def _show_palette(self):
+      if self.palette:
+          self.palette.close()
+          self.palette = None
+      self.palette = CommandPalette(self)
+      self.palette.connect('close-request', self._on_palette_closed)
+      self.palette.present()
+
+  def _on_palette_closed(self, _win):
+      self.palette = None
+      return False
+
+
+class PaletteApp(Gtk.Application):
+  def do_activate(self):
+      CommandPalette(self).present()
+
 
 if __name__ == '__main__':
-    app = AGDApp()
-    app.run()
+    if '--palette' in sys.argv:
+        PaletteApp().run(sys.argv)
+    else:
+        AGDApp().run(sys.argv)

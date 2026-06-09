@@ -2,16 +2,18 @@
  ║   F L Y N N   O S  —  Keyboard Shortcuts & Commands                    ║
  ╚══════════════════════════════════════════════════════════════════════════╝
 
- DESKTOP (Super = Win / ⌘ key)
+ DESKTOP (Super = Win / Cmd key)
  ──────────────────────────────────────────────────────────────────────────
   Super+Return      Open terminal
-  Super+D           App launcher (Rofi)
+  Super+D           App launcher (Fuzzel)
+  Super+Space       ANTIGRAVITY command palette
+  Super+Escape      Power menu (lock / logout / reboot)
   Super+Q           Close window
   Super+F           Fullscreen toggle
   Super+Shift+Space Float/tile toggle
   Super+Tab         Tabbed layout
   Super+R           Resize mode
-  Super+V           Clipboard history picker
+  Super+Shift+V     Clipboard history
   Super+Shift+R     Reload Sway config
   Super+Shift+E     Exit Sway (logout)
 
@@ -19,7 +21,7 @@
  ──────────────────────────────────────────────────────────────────────────
   Super+N           Open Notion (browser)
   Super+A           Open Anki
-  Super+S           Steam Big Picture
+  Super+S           Steam Big Picture (run flynn-setup first)
   Super+P           Flynn Dashboard
   Super+,           Settings panel
   Super+?           This help page
@@ -32,24 +34,21 @@
 
  AUDIO / BRIGHTNESS
  ──────────────────────────────────────────────────────────────────────────
-  F1 / F2           Volume down / up (media keys)
-  Mute              Toggle mute
-  Brightness keys   +/- screen brightness
+  Media keys        Volume up / down / mute
+  Brightness keys   Screen brightness (+ OSD)
 
- WORKSPACES  (1–5)
+ WORKSPACES
  ──────────────────────────────────────────────────────────────────────────
-  Super+1..5        Switch to workspace
+  Super+1           GRID   (home / terminal)
+  Super+2           STUDY  (Notion / Amboss)
+  Super+3           ANKI
+  Super+4           GAME   (Steam)
+  Super+5           SYS    (tools)
   Super+Shift+1..5  Move window to workspace
-
- FOCUS / MOVE
- ──────────────────────────────────────────────────────────────────────────
-  Super+h/j/k/l     Focus left/down/up/right
-  Super+Shift+h..l  Move window in direction
-  Arrow keys        Also work for focus/move
 
  FLYNN FEATURES
  ──────────────────────────────────────────────────────────────────────────
-  Super+G           Toggle Game Mode (GameMode + MangoHud)
+  Super+G           Toggle Game / Study mode
   Super+Shift+S     Sunshine streaming status
   Super+Shift+A     Ambient sound toggle
   Super+F1          Health & timer status
@@ -58,20 +57,11 @@
  SHELL COMMANDS (from terminal)
  ──────────────────────────────────────────────────────────────────────────
   help              Show this help
-  status            Live system dashboard
-  matrix            Matrix rain effect
-  scan              LAN device scanner
-  wifi              WiFi manager (nmtui)
-  services          Active systemd services
-  disk              Disk usage
+  status            System dashboard
+  flynn-setup       Post-install wizard (Steam, Anki, GPU)
   flynn-update      OTA update from GitHub
   flynn-install     Install Flynn OS to disk
+  game / study      Switch performance profile
+  matrix            TRON matrix rain
 
- DOCK (bottom bar)
- ──────────────────────────────────────────────────────────────────────────
-  Click icons       Launch apps
-  Scroll on 🔊      Volume up/down
-  Right-click       Secondary action (see tooltip)
-
- ──────────────────────────────────────────────────────────────────────────
- Press any key to close...
+ Login: root / tron

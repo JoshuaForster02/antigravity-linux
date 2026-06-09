@@ -193,13 +193,14 @@ class SetupWizard(Gtk.ApplicationWindow):
             "",
             "Key shortcuts (Sway / Wayland):",
             "  Super+Return  →  New terminal",
-            "  Super+D       →  App launcher",
+            "  Super+D       →  App launcher (Fuzzel)",
             "  Super+G       →  Game Mode (Steam Big Picture)",
             "  Super+N       →  Notion",
             "  Super+A       →  Anki",
             "  Super+P       →  Flynn Dashboard",
             "  Super+Q       →  Close window",
-            "  Super+Shift+E →  Exit session",
+            "  Super+Escape  →  Power menu
+  Super+Shift+E →  Exit session",
             "",
             "Install to disk (dual-boot):  Super+P → INSTALL TO HD",
         ]:

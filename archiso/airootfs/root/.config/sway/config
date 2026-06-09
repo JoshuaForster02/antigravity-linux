@@ -11,7 +11,7 @@ set $right l
 
 # ── Terminal + Launcher ───────────────────────────────────────────────────────
 set $term  foot
-set $menu  rofi -show drun -theme /root/.config/rofi/tron.rasi
+set $menu  fuzzel
 
 # ── TRON Colors ───────────────────────────────────────────────────────────────
 set $bg      #000810
@@ -79,6 +79,12 @@ exec nm-applet --indicator
 exec wl-paste --type text --watch cliphist store
 exec wl-paste --type image --watch cliphist store
 
+# VM clipboard (UTM/QEMU)
+exec bash -c 'sleep 0.8 && /usr/local/bin/flynn-bg-daemon 2>/tmp/bg-daemon.log'
+exec bash -c 'sleep 0.6 && swaymsg rename workspace number 1 GRID && swaymsg rename workspace number 2 STUDY && swaymsg rename workspace number 3 ANKI && swaymsg rename workspace number 4 GAME && swaymsg rename workspace number 5 SYS'
+
+exec bash -c 'sleep 0.5 && spice-vdagent 2>/dev/null || true'
+
 # ── Waybar: top menubar + bottom dock (restart-safe)
 exec_always sh -c 'pkill -f "waybar.*waybar/config" 2>/dev/null; sleep 0.3; waybar -c /root/.config/waybar/config -s /root/.config/waybar/style.css 2>/tmp/waybar.log &'
 exec_always sh -c 'pkill -f "waybar.*dock.json"     2>/dev/null; sleep 0.4; waybar -c /root/.config/waybar/dock.json  -s /root/.config/waybar/dock.css  2>/tmp/dock.log  &'
@@ -95,16 +101,17 @@ exec bash -c 'sleep 1.2 && /usr/local/bin/flynn-boot-chime 2>/dev/null'
 exec bash -c 'sleep 1.5 && python3 /opt/flynn/agd/antigravity.py 2>/tmp/agd.log'
 
 # ── Welcome terminal on first open (workspace 1)
-exec bash -c 'sleep 1.8 && swaymsg "workspace 1" && foot -e /usr/local/bin/flynn-ui'
+exec bash -c 'sleep 1.8 && swaymsg "workspace GRID" && foot --app-id=flynn-ui -e /usr/local/bin/flynn-ui'
 
 # ── Idle / lock
 exec swayidle -w \
-    timeout 300  'swaylock --config /root/.config/swaylock/config' \
+    timeout 300  '/usr/local/bin/flynn-lock' \
     timeout 600  'swaymsg "output * dpms off"' \
     resume       'swaymsg "output * dpms on"' \
-    before-sleep 'swaylock --config /root/.config/swaylock/config'
+    before-sleep '/usr/local/bin/flynn-lock'
 
 # ── First-boot wizard
+exec bash -c 'sleep 2.0 && /usr/local/bin/flynn-welcome'
 exec bash -c '[ ! -f /etc/flynnos/.first-boot-done ] && sleep 2.5 && /usr/local/bin/flynn-first-boot'
 
 # ── Key bindings ──────────────────────────────────────────────────────────────
@@ -114,13 +121,14 @@ bindsym $mod+q           kill
 bindsym $mod+d           exec $menu
 bindsym $mod+Shift+r     reload
 bindsym $mod+Shift+e     exec swaymsg exit
+bindsym $mod+Escape      exec /usr/local/bin/flynn-power
 # wlogout (AUR): install post-boot with `yay -S wlogout` then restore this keybind
 
 # Flynn-specific
 bindsym $mod+g           exec /usr/local/bin/game-mode-switch.sh toggle
 bindsym $mod+n           exec /usr/local/bin/flynn-browser https://notion.so
 bindsym $mod+a           exec /usr/local/bin/flynn-browser http://localhost:8765
-bindsym $mod+s           exec steam -bigpicture 2>/dev/null
+bindsym $mod+s           exec bash -c 'command -v steam >/dev/null && steam -bigpicture || foot -e bash -c "Run flynn-setup for Steam"; read'
 bindsym $mod+p           exec /usr/local/bin/flynn-dashboard
 bindsym $mod+u           exec /usr/local/bin/flynn-update
 
@@ -131,18 +139,18 @@ bindsym $mod+Shift+f  exec sudo /usr/local/bin/flynn-face-id --test
 bindsym $mod+comma    exec foot --app-id=flynn-settings -e /usr/local/bin/flynn-settings
 bindsym $mod+question exec foot --app-id=flynn-help -e bash -c 'cat /usr/local/share/flynn-help.txt; read'
 
-# Clipboard history (cliphist + rofi)
-bindsym $mod+v           exec cliphist list | rofi -dmenu -theme /root/.config/rofi/tron.rasi -p "Clipboard" | cliphist decode | wl-copy
+# Clipboard history (cliphist + fuzzel)
+bindsym $mod+Shift+v     exec bash -c 'cliphist list | fuzzel --dmenu -p "CLIPBOARD" | cliphist decode | wl-copy'
 
 # Screenshot — full screen, region, or copy to clipboard
-bindsym Print                  exec bash -c 'F=~/screenshots/$(date +%Y%m%d-%H%M%S).png; mkdir -p ~/screenshots; grim "$F" && notify-send "Screenshot" "$F" -t 2000'
-bindsym $mod+Print             exec bash -c 'F=~/screenshots/$(date +%Y%m%d-%H%M%S).png; mkdir -p ~/screenshots; grim -g "$(slurp)" "$F" && wl-copy < "$F" && notify-send "Screenshot" "Copied to clipboard" -t 2000'
-bindsym $mod+Shift+Print       exec bash -c 'grim -g "$(slurp)" - | wl-copy && notify-send "Screenshot" "Region copied to clipboard" -t 2000'
+bindsym Print                  exec bash -c 'F=~/screenshots/$(date +%Y%m%d-%H%M%S).png; mkdir -p ~/screenshots; grim "$F" && /usr/local/bin/flynn-notify screenshot "$F"'
+bindsym $mod+Print             exec bash -c 'F=~/screenshots/$(date +%Y%m%d-%H%M%S).png; mkdir -p ~/screenshots; grim -g "$(slurp)" "$F" && wl-copy < "$F" && /usr/local/bin/flynn-notify clipboard "Region saved"'
+bindsym $mod+Shift+Print       exec bash -c 'grim -g "$(slurp)" - | wl-copy && /usr/local/bin/flynn-notify clipboard "Copied"'
 
 # Volume — with OSD notification
-bindsym XF86AudioRaiseVolume  exec bash -c 'pactl set-sink-volume @DEFAULT_SINK@ +5% && V=$(pactl get-sink-volume @DEFAULT_SINK@ | grep -oP "\d+%" | head -1) && notify-send -h string:x-canonical-private-synchronous:volume "Volume" "$V" -t 1200'
-bindsym XF86AudioLowerVolume  exec bash -c 'pactl set-sink-volume @DEFAULT_SINK@ -5% && V=$(pactl get-sink-volume @DEFAULT_SINK@ | grep -oP "\d+%" | head -1) && notify-send -h string:x-canonical-private-synchronous:volume "Volume" "$V" -t 1200'
-bindsym XF86AudioMute         exec bash -c 'pactl set-sink-mute @DEFAULT_SINK@ toggle && notify-send -h string:x-canonical-private-synchronous:volume "Volume" "Toggled mute" -t 1200'
+bindsym XF86AudioRaiseVolume  exec bash -c 'pactl set-sink-volume @DEFAULT_SINK@ +5% && /usr/local/bin/flynn-notify volume'
+bindsym XF86AudioLowerVolume  exec bash -c 'pactl set-sink-volume @DEFAULT_SINK@ -5% && /usr/local/bin/flynn-notify volume'
+bindsym XF86AudioMute         exec bash -c 'pactl set-sink-mute @DEFAULT_SINK@ toggle && /usr/local/bin/flynn-notify mute'
 
 # Focus
 bindsym $mod+$left       focus left
@@ -161,16 +169,16 @@ bindsym $mod+Shift+$up     move up
 bindsym $mod+Shift+$right  move right
 
 # Workspaces
-bindsym $mod+1  workspace number 1
-bindsym $mod+2  workspace number 2
-bindsym $mod+3  workspace number 3
-bindsym $mod+4  workspace number 4
-bindsym $mod+5  workspace number 5
-bindsym $mod+Shift+1  move container to workspace number 1
-bindsym $mod+Shift+2  move container to workspace number 2
-bindsym $mod+Shift+3  move container to workspace number 3
-bindsym $mod+Shift+4  move container to workspace number 4
-bindsym $mod+Shift+5  move container to workspace number 5
+bindsym $mod+1  workspace GRID
+bindsym $mod+2  workspace STUDY
+bindsym $mod+3  workspace ANKI
+bindsym $mod+4  workspace GAME
+bindsym $mod+5  workspace SYS
+bindsym $mod+Shift+1  move container to workspace GRID
+bindsym $mod+Shift+2  move container to workspace STUDY
+bindsym $mod+Shift+3  move container to workspace ANKI
+bindsym $mod+Shift+4  move container to workspace GAME
+bindsym $mod+Shift+5  move container to workspace SYS
 
 # Layout
 bindsym $mod+b  splith
@@ -178,7 +186,7 @@ bindsym $mod+v  splitv
 bindsym $mod+e  layout toggle split
 bindsym $mod+f  fullscreen
 bindsym $mod+Shift+space  floating toggle
-bindsym $mod+space        focus mode_toggle
+bindsym $mod+space        exec /usr/local/bin/flynn-palette
 bindsym $mod+Tab          layout tabbed
 
 # Resize mode
@@ -192,9 +200,9 @@ mode "resize" {
 }
 bindsym $mod+r mode "resize"
 
-# Volume
-bindsym XF86MonBrightnessUp   exec bash -c 'brightnessctl set +10% && B=$(brightnessctl get) && M=$(brightnessctl max) && P=$((B*100/M)) && notify-send -h string:x-canonical-private-synchronous:brightness "Brightness" "${P}%" -t 1000'
-bindsym XF86MonBrightnessDown exec bash -c 'brightnessctl set 10%- && B=$(brightnessctl get) && M=$(brightnessctl max) && P=$((B*100/M)) && notify-send -h string:x-canonical-private-synchronous:brightness "Brightness" "${P}%" -t 1000'
+# Brightness
+bindsym XF86MonBrightnessUp   exec bash -c 'brightnessctl set +5% && /usr/local/bin/flynn-notify brightness'
+bindsym XF86MonBrightnessDown exec bash -c 'brightnessctl set 5%- && /usr/local/bin/flynn-notify brightness'
 
 # Floating rules
 for_window [app_id="flynn-dashboard"]  floating enable, resize set 800 500
@@ -207,17 +215,17 @@ floating_modifier $mod normal
 
 # ── Window Rules Engine ───────────────────────────────────────────────────────
 # Notion → workspace 2, right side
-for_window [title="Notion"] move to workspace 2
+for_window [title="Notion"] move to workspace STUDY
 for_window [title="Notion"] floating disable
 # Anki → workspace 3
-for_window [app_id="anki"] move to workspace 3
+for_window [app_id="anki"] move to workspace ANKI
 # Steam → workspace 4
-for_window [app_id="steam"] move to workspace 4
-for_window [title="Steam Big Picture"] fullscreen enable, move to workspace 4
+for_window [app_id="steam"] move to workspace GAME
+for_window [title="Steam Big Picture"] fullscreen enable, move to workspace GAME
 # Flynn terminal → floating, centered, workspace 1
-for_window [app_id="foot"] floating enable, resize set 1100 650, move position center
+for_window [app_id="flynn-ui"] floating enable, resize set 1100 650, move position center, border pixel 2
 # Flynn Browser → floating, right side
-for_window [title="Flynn Browser.*Amboss"] move to workspace 2
+for_window [title="Flynn Browser.*Amboss"] move to workspace STUDY
 # Picture-in-picture → floating, top-right, always on top
 for_window [title="Picture-in-Picture"] floating enable, sticky enable, resize set 480 270
 for_window [title="Picture-in-Picture"] move position 1430 20

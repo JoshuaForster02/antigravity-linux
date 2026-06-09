@@ -1,67 +1,130 @@
 {
   "layer": "top",
   "position": "top",
-  "height": 30,
+  "height": 32,
   "spacing": 0,
   "exclusive": true,
-
-  "modules-left":   ["custom/logo", "sway/workspaces"],
-  "modules-center": ["clock"],
-  "modules-right":  ["cpu", "memory", "pulseaudio", "network", "tray"],
-
+  "modules-left": [
+    "custom/logo",
+    "sway/workspaces",
+    "custom/mode"
+  ],
+  "modules-center": [
+    "clock"
+  ],
+  "modules-right": [
+    "cpu",
+    "memory",
+    "temperature",
+    "battery",
+    "pulseaudio",
+    "bluetooth",
+    "network",
+    "tray",
+    "custom/power"
+  ],
   "custom/logo": {
-    "format": "  Flynn OS  ",
-    "tooltip": false,
-    "on-click": "exec rofi -show drun -theme /root/.config/rofi/tron.rasi"
+    "format": "  \uf0e7  FLYNN OS  ",
+    "tooltip": "App Launcher  (Super+D)",
+    "on-click": "fuzzel"
   },
-
   "sway/workspaces": {
     "disable-scroll": true,
     "all-outputs": true,
-    "format": "{name}"
+    "format": "{icon}",
+    "format-icons": {
+      "GRID": "\uf015",
+      "STUDY": "\uf02d",
+      "ANKI": "\uf5da",
+      "GAME": "\uf11b",
+      "SYS": "\uf013",
+      "urgent": "\uf071",
+      "focused": "\uf111",
+      "default": "\uf111"
+    }
   },
-
+  "custom/mode": {
+    "exec": "bash -c 'm=$(cat /tmp/flynnos-mode 2>/dev/null||echo study); [ \"$m\" = game ] && echo \"\uf11b GAME\" || echo \"\uf19d STUDY\"'",
+    "interval": 2,
+    "tooltip": "Game / Study mode  (Super+G)",
+    "on-click": "/usr/local/bin/game-mode-switch.sh toggle"
+  },
   "clock": {
-    "format": "{:%H:%M}",
-    "format-alt": "{:%a  %d %b  %H:%M:%S}",
+    "format": "\uf017  {:%H:%M}",
+    "format-alt": "\uf073  {:%a %d %b  %H:%M:%S}",
     "tooltip-format": "<tt><small>{calendar}</small></tt>",
     "interval": 1,
     "on-click": "exec sh -c 'swaymsg output - dpms toggle'"
   },
-
   "cpu": {
-    "format": "CPU {usage}%",
+    "format": "\uf4bc {usage}%",
     "interval": 3,
-    "tooltip": false,
-    "states": { "warning": 70, "critical": 90 }
+    "tooltip-format": "CPU {usage}%",
+    "states": {
+      "warning": 70,
+      "critical": 90
+    }
   },
-
   "memory": {
-    "format": "MEM {percentage}%",
+    "format": "\uf538 {percentage}%",
     "interval": 5,
-    "tooltip-format": "{used:0.1f}G of {total:0.1f}G"
+    "tooltip-format": "{used:0.1f}G / {total:0.1f}G"
   },
-
+  "temperature": {
+    "critical-threshold": 85,
+    "format": "\uf2c7 {temperatureC}\u00b0C",
+    "tooltip-format": "Thermal {temperatureC}\u00b0C",
+    "interval": 5
+  },
+  "battery": {
+    "states": {
+      "warning": 30,
+      "critical": 15
+    },
+    "format": "{capacity}% {icon}",
+    "format-charging": "\uf0e7 {capacity}%",
+    "format-plugged": "\uf1e6 {capacity}%",
+    "format-icons": [
+      "\uf244",
+      "\uf243",
+      "\uf242",
+      "\uf241",
+      "\uf240"
+    ],
+    "interval": 20,
+    "on-click": "foot -e upower -i $(upower -e | grep BAT | head -1)"
+  },
   "pulseaudio": {
-    "format": "VOL {volume}%",
-    "format-muted": "MUTE",
-    "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
-    "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +2%",
-    "on-scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -2%",
-    "tooltip": false
+    "format": "\uf028 {volume}%",
+    "format-muted": "\uf6a9",
+    "on-click": "pavucontrol",
+    "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+    "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +3%",
+    "on-scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -3%"
   },
-
+  "bluetooth": {
+    "format": "\uf294",
+    "format-connected": "\uf293 {num_connections}",
+    "format-disabled": "",
+    "format-off": "",
+    "tooltip-format": "{device_alias}",
+    "on-click": "blueman-manager"
+  },
   "network": {
-    "format-wifi":         "{signalStrength}%",
-    "format-ethernet":     "ETH",
-    "format-disconnected": "---",
-    "tooltip-format": "{ifname}  {ipaddr}",
+    "format-wifi": "\uf1eb {signalStrength}%",
+    "format-ethernet": "\uf796",
+    "format-disconnected": "\uf127",
+    "tooltip-format": "{ifname}  {ipaddr}/{cidr}",
     "on-click": "nm-connection-editor",
-    "interval": 15
+    "interval": 10
   },
-
   "tray": {
     "spacing": 8,
-    "icon-size": 14
+    "icon-size": 16
+  },
+  "custom/power": {
+    "format": "\uf011",
+    "tooltip": "Power  (Super+Escape)",
+    "on-click": "/usr/local/bin/flynn-power"
   }
 }

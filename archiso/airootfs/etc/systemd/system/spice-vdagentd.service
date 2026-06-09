@@ -1,0 +1,12 @@
+[Unit]
+Description=SPICE VDAgent Daemon (UTM clipboard + display resize)
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/spice-vdagentd -x
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
