@@ -104,22 +104,26 @@ class SettingsApp(Gtk.Application):
         # ── Display
         box.append(self._section('DISPLAY'))
         box.append(self._brightness_row())
+        box.append(self._row('Display Scale', 'HiDPI / Retina scaling (persists)',
+                              lambda: run('/usr/local/bin/flynn-display')))
         box.append(self._row('Lock Screen', 'Lock immediately',
-                              lambda: run('swaylock -i /root/.config/sway/tron-bg.png --scaling fill')))
+                              lambda: run('/usr/local/bin/flynn-lock')))
 
         box.append(self._sep())
 
         # ── Keyboard
         box.append(self._section('KEYBOARD'))
-        box.append(self._row('Layout: US', 'Change to German (DE)',
-                              lambda: run("swaymsg 'input type:keyboard xkb_layout de'")))
-        box.append(self._row('Layout: DE', 'Change to English (US)',
-                              lambda: run("swaymsg 'input type:keyboard xkb_layout us'")))
+        box.append(self._row('German (QWERTZ)', 'Persists across reboots',
+                              lambda: run('/usr/local/bin/flynn-keyboard de')))
+        box.append(self._row('English (US)', 'Persists across reboots',
+                              lambda: run('/usr/local/bin/flynn-keyboard us')))
 
         box.append(self._sep())
 
         # ── Network
         box.append(self._section('NETWORK'))
+        box.append(self._row('Wi-Fi', 'Quick picker — click to connect',
+                              lambda: run('/usr/local/bin/flynn-wifi')))
         box.append(self._row('Network Manager', 'Open WiFi/Ethernet config',
                               lambda: run('nm-connection-editor')))
         ip = run_out("ip route get 1 | awk '{print $7; exit}' 2>/dev/null")

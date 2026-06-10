@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+"""Flynn OS — Window switcher (Super+Tab / Alt+Tab)
+Lists all open windows via fuzzel, focuses the chosen one."""
+import json, subprocess, sys
+
+def get_windows():
+    try:
+        tree = json.loads(subprocess.check_output(
+            ["swaymsg", "-t", "get_tree"], text=True))
+    except Exception:
+        return []
+    wins = []
+
+    def walk(node, workspace=None):
+        if node.get("type") == "workspace":
+            workspace = node.get("name", "?")
+        # A real window: has a name and an app_id (wayland) or window props (X11)
+        if node.get("name") and (node.get("app_id") or node.get("window_properties")) \
+           and node.get("type") in ("con", "floating_con") and node.get("pid"):
+            wins.append((node["id"], workspace or "?", node["name"],
+                         bool(node.get("focused"))))
+        for child in node.get("nodes", []) + node.get("floating_nodes", []):
+            walk(child, workspace)
+
+    walk(tree)
+    return wins
+
+def main():
+    wins = get_windows()
+    if not wins:
+        subprocess.run(["/usr/local/bin/flynn-notify", "info", "No open windows"])
+        return
+    lines = []
+    for _id, ws, title, focused in wins:
+        marker = "● " if focused else "  "
+        title = title if len(title) <= 60 else title[:57] + "…"
+        lines.append(f"{marker}{ws}  ·  {title}")
+    try:
+        out = subprocess.run(
+            ["fuzzel", "--dmenu", "--index", "-p", "  Windows  ",
+             "--width", "56", "--lines", str(min(len(lines), 10))],
+            input="\n".join(lines), capture_output=True, text=True)
+        idx = int(out.stdout.strip())
+    except Exception:
+        return
+    if 0 <= idx < len(wins):
+        subprocess.run(["swaymsg", f"[con_id={wins[idx][0]}]", "focus"],
+                       capture_output=True)
+
+if __name__ == "__main__":
+    main()

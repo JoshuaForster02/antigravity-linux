@@ -1,0 +1,20 @@
+#!/bin/bash
+# Flynn OS — Display scale picker (HiDPI / Retina, persists across reboots)
+# Usage: flynn-display [scale]   e.g. flynn-display 1.5
+
+CONF_DIR=/root/.config/sway/config.d
+CONF=$CONF_DIR/20-display.conf
+mkdir -p "$CONF_DIR"
+
+if [ -n "${1:-}" ]; then
+    SCALE=$1
+else
+    SCALE=$(printf "1.0   default\n1.25  comfortable\n1.5   HiDPI\n1.75\n2.0   Retina" \
+            | fuzzel --dmenu -p "  Display scale  " --width 30 --lines 5 \
+            | awk '{print $1}')
+fi
+[ -z "$SCALE" ] && exit 0
+
+echo "output * scale $SCALE" > "$CONF"
+swaymsg "output * scale $SCALE" >/dev/null 2>&1 || true
+/usr/local/bin/flynn-notify display "Scale: ${SCALE}×"

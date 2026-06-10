@@ -61,6 +61,14 @@ case "$TYPE" in
         notify-send -u low -t 2500 -i network-wireless \
             "NETWORK" "${VAL:-Network state changed}" 2>/dev/null
         ;;
+    keyboard)
+        notify-send -u low -t 2000 -i input-keyboard \
+            "KEYBOARD" "${VAL:-Layout changed}" 2>/dev/null
+        ;;
+    display)
+        notify-send -u low -t 2000 -i video-display \
+            "DISPLAY" "${VAL:-Display changed}" 2>/dev/null
+        ;;
     error)
         notify-send -u critical -t 4000 \
             "ERROR" "${VAL:-An error occurred}" 2>/dev/null

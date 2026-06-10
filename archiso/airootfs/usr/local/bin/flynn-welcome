@@ -4,4 +4,6 @@ FLAG=/run/flynn-welcome.done
 [ -f "$FLAG" ] && exit 0
 touch "$FLAG"
 sleep 1.2
-notify-send -a "Flynn OS" -u low -t 8000 -i dialog-information     "THE GRID IS ONLINE"     "Super+D Launcher  ·  Super+N Notion  ·  Super+G GameMode\nSuper+? Help  ·  flynn-setup for Steam/Anki" 2>/dev/null || true
+notify-send -a "Flynn OS" -u low -t 8000 -i dialog-information \
+    "Welcome to the Grid" \
+    "Super+D Launcher  ·  Super+Tab Windows  ·  Super+W Wi-Fi\nSuper+, Settings  ·  Super+? All shortcuts" 2>/dev/null || true

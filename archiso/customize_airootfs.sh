@@ -165,6 +165,7 @@ mkdir -p /root/.config/rofi
 [ -f /root/.config/rofi/config.rasi ] && cp /root/.config/rofi/config.rasi /root/.config/rofi/tron.rasi 2>/dev/null || true
 mkdir -p /root/.config/swaylock
 mkdir -p /root/.config/sway
+mkdir -p /root/.config/sway/config.d
 mkdir -p /root/screenshots
 echo "  ✓ config dirs"
 

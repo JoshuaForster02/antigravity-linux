@@ -41,6 +41,9 @@ smart_borders on
 # Default layout: floating (macOS-like — no tiling on first open)
 workspace_layout default
 
+# macOS feel: click to focus (not hover)
+focus_follows_mouse no
+
 # ── Font ──────────────────────────────────────────────────────────────────────
 font pango:Noto Sans 10
 
@@ -133,6 +136,8 @@ bindsym $mod+p           exec /usr/local/bin/flynn-dashboard
 bindsym $mod+u           exec /usr/local/bin/flynn-update
 
 bindsym $mod+w           exec /usr/local/bin/flynn-wifi
+bindsym $mod+F2          exec /usr/local/bin/flynn-keyboard toggle
+bindsym $mod+F3          exec /usr/local/bin/flynn-display
 
 bindsym $mod+Shift+s  exec /usr/local/bin/flynn-sunshine --status
 bindsym $mod+Shift+a  exec /usr/local/bin/flynn-ambient toggle
@@ -189,7 +194,9 @@ bindsym $mod+e  layout toggle split
 bindsym $mod+f  fullscreen
 bindsym $mod+Shift+space  floating toggle
 bindsym $mod+space        exec /usr/local/bin/flynn-palette
-bindsym $mod+Tab          layout tabbed
+bindsym $mod+Tab          exec /usr/local/bin/flynn-windows
+bindsym Mod1+Tab          exec /usr/local/bin/flynn-windows
+bindsym $mod+Shift+Tab    layout tabbed
 
 # Resize mode
 mode "resize" {
@@ -205,6 +212,11 @@ bindsym $mod+r mode "resize"
 # Brightness
 bindsym XF86MonBrightnessUp   exec bash -c 'brightnessctl set +5% && /usr/local/bin/flynn-notify brightness'
 bindsym XF86MonBrightnessDown exec bash -c 'brightnessctl set 5%- && /usr/local/bin/flynn-notify brightness'
+
+# ── macOS-like: ALL windows open floating + centered ─────────────────────────
+# (toggle tiling per window: Super+Shift+Space · tile layouts: Super+B / Super+V)
+for_window [app_id=".*"] floating enable, move position center
+for_window [class=".*"]  floating enable, move position center
 
 # Floating rules
 for_window [app_id="flynn-dashboard"]  floating enable, resize set 800 500
@@ -237,5 +249,8 @@ for_window [app_id="thunar"] floating enable, resize set 1000 600, move position
 for_window [title="Flynn Command Palette"] floating enable, move position center, border none
 for_window [app_id="os.flynnos.settings"] floating enable, resize set 480 600, move position center, border none
 for_window [app_id="flynn-help"]     floating enable, resize set 700 500, move position center, border none
+
+# User settings written by flynn-keyboard / flynn-display (persist across reboots)
+include /root/.config/sway/config.d/*
 
 include /etc/sway/config.d/*

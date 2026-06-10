@@ -1,0 +1,31 @@
+#!/bin/bash
+# Flynn OS — Keyboard layout switcher (persists across reboots)
+# Usage: flynn-keyboard [us|de|toggle]
+
+CONF_DIR=/root/.config/sway/config.d
+CONF=$CONF_DIR/10-keyboard.conf
+mkdir -p "$CONF_DIR"
+
+CUR=us
+[ -f "$CONF" ] && CUR=$(grep -oE 'xkb_layout [a-z]+' "$CONF" | awk '{print $2}')
+
+case "${1:-toggle}" in
+    us|de)  NEW=$1 ;;
+    toggle) [ "$CUR" = "us" ] && NEW=de || NEW=us ;;
+    *)      echo "usage: flynn-keyboard [us|de|toggle]"; exit 1 ;;
+esac
+
+cat > "$CONF" << EOF
+input type:keyboard {
+    xkb_layout  $NEW
+    xkb_options caps:escape
+}
+EOF
+
+swaymsg "input type:keyboard xkb_layout $NEW" >/dev/null 2>&1 || true
+
+if [ "$NEW" = "de" ]; then
+    /usr/local/bin/flynn-notify keyboard "Layout: German (QWERTZ)"
+else
+    /usr/local/bin/flynn-notify keyboard "Layout: English (US)"
+fi

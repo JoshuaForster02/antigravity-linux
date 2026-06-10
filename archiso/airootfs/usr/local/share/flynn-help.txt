@@ -6,13 +6,16 @@
  ──────────────────────────────────────────────────────────────────────────
   Super+Return      Open terminal
   Super+D           App launcher (Fuzzel)
+  Super+Tab         Window switcher (also Alt+Tab)
   Super+Space       ANTIGRAVITY command palette
   Super+Escape      Power menu (lock / logout / reboot)
   Super+Q           Close window
   Super+F           Fullscreen toggle
-  Super+Shift+Space Float/tile toggle
-  Super+Tab         Tabbed layout
+  Super+Shift+Space Float/tile toggle (windows open floating)
+  Super+Shift+Tab   Tabbed layout
   Super+R           Resize mode
+  Super+F2          Keyboard layout US/DE toggle
+  Super+F3          Display scale (HiDPI/Retina)
   Super+Shift+V     Clipboard history
   Super+Shift+R     Reload Sway config
   Super+Shift+E     Exit Sway (logout)
