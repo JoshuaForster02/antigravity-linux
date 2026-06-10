@@ -1,0 +1,71 @@
+#!/bin/bash
+# Flynn OS — Wi-Fi quick picker (nmcli + fuzzel)
+# Click a network → connect. Prompts for password via fuzzel if needed.
+
+set -u
+
+if ! command -v nmcli >/dev/null; then
+    /usr/local/bin/flynn-notify error "NetworkManager not available"
+    exit 1
+fi
+
+# Current connection (if any)
+ACTIVE=$(nmcli -t -f NAME connection show --active 2>/dev/null | head -1)
+
+# Header entries
+HEADER=""
+[ -n "$ACTIVE" ] && HEADER="✓ Connected: ${ACTIVE}\n──────────────\n"
+
+# Scan (async refresh, use cache for instant open)
+nmcli device wifi rescan 2>/dev/null &
+
+LIST=$(nmcli -t -f SSID,SIGNAL,SECURITY device wifi list 2>/dev/null \
+       | awk -F: '$1 != "" { seen[$1]++ } seen[$1]==1 {
+           bars = ($2 > 75) ? "▂▄▆█" : ($2 > 50) ? "▂▄▆" : ($2 > 25) ? "▂▄" : "▂";
+           lock = ($3 != "" && $3 != "--") ? " " : "";
+           printf "%s  %s%s\n", bars, $1, lock }')
+
+CHOICE=$(printf "${HEADER}${LIST}\nEthernet / Editor…\nDisconnect Wi-Fi" \
+         | fuzzel --dmenu -p "  Wi-Fi  " --width 44 --lines 12)
+
+case "$CHOICE" in
+    ""|"✓ Connected:"*|"──"*) exit 0 ;;
+    "Ethernet / Editor…")     exec nm-connection-editor ;;
+    "Disconnect Wi-Fi")
+        IFACE=$(nmcli -t -f DEVICE,TYPE device | awk -F: '$2=="wifi"{print $1; exit}')
+        nmcli device disconnect "$IFACE" 2>/dev/null
+        /usr/local/bin/flynn-notify network "Wi-Fi disconnected"
+        exit 0 ;;
+esac
+
+# Strip bars + lock glyph → SSID
+SSID=$(echo "$CHOICE" | sed -E 's/^[▂▄▆█]+  //; s/ $//')
+[ -z "$SSID" ] && exit 0
+
+# Known network? Just bring it up.
+if nmcli -t -f NAME connection show 2>/dev/null | grep -qxF "$SSID"; then
+    if nmcli connection up "$SSID" >/dev/null 2>&1; then
+        /usr/local/bin/flynn-notify network "Connected to ${SSID}"
+        exit 0
+    fi
+fi
+
+# Secured? Ask for password (fuzzel --password)
+SEC=$(nmcli -t -f SSID,SECURITY device wifi list 2>/dev/null \
+      | awk -F: -v s="$SSID" '$1==s {print $2; exit}')
+
+if [ -n "$SEC" ] && [ "$SEC" != "--" ]; then
+    PASS=$(echo "" | fuzzel --dmenu --password -p "  ${SSID}  " --width 44 --lines 0)
+    [ -z "$PASS" ] && exit 0
+    if nmcli device wifi connect "$SSID" password "$PASS" >/dev/null 2>&1; then
+        /usr/local/bin/flynn-notify network "Connected to ${SSID}"
+    else
+        /usr/local/bin/flynn-notify error "Could not connect to ${SSID}"
+    fi
+else
+    if nmcli device wifi connect "$SSID" >/dev/null 2>&1; then
+        /usr/local/bin/flynn-notify network "Connected to ${SSID}"
+    else
+        /usr/local/bin/flynn-notify error "Could not connect to ${SSID}"
+    fi
+fi

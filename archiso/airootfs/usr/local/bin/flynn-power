@@ -1,9 +1,15 @@
 #!/bin/bash
 # Flynn OS — Power menu (fuzzel)
-CHOICE=$(printf "Lock Grid\nLogout\nReboot\nShutdown\nCancel" | fuzzel --dmenu -p "POWER" -w 28)
+CHOICE=$(printf "  Lock\n  Logout\n  Reboot\n  Shutdown\n  Cancel" \
+         | fuzzel --dmenu -p "  Power  " --width 26 --lines 5)
+
 case "$CHOICE" in
-    "Lock Grid")  /usr/local/bin/flynn-lock ;;
-    Logout)       swaymsg exit ;;
-    Reboot)       systemctl reboot ;;
-    Shutdown)     systemctl poweroff ;;
+    *Lock)      exec /usr/local/bin/flynn-lock ;;
+    *Logout)    swaymsg exit ;;
+    *Reboot)
+        OK=$(printf "Yes, reboot\nCancel" | fuzzel --dmenu -p "  Reboot?  " --width 26 --lines 2)
+        [ "$OK" = "Yes, reboot" ] && systemctl reboot ;;
+    *Shutdown)
+        OK=$(printf "Yes, shut down\nCancel" | fuzzel --dmenu -p "  Shutdown?  " --width 26 --lines 2)
+        [ "$OK" = "Yes, shut down" ] && systemctl poweroff ;;
 esac

@@ -9,55 +9,54 @@ from gi.repository import Gtk, Gdk, GLib
 
 CSS = b"""
 window {
-    background: rgba(0, 8, 18, 0.97);
-    color: #00d8f0;
+    background: rgba(12, 20, 34, 0.97);
+    color: #dcedf7;
+    border-radius: 16px;
 }
 .settings-header {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
+    font-family: "Noto Sans", sans-serif;
+    font-size: 15px;
     font-weight: 700;
-    letter-spacing: 3px;
-    color: rgba(0, 150, 180, 0.55);
-    padding: 14px 20px 6px;
+    color: #e6f4fb;
+    padding: 16px 20px 6px;
 }
 .section-title {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
+    font-family: "Noto Sans", sans-serif;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 2px;
-    color: rgba(0, 180, 210, 0.60);
-    padding: 12px 20px 4px;
+    color: #5ad7ff;
+    padding: 14px 20px 4px;
 }
 .setting-row {
-    padding: 8px 20px;
-    border-radius: 6px;
-    margin: 1px 8px;
+    padding: 9px 20px;
+    border-radius: 10px;
+    margin: 1px 10px;
 }
-.setting-row:hover { background: rgba(0, 229, 255, 0.06); }
+.setting-row:hover { background: rgba(122, 216, 248, 0.08); }
 .setting-label {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 12px;
-    color: rgba(180, 220, 235, 0.85);
+    font-family: "Noto Sans", sans-serif;
+    font-size: 13px;
+    color: #dcedf7;
 }
 .setting-sub {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 9px;
-    color: rgba(0, 130, 160, 0.55);
+    font-family: "Noto Sans", sans-serif;
+    font-size: 10px;
+    color: #56788c;
 }
 button {
-    background:    rgba(0, 229, 255, 0.08);
-    border:        1px solid rgba(0, 229, 255, 0.20);
-    border-radius: 8px;
-    color:         rgba(0, 200, 230, 0.80);
-    font-family:   "JetBrains Mono", monospace;
-    font-size:     11px;
-    padding:       4px 14px;
+    background:    rgba(122, 216, 248, 0.10);
+    border:        1px solid rgba(122, 216, 248, 0.22);
+    border-radius: 10px;
+    color:         #cfe9f5;
+    font-family:   "Noto Sans", sans-serif;
+    font-size:     12px;
+    padding:       5px 14px;
 }
-button:hover { background: rgba(0, 229, 255, 0.16); color: #00e5ff; }
-scale trough { background: rgba(0, 229, 255, 0.08); min-height: 4px; }
-scale highlight { background: rgba(0, 229, 255, 0.65); }
-scale slider { background: #00e5ff; min-width: 14px; min-height: 14px; border-radius: 50%; }
-separator { background: rgba(0, 229, 255, 0.08); min-height: 1px; margin: 4px 16px; }
+button:hover { background: rgba(122, 216, 248, 0.18); color: #ffffff; }
+scale trough { background: rgba(122, 216, 248, 0.10); min-height: 4px; border-radius: 2px; }
+scale highlight { background: #5ad7ff; border-radius: 2px; }
+scale slider { background: #ffffff; min-width: 16px; min-height: 16px; border-radius: 50%; }
+separator { background: rgba(122, 216, 248, 0.10); min-height: 1px; margin: 4px 16px; }
 """
 
 def run(cmd): subprocess.Popen(cmd, shell=True)

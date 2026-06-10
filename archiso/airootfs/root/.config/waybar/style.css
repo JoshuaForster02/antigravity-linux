@@ -1,96 +1,134 @@
-/* Flynn OS HUD — TRON Legacy / SolarOS */
-
-@keyframes flynn-pulse {
-  0%, 100% { border-bottom-color: rgba(126, 232, 255, 0.22); }
-  50%      { border-bottom-color: rgba(232, 248, 255, 0.55); }
-}
+/* ════════════════════════════════════════════════════════════════════════════
+   Flynn OS — Menubar  (ENCOM clean / Antigravity look)
+   Frosted glass, soft navy, quiet cyan accents. No shouting.
+   ════════════════════════════════════════════════════════════════════════════ */
 
 * {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 9px;
+    font-family: "Noto Sans", "Symbols Nerd Font", sans-serif;
+    font-size: 12px;
     font-weight: 500;
     min-height: 0;
     border: none;
     border-radius: 0;
     padding: 0;
     margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 2px;
 }
 
 window#waybar {
-    background-color: rgba(0, 0, 0, 0.96);
-    border-bottom: 1px solid rgba(126, 232, 255, 0.28);
-    color: rgba(184, 232, 248, 0.82);
-    animation: flynn-pulse 4s ease-in-out infinite;
+    background: rgba(10, 17, 30, 0.82);
+    border-bottom: 1px solid rgba(122, 216, 248, 0.10);
+    color: #9ec1d4;
 }
 
+/* ── Logo / launcher ─────────────────────────────────────────────────────── */
 #custom-logo {
-    color: rgba(232, 248, 255, 0.95);
+    color: #5ad7ff;
     font-weight: 700;
-    font-size: 9px;
-    letter-spacing: 4px;
-    padding: 0 20px;
-    border-right: 1px solid rgba(126, 232, 255, 0.15);
+    font-size: 12px;
+    padding: 0 16px 0 18px;
 }
-#custom-logo:hover { color: #fff; background: rgba(126, 232, 255, 0.04); }
+#custom-logo:hover {
+    color: #aeeaff;
+    background: rgba(122, 216, 248, 0.08);
+}
 
-#workspaces { padding: 0 8px; }
+/* ── Workspaces ──────────────────────────────────────────────────────────── */
+#workspaces {
+    padding: 0 6px;
+}
 #workspaces button {
-    padding: 0 16px;
-    min-width: 36px;
-    color: rgba(58, 120, 140, 0.55);
+    padding: 0 12px;
+    margin: 4px 2px;
+    border-radius: 8px;
+    color: #56788c;
     background: transparent;
-    border-bottom: 1px solid transparent;
-    font-size: 8px;
-    letter-spacing: 3px;
+    font-size: 11px;
+    transition: all 0.15s ease;
 }
 #workspaces button:hover {
-    color: rgba(184, 232, 248, 0.9);
-    border-bottom: 1px solid rgba(126, 232, 255, 0.35);
+    color: #cfe9f5;
+    background: rgba(122, 216, 248, 0.10);
 }
 #workspaces button.focused {
-    color: #e8f8ff;
-    border-bottom: 1px solid rgba(232, 248, 255, 0.85);
+    color: #0a111e;
+    background: #5ad7ff;
+    font-weight: 700;
+}
+#workspaces button.urgent {
+    color: #ff5d6c;
+    background: rgba(255, 93, 108, 0.12);
 }
 
 #custom-mode {
-    padding: 0 14px;
-    color: rgba(100, 180, 200, 0.65);
-    border-left: 1px solid rgba(126, 232, 255, 0.08);
-    font-size: 8px;
-}
-
-#clock {
-    color: rgba(232, 248, 255, 0.92);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 4px;
-    padding: 0 28px;
-}
-
-#cpu, #memory, #temperature, #battery, #pulseaudio, #bluetooth, #network, #tray, #custom-power {
     padding: 0 12px;
-    font-size: 8px;
-    color: rgba(120, 180, 200, 0.62);
-    border-left: 1px solid rgba(126, 232, 255, 0.06);
+    margin: 4px 4px;
+    border-radius: 8px;
+    color: #7da8bc;
+    font-size: 11px;
 }
-#cpu:hover, #memory:hover, #clock:hover, #custom-power:hover {
-    color: #e8f8ff;
-    background: rgba(126, 232, 255, 0.03);
+#custom-mode:hover {
+    background: rgba(122, 216, 248, 0.10);
+    color: #cfe9f5;
 }
-#cpu.warning, #battery.warning { color: #ffcc44; }
-#cpu.critical { color: #ff4060; }
-#custom-power { padding: 0 16px; letter-spacing: 3px; }
 
-tooltip {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 8px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    background: rgba(0, 0, 0, 0.98);
-    border: 1px solid rgba(126, 232, 255, 0.35);
-    border-radius: 0;
-    color: #b8e8f8;
-    padding: 6px 12px;
+/* ── Clock (center, macOS style) ─────────────────────────────────────────── */
+#clock {
+    color: #e6f4fb;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 0 20px;
 }
+#clock:hover {
+    background: rgba(122, 216, 248, 0.08);
+}
+
+/* ── Right modules — quiet pills ─────────────────────────────────────────── */
+#cpu, #memory, #temperature, #battery, #pulseaudio,
+#bluetooth, #network, #idle_inhibitor, #tray, #custom-power {
+    padding: 0 11px;
+    margin: 4px 1px;
+    border-radius: 8px;
+    font-size: 11px;
+    color: #7da8bc;
+    transition: all 0.15s ease;
+}
+#cpu:hover, #memory:hover, #temperature:hover, #battery:hover,
+#pulseaudio:hover, #bluetooth:hover, #network:hover,
+#idle_inhibitor:hover, #custom-power:hover {
+    color: #e6f4fb;
+    background: rgba(122, 216, 248, 0.10);
+}
+
+#cpu.warning, #battery.warning      { color: #ffc857; }
+#cpu.critical, #temperature.critical { color: #ff5d6c; }
+#battery.critical                    { color: #ff5d6c; }
+#battery.charging                    { color: #3ddc97; }
+#pulseaudio.muted                    { color: #56788c; }
+#network.disconnected                { color: #ff5d6c; }
+#idle_inhibitor.activated            { color: #ffc857; }
+
+#custom-power {
+    color: #9ec1d4;
+    padding: 0 16px 0 12px;
+}
+#custom-power:hover {
+    color: #ff5d6c;
+    background: rgba(255, 93, 108, 0.10);
+}
+
+#tray {
+    padding: 0 8px;
+}
+#tray > .passive { -gtk-icon-effect: dim; }
+
+/* ── Tooltips — rounded frosted cards ────────────────────────────────────── */
+tooltip {
+    font-family: "Noto Sans", sans-serif;
+    font-size: 11px;
+    background: rgba(16, 25, 42, 0.96);
+    border: 1px solid rgba(122, 216, 248, 0.22);
+    border-radius: 10px;
+    color: #cfe9f5;
+    padding: 8px 12px;
+}
+tooltip label { color: #cfe9f5; }

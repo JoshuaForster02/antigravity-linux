@@ -57,6 +57,10 @@ case "$TYPE" in
         notify-send -u low -t 800 \
             "SECURITY" "LOCKING GRID..." 2>/dev/null
         ;;
+    network)
+        notify-send -u low -t 2500 -i network-wireless \
+            "NETWORK" "${VAL:-Network state changed}" 2>/dev/null
+        ;;
     error)
         notify-send -u critical -t 4000 \
             "ERROR" "${VAL:-An error occurred}" 2>/dev/null

@@ -13,29 +13,28 @@ set $right l
 set $term  foot
 set $menu  fuzzel
 
-# ── TRON Colors ───────────────────────────────────────────────────────────────
-set $bg       #000000
-set $cyan    #00e5ff
-set $dcyan   #004466
-set $border  #00e5ff
-set $dborder #002233
-set $text    #e0f8ff
-set $urgent  #ff3300
+# ── Flynn Colors (ENCOM clean) ────────────────────────────────────────────────
+set $bg      #0c1422
+set $accent  #5ad7ff
+set $muted   #2c4258
+set $dborder #16283a
+set $text    #dcedf7
+set $urgent  #ff5d6c
 
-# ── Background — solid color only (live TRON grid handled by flynn-bg-daemon) ──
-output * bg #000000 solid_color
+# ── Background — solid navy until wallpaper applies ──────────────────────────
+output * bg #0c1422 solid_color
 
 # ── Window appearance ─────────────────────────────────────────────────────────
 # class                  border   bg       text    indicator child_border
-client.focused           $cyan    $bg      $text   $cyan     $cyan
-client.focused_inactive  $dborder $bg      $dcyan  $dborder  $dborder
-client.unfocused         $dborder $bg      $dcyan  $dborder  $dborder
+client.focused           $accent  $bg      $text   $accent   $accent
+client.focused_inactive  $dborder $bg      $muted  $dborder  $dborder
+client.unfocused         $dborder $bg      $muted  $dborder  $dborder
 client.urgent            $urgent  $bg      $text   $urgent   $urgent
 
-default_border pixel 1
-default_floating_border pixel 1
-gaps inner 12
-gaps outer 8
+default_border pixel 2
+default_floating_border pixel 2
+gaps inner 14
+gaps outer 10
 smart_gaps on
 smart_borders on
 
@@ -43,7 +42,7 @@ smart_borders on
 workspace_layout default
 
 # ── Font ──────────────────────────────────────────────────────────────────────
-font pango:JetBrains Mono 10
+font pango:Noto Sans 10
 
 # ── Input ─────────────────────────────────────────────────────────────────────
 input type:keyboard {
@@ -92,7 +91,7 @@ exec_always sh -c 'pkill -f "waybar.*dock.json"     2>/dev/null; sleep 0.4; wayb
 exec_always sh -c 'pkill -x mako 2>/dev/null; sleep 0.3; mako --config /root/.config/mako/config 2>/dev/null &'
 
 # ── TRON wallpaper (pre-generated during build, re-applies on reload)
-exec_always bash -c 'sleep 0.2 && swaymsg "output * bg /root/.config/sway/tron-bg.png fill" 2>/dev/null || swaymsg "output * bg #000000 solid_color"'
+exec_always bash -c 'sleep 0.2 && swaymsg "output * bg /root/.config/sway/tron-bg.png fill" 2>/dev/null || swaymsg "output * bg #0c1422 solid_color"'
 
 # ── Flynn daemon (REST API + system monitor)
 exec bash -c 'sleep 1.0 && /usr/local/bin/flynn-daemon 2>/tmp/daemon.log'
@@ -133,11 +132,13 @@ bindsym $mod+s           exec bash -c 'command -v steam >/dev/null && steam -big
 bindsym $mod+p           exec /usr/local/bin/flynn-dashboard
 bindsym $mod+u           exec /usr/local/bin/flynn-update
 
+bindsym $mod+w           exec /usr/local/bin/flynn-wifi
+
 bindsym $mod+Shift+s  exec /usr/local/bin/flynn-sunshine --status
 bindsym $mod+Shift+a  exec /usr/local/bin/flynn-ambient toggle
 bindsym $mod+F1       exec /usr/local/bin/flynn-health status
 bindsym $mod+Shift+f  exec sudo /usr/local/bin/flynn-face-id --test
-bindsym $mod+comma    exec foot --app-id=flynn-settings -e /usr/local/bin/flynn-settings
+bindsym $mod+comma    exec /usr/local/bin/flynn-settings
 bindsym $mod+question exec foot --app-id=flynn-help -e bash -c 'cat /usr/local/share/flynn-help.txt; read'
 
 # Clipboard history (cliphist + fuzzel)
@@ -234,7 +235,7 @@ for_window [title="Picture-in-Picture"] move position 1430 20
 for_window [app_id="thunar"] floating enable, resize set 1000 600, move position center
 # AGD Command Palette — centered, floating, no shadows needed
 for_window [title="Flynn Command Palette"] floating enable, move position center, border none
-for_window [app_id="flynn-settings"] floating enable, resize set 480 600, move position center, border none
+for_window [app_id="os.flynnos.settings"] floating enable, resize set 480 600, move position center, border none
 for_window [app_id="flynn-help"]     floating enable, resize set 700 500, move position center, border none
 
 include /etc/sway/config.d/*

@@ -1,61 +1,87 @@
-/* Flynn OS command rail */
-
-@keyframes dock-glow {
-  0%, 100% { border-top-color: rgba(126, 232, 255, 0.18); }
-  50%      { border-top-color: rgba(232, 248, 255, 0.42); }
-}
+/* ════════════════════════════════════════════════════════════════════════════
+   Flynn OS — Dock  (floating frosted pill, macOS style)
+   The waybar window itself is transparent; the centered module box is the dock.
+   ════════════════════════════════════════════════════════════════════════════ */
 
 * {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 9px;
+    font-family: "Symbols Nerd Font", "Noto Sans", sans-serif;
+    font-size: 18px;
     min-height: 0;
     border: none;
     border-radius: 0;
     padding: 0;
     margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 2px;
 }
 
 window#waybar.dock {
-    background: rgba(0, 0, 0, 0.94);
-    border-top: 1px solid rgba(126, 232, 255, 0.22);
-    border-radius: 0;
-    box-shadow: none;
-    color: rgba(140, 200, 220, 0.65);
-    animation: dock-glow 5s ease-in-out infinite;
-    margin-bottom: 0;
+    background: transparent;
 }
 
-.modules-center { padding: 0 12px; }
+/* The floating pill */
+.modules-center {
+    background: rgba(12, 19, 33, 0.86);
+    border: 1px solid rgba(122, 216, 248, 0.16);
+    border-radius: 18px;
+    padding: 4px 14px;
+}
 
+/* ── Launcher icons ──────────────────────────────────────────────────────── */
 #custom-term, #custom-launcher, #custom-files, #custom-browser,
-#custom-anki, #custom-mode, #custom-steam, #custom-volume, #custom-wifi,
-#custom-settings, #custom-lock {
-    padding: 10px 18px;
-    border-radius: 0;
-    color: rgba(120, 175, 195, 0.58);
-    border-right: 1px solid rgba(126, 232, 255, 0.05);
-    transition: color 0.12s linear, background 0.12s linear;
+#custom-anki, #custom-steam, #custom-mode, #custom-wifi,
+#custom-volume, #custom-settings, #custom-lock {
+    padding: 6px 13px;
+    margin: 3px 1px;
+    border-radius: 12px;
+    color: #8fb9cd;
+    transition: all 0.15s ease;
 }
 
 #custom-term:hover, #custom-launcher:hover, #custom-files:hover,
-#custom-browser:hover, #custom-anki:hover, #custom-mode:hover,
-#custom-steam:hover, #custom-volume:hover, #custom-wifi:hover,
+#custom-browser:hover, #custom-anki:hover, #custom-steam:hover,
+#custom-mode:hover, #custom-wifi:hover, #custom-volume:hover,
 #custom-settings:hover {
-    color: #e8f8ff;
-    background: rgba(126, 232, 255, 0.06);
+    color: #ffffff;
+    background: rgba(122, 216, 248, 0.14);
 }
 
-#custom-sep1, #custom-sep2 { color: rgba(126, 232, 255, 0.08); padding: 0 4px; }
-#custom-lock:hover { color: #ff6040; background: rgba(255, 64, 48, 0.06); }
+#custom-lock:hover {
+    color: #ff5d6c;
+    background: rgba(255, 93, 108, 0.12);
+}
 
+/* ── Separators ──────────────────────────────────────────────────────────── */
+#custom-sep1, #custom-sep2 {
+    color: rgba(122, 216, 248, 0.14);
+    font-size: 14px;
+    padding: 0 6px;
+}
+
+/* ── Taskbar (running windows) ───────────────────────────────────────────── */
+#taskbar {
+    padding: 0 2px;
+}
+#taskbar button {
+    padding: 4px 8px;
+    margin: 3px 2px;
+    border-radius: 12px;
+    background: transparent;
+    transition: all 0.15s ease;
+}
+#taskbar button:hover {
+    background: rgba(122, 216, 248, 0.14);
+}
+#taskbar button.active {
+    background: rgba(122, 216, 248, 0.20);
+}
+
+/* ── Tooltips ────────────────────────────────────────────────────────────── */
 tooltip {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 8px;
-    text-transform: uppercase;
-    background: #000;
-    border: 1px solid rgba(126, 232, 255, 0.35);
-    border-radius: 0;
-    color: #b8e8f8;
+    font-family: "Noto Sans", sans-serif;
+    font-size: 11px;
+    background: rgba(16, 25, 42, 0.96);
+    border: 1px solid rgba(122, 216, 248, 0.22);
+    border-radius: 10px;
+    color: #cfe9f5;
+    padding: 8px 12px;
 }
+tooltip label { color: #cfe9f5; }

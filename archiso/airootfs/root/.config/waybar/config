@@ -1,7 +1,7 @@
 {
   "layer": "top",
   "position": "top",
-  "height": 26,
+  "height": 30,
   "spacing": 0,
   "exclusive": true,
   "modules-left": [
@@ -13,6 +13,7 @@
     "clock"
   ],
   "modules-right": [
+    "idle_inhibitor",
     "cpu",
     "memory",
     "temperature",
@@ -24,56 +25,56 @@
     "custom/power"
   ],
   "custom/logo": {
-    "format": "  FLYNN // SOLAROS  ",
-    "tooltip": "App Launcher  (Super+D)",
+    "format": "  FLYNN OS",
+    "tooltip-format": "App Launcher  (Super+D)",
     "on-click": "fuzzel"
   },
   "sway/workspaces": {
     "disable-scroll": true,
     "all-outputs": true,
-    "format": "{icon}",
-    "format-icons": {
-      "GRID": "\uf015",
-      "STUDY": "\uf02d",
-      "ANKI": "\uf5da",
-      "GAME": "\uf11b",
-      "SYS": "\uf013",
-      "urgent": "\uf071",
-      "focused": "\uf111",
-      "default": "\uf111"
-    }
+    "format": "{name}"
   },
   "custom/mode": {
-    "exec": "bash -c 'm=$(cat /tmp/flynnos-mode 2>/dev/null||echo study); [ \"$m\" = game ] && echo \"\uf11b GAME\" || echo \"\uf19d STUDY\"'",
+    "exec": "bash -c 'm=$(cat /tmp/flynnos-mode 2>/dev/null||echo study); [ \"$m\" = game ] && echo \" Game\" || echo \" Study\"'",
     "interval": 2,
-    "tooltip": "Game / Study mode  (Super+G)",
+    "tooltip-format": "Game / Study mode  (Super+G)",
     "on-click": "/usr/local/bin/game-mode-switch.sh toggle"
   },
   "clock": {
-    "format": "{:%H:%M:%S}",
-    "format-alt": "SYS // {:%Y-%m-%d}",
+    "format": "{:%a %d %b   %H:%M}",
+    "format-alt": "{:%Y-%m-%d   %H:%M:%S}",
     "tooltip-format": "<tt><small>{calendar}</small></tt>",
-    "interval": 1,
-    "on-click": "exec sh -c 'swaymsg output - dpms toggle'"
+    "interval": 1
+  },
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+      "activated": "",
+      "deactivated": ""
+    },
+    "tooltip-format-activated": "Screen stays awake",
+    "tooltip-format-deactivated": "Auto-lock active"
   },
   "cpu": {
-    "format": "CPU {usage}%",
+    "format": " {usage}%",
     "interval": 3,
     "tooltip-format": "CPU {usage}%",
+    "on-click": "foot -e btop",
     "states": {
       "warning": 70,
       "critical": 90
     }
   },
   "memory": {
-    "format": "MEM {percentage}%",
+    "format": " {percentage}%",
     "interval": 5,
-    "tooltip-format": "{used:0.1f}G / {total:0.1f}G"
+    "tooltip-format": "{used:0.1f}G / {total:0.1f}G",
+    "on-click": "foot -e btop"
   },
   "temperature": {
     "critical-threshold": 85,
-    "format": "\uf2c7 {temperatureC}\u00b0C",
-    "tooltip-format": "Thermal {temperatureC}\u00b0C",
+    "format": " {temperatureC}°",
+    "tooltip-format": "Thermal {temperatureC}°C",
     "interval": 5
   },
   "battery": {
@@ -81,50 +82,45 @@
       "warning": 30,
       "critical": 15
     },
-    "format": "{capacity}% {icon}",
-    "format-charging": "\uf0e7 {capacity}%",
-    "format-plugged": "\uf1e6 {capacity}%",
-    "format-icons": [
-      "\uf244",
-      "\uf243",
-      "\uf242",
-      "\uf241",
-      "\uf240"
-    ],
-    "interval": 20,
-    "on-click": "foot -e upower -i $(upower -e | grep BAT | head -1)"
+    "format": "{icon} {capacity}%",
+    "format-charging": " {capacity}%",
+    "format-plugged": " {capacity}%",
+    "format-icons": ["", "", "", "", ""],
+    "interval": 20
   },
   "pulseaudio": {
-    "format": "AUD {volume}%",
-    "format-muted": "MUTE",
+    "format": "{icon} {volume}%",
+    "format-muted": "",
+    "format-icons": { "default": ["", "", ""] },
     "on-click": "pavucontrol",
     "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
     "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +3%",
     "on-scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -3%"
   },
   "bluetooth": {
-    "format": "\uf294",
-    "format-connected": "\uf293 {num_connections}",
+    "format": "",
+    "format-connected": " {num_connections}",
     "format-disabled": "",
     "format-off": "",
     "tooltip-format": "{device_alias}",
     "on-click": "blueman-manager"
   },
   "network": {
-    "format-wifi": "\uf1eb {signalStrength}%",
-    "format-ethernet": "\uf796",
-    "format-disconnected": "\uf127",
+    "format-wifi": " {signalStrength}%",
+    "format-ethernet": "",
+    "format-disconnected": "",
     "tooltip-format": "{ifname}  {ipaddr}/{cidr}",
-    "on-click": "nm-connection-editor",
+    "on-click": "/usr/local/bin/flynn-wifi",
+    "on-click-right": "nm-connection-editor",
     "interval": 10
   },
   "tray": {
     "spacing": 8,
-    "icon-size": 16
+    "icon-size": 15
   },
   "custom/power": {
-    "format": "PWR",
-    "tooltip": "Power  (Super+Escape)",
+    "format": "",
+    "tooltip-format": "Power  (Super+Escape)",
     "on-click": "/usr/local/bin/flynn-power"
   }
 }

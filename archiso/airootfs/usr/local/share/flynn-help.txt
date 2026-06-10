@@ -23,6 +23,7 @@
   Super+A           Open Anki
   Super+S           Steam Big Picture (run flynn-setup first)
   Super+P           Flynn Dashboard
+  Super+W           Wi-Fi quick picker
   Super+,           Settings panel
   Super+?           This help page
 
