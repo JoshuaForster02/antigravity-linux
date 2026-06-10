@@ -137,6 +137,7 @@ bindsym $mod+n           exec /usr/local/bin/flynn-browser https://notion.so
 bindsym $mod+p           exec /usr/local/bin/flynn-dashboard
 bindsym $mod+u           exec /usr/local/bin/flynn-update
 bindsym $mod+i           exec /usr/local/bin/flynn-wifi
+bindsym $mod+o           exec /usr/local/bin/flynn-hub
 bindsym $mod+y           exec bash -c 'cliphist list | fuzzel --dmenu -p "  Clipboard  " | cliphist decode | wl-copy'
 
 bindsym $mod+F1          exec /usr/local/bin/flynn-health status
@@ -237,9 +238,14 @@ floating_modifier $mod normal
 
 
 # ── Window Rules Engine ───────────────────────────────────────────────────────
-# Notion → workspace 2, right side
+# Notion → workspace STUDY, tiled (left panel)
 for_window [title="Notion"] move to workspace STUDY
 for_window [title="Notion"] floating disable
+# Amboss → workspace STUDY, tiled (right panel — Study Hub dual-panel)
+for_window [title="Amboss"] move to workspace STUDY
+for_window [title="Amboss"] floating disable
+# Study dashboard → floating panel
+for_window [app_id="flynn-study"] floating enable, resize set 760 540, move position center
 # Anki → workspace 3
 for_window [app_id="anki"] move to workspace ANKI
 # Steam → workspace 4

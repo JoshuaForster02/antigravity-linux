@@ -1,0 +1,42 @@
+#!/bin/bash
+# Flynn OS — Study Hub
+# One command builds the study cockpit (the Mac-app experience, native):
+#   STUDY workspace · Notion + Amboss tiled side by side · Anki ready
+#   · distraction blocker on · study performance profile · dashboard panel
+# Usage: flynn-hub [stop]
+
+notify() { /usr/local/bin/flynn-notify "$1" "$2" 2>/dev/null; }
+
+if [ "${1:-}" = "stop" ]; then
+    /usr/local/bin/flynn-focus off >/dev/null 2>&1
+    notify info "Study Hub closed — blocker off"
+    exit 0
+fi
+
+# 1. Performance profile + distraction blocker
+/usr/local/bin/game-mode-switch.sh study >/dev/null 2>&1
+/usr/local/bin/flynn-focus on >/dev/null 2>&1
+
+# 2. STUDY workspace
+swaymsg "workspace STUDY" >/dev/null 2>&1
+
+# 3. Notion + Amboss side by side (window rules tile them on STUDY)
+if ! swaymsg -t get_tree 2>/dev/null | grep -q '"title": "Notion'; then
+    /usr/local/bin/flynn-browser https://notion.so --title Notion >/dev/null 2>&1 &
+    sleep 1.5
+fi
+if ! swaymsg -t get_tree 2>/dev/null | grep -q '"title": "Amboss'; then
+    /usr/local/bin/flynn-browser https://next.amboss.com --title Amboss >/dev/null 2>&1 &
+    sleep 1.5
+fi
+swaymsg "workspace STUDY; layout splith" >/dev/null 2>&1
+
+# 4. Anki in the background on its workspace (if installed)
+if command -v anki >/dev/null && ! pgrep -x anki >/dev/null; then
+    anki >/dev/null 2>&1 &
+fi
+
+# 5. Dashboard panel (Anki due counts, recommendation) — floating, centered
+foot --app-id=flynn-study -e /usr/local/bin/flynn-study >/dev/null 2>&1 &
+
+notify info "Study Hub online — blocker active, Notion + Amboss ready"

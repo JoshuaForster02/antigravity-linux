@@ -26,37 +26,37 @@ args = p.parse_args()
 
 CSS = b"""
 window {
-    background: #000810;
+    background: #0a0b10;
 }
 headerbar {
-    background: #000810;
-    border-bottom: 1px solid #00334d;
-    color: #00e5ff;
-    font-family: "JetBrains Mono", monospace;
+    background: #0a0b10;
+    border-bottom: 1px solid #2e3b4a;
+    color: #9fdcf5;
+    font-family: "Noto Sans", monospace;
     font-size: 12px;
     min-height: 32px;
     padding: 0 8px;
 }
-headerbar .title { color: #00e5ff; font-size: 12px; }
+headerbar .title { color: #9fdcf5; font-size: 12px; }
 headerbar button {
     background: transparent;
-    border: 1px solid #00334d;
-    color: #00a0c0;
+    border: 1px solid #2e3b4a;
+    color: #98a4b0;
     border-radius: 3px;
     min-width: 0;
     padding: 2px 8px;
 }
-headerbar button:hover { border-color: #00e5ff; color: #00e5ff; }
+headerbar button:hover { border-color: #9fdcf5; color: #9fdcf5; }
 entry {
-    background: #001520;
-    color: #00e5ff;
-    border: 1px solid #00334d;
+    background: #12141c;
+    color: #9fdcf5;
+    border: 1px solid #2e3b4a;
     border-radius: 3px;
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Noto Sans", monospace;
     font-size: 11px;
-    caret-color: #00e5ff;
+    caret-color: #9fdcf5;
 }
-entry:focus { border-color: #00e5ff; }
+entry:focus { border-color: #9fdcf5; }
 """
 
 class FlynnBrowser(Gtk.ApplicationWindow):

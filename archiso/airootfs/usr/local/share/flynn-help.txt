@@ -61,6 +61,8 @@
 
  FLYNN FEATURES
  ──────────────────────────────────────────────────────────────────────────
+  Super+O           STUDY HUB — Notion + Amboss side by side, Anki,
+                    distraction blocker on, dashboard (also: 'study')
   Super+G           Toggle Game / Study mode
   Super+Shift+S     Sunshine streaming status
   Super+Shift+A     Ambient sound toggle

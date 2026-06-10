@@ -76,9 +76,9 @@
   },
   "custom/mode": {
     "format": "",
-    "tooltip-format": "Game / Study mode  (Super+G)",
-    "on-click": "/usr/local/bin/game-mode-switch.sh toggle",
-    "on-click-right": "/usr/local/bin/flynn-study"
+    "tooltip-format": "Study Hub  (Super+O)  ·  right-click: Game/Study mode",
+    "on-click": "/usr/local/bin/flynn-hub",
+    "on-click-right": "/usr/local/bin/game-mode-switch.sh toggle"
   },
   "custom/wifi": {
     "format": "",

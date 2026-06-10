@@ -356,7 +356,8 @@ while true; do
         proton|proton-ge)        /usr/local/bin/proton-ge-install ;;
         steam)                   steam 2>/dev/null & echo "  Steam launching..." ;;
         game)                    /usr/local/bin/game-mode-switch.sh game ;;
-        study)                   /usr/local/bin/game-mode-switch.sh study ;;
+        study|hub)               /usr/local/bin/flynn-hub ;;
+        study-mode)              /usr/local/bin/game-mode-switch.sh study ;;
         fastfetch|neofetch|fetch) fastfetch 2>/dev/null || uname -a ;;
         update)                  /usr/local/bin/flynn-update ;;
         update-packages)         pacman -Syu --noconfirm ;;

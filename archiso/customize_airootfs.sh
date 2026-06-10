@@ -84,7 +84,7 @@ PROFILE
 cat > /root/.xinitrc << 'XINITRC'
 #!/bin/sh
 export DISPLAY=:0
-xsetroot -solid "#000810"
+xsetroot -solid "#0a0b10"
 [ -f /root/.Xresources ] && xrdb -merge /root/.Xresources
 # TRON wallpaper (Python)
 python3 /usr/local/bin/flynn-draw-bg 2>/dev/null &
@@ -96,7 +96,7 @@ tint2 -c /root/.config/tint2/tint2rc 2>/dev/null &
 dunst -config /root/.config/dunst/dunstrc 2>/dev/null &
 # Open Flynn terminal on start
 sleep 0.3
-xterm -bg "#000810" -fg "#00e5ff" -fa "JetBrains Mono" -fs 11 \
+xterm -bg "#0a0b10" -fg "#9fdcf5" -fa "JetBrains Mono" -fs 11 \
       -title "Flynn OS" -geometry 120x35+40+60 \
       -e /usr/local/bin/flynn-ui &
 # Openbox WM (last — becomes the session process)
@@ -114,16 +114,16 @@ mkdir -p /etc/flynnos
 cat > /etc/flynnos/defaults.conf << 'CONF'
 PI_IP=100.74.204.71
 FLYNN_DAEMON_PORT=7777
-GRID_COLOR=#00e5ff
+GRID_COLOR=#9fdcf5
 CONF
 echo "  ✓ /etc/flynnos config dir"
 
 # ── Xresources: TRON xterm colors ─────────────────────────────────────────────
 cat > /root/.Xresources << 'XRES'
-XTerm*background:           #000810
-XTerm*foreground:           #00e5ff
-XTerm*cursorColor:          #00e5ff
-XTerm*selectBackground:     #004455
+XTerm*background:           #0a0b10
+XTerm*foreground:           #9fdcf5
+XTerm*cursorColor:          #9fdcf5
+XTerm*selectBackground:     #3a4654
 XTerm*faceName:             JetBrains Mono
 XTerm*faceSize:             11
 XTerm*scrollBar:            false
@@ -131,13 +131,13 @@ XTerm*borderWidth:          0
 XTerm*internalBorder:       8
 XTerm*saveLines:            10000
 ! TRON 16-color palette
-XTerm*color0:   #000810
+XTerm*color0:   #0a0b10
 XTerm*color1:   #ff3366
 XTerm*color2:   #00ff9f
 XTerm*color3:   #ffcc00
 XTerm*color4:   #0088ff
 XTerm*color5:   #cc00ff
-XTerm*color6:   #00e5ff
+XTerm*color6:   #9fdcf5
 XTerm*color7:   #c0d8e0
 XTerm*color8:   #002030
 XTerm*color9:   #ff6688
@@ -208,14 +208,14 @@ time1_format = %H:%M
 time2_format = %Y-%m-%d
 time1_font = JetBrains Mono Bold 10
 time2_font = JetBrains Mono 9
-clock_font_color = #00e5ff 100
+clock_font_color = #9fdcf5 100
 taskbar_mode = single_desktop
 task_text = 1
 task_active_background_id = 2
 task_background_id = 1
 task_font = JetBrains Mono 10
 task_font_color = #80c8d8 100
-task_active_font_color = #00e5ff 100
+task_active_font_color = #9fdcf5 100
 systray = 1
 systray_padding = 4 4 4
 #---------------------------------------------
@@ -223,13 +223,13 @@ systray_padding = 4 4 4
 #---------------------------------------------
 rounded = 0
 border_width = 0
-background_color = #000810 95
-border_color = #00e5ff 0
+background_color = #0a0b10 95
+border_color = #9fdcf5 0
 
 rounded = 0
 border_width = 1
-background_color = #004455 80
-border_color = #00e5ff 60
+background_color = #3a4654 80
+border_color = #9fdcf5 60
 TINT2
 
 # ── Dunst notification config ──────────────────────────────────────────────────
@@ -260,18 +260,18 @@ separator_height = 1
 padding = 8
 horizontal_padding = 12
 frame_width = 1
-frame_color = "#00e5ff"
-separator_color = "#004455"
+frame_color = "#9fdcf5"
+separator_color = "#3a4654"
 startup_notification = false
 browser = /usr/bin/xdg-open
 [urgency_low]
-background = "#000810"
-foreground = "#004455"
+background = "#0a0b10"
+foreground = "#3a4654"
 timeout = 3
 [urgency_normal]
-background = "#000810"
-foreground = "#00e5ff"
-frame_color = "#00e5ff"
+background = "#0a0b10"
+foreground = "#9fdcf5"
+frame_color = "#9fdcf5"
 timeout = 6
 [urgency_critical]
 background = "#200010"
@@ -315,7 +315,7 @@ cat > /root/.config/openbox/rc.xml << 'OBRC'
   </mouse>
   <keyboard>
     <keybind key="Super_L"><action name="ShowMenu"><menu>root-menu</menu></action></keybind>
-    <keybind key="Super-Return"><action name="Execute"><command>xterm -bg "#000810" -fg "#00e5ff" -fa "JetBrains Mono" -fs 11 -e /usr/local/bin/flynn-ui</command></action></keybind>
+    <keybind key="Super-Return"><action name="Execute"><command>xterm -bg "#0a0b10" -fg "#9fdcf5" -fa "JetBrains Mono" -fs 11 -e /usr/local/bin/flynn-ui</command></action></keybind>
     <keybind key="Super-f"><action name="ToggleMaximizeFull"/></keybind>
     <keybind key="Super-q"><action name="Close"/></keybind>
     <keybind key="Super-h"><action name="Execute"><command>/usr/local/bin/game-mode-switch.sh study</command></action></keybind>
@@ -340,7 +340,7 @@ cat > /root/.config/openbox/menu.xml << 'OBMENU'
 <?xml version="1.0" encoding="UTF-8"?>
 <openbox_menu xmlns="http://openbox.org/3.4/menu">
   <menu id="root-menu" label="FLYNN OS">
-    <item label="[ Terminal ]"><action name="Execute"><command>xterm -bg "#000810" -fg "#00e5ff" -fa "JetBrains Mono" -fs 11 -e /usr/local/bin/flynn-ui</command></action></item>
+    <item label="[ Terminal ]"><action name="Execute"><command>xterm -bg "#0a0b10" -fg "#9fdcf5" -fa "JetBrains Mono" -fs 11 -e /usr/local/bin/flynn-ui</command></action></item>
     <item label="[ File Manager ]"><action name="Execute"><command>thunar</command></action></item>
     <item label="[ Notion ]"><action name="Execute"><command>/usr/local/bin/flynn-browser https://notion.so --title Notion</command></action></item>
     <item label="[ Amboss ]"><action name="Execute"><command>/usr/local/bin/flynn-browser https://amboss.com --title Amboss</command></action></item>
@@ -365,42 +365,42 @@ cat > /usr/share/themes/Flynn/openbox-3/themerc << 'THEMERC'
 border.width: 1
 padding.width: 4
 padding.height: 4
-window.active.border.color: #00e5ff
+window.active.border.color: #9fdcf5
 window.inactive.border.color: #002030
 window.active.title.bg: Flat Solid
-window.active.title.bg.color: #000810
-window.active.label.text.color: #00e5ff
+window.active.title.bg.color: #0a0b10
+window.active.label.text.color: #9fdcf5
 window.active.label.bg: Flat Solid
-window.active.label.bg.color: #000810
+window.active.label.bg.color: #0a0b10
 window.active.button.*.bg: Flat Solid
-window.active.button.*.bg.color: #000810
-window.active.button.*.image.color: #00e5ff
+window.active.button.*.bg.color: #0a0b10
+window.active.button.*.image.color: #9fdcf5
 window.inactive.title.bg: Flat Solid
-window.inactive.title.bg.color: #000810
+window.inactive.title.bg.color: #0a0b10
 window.inactive.label.text.color: #002a3a
 window.inactive.label.bg: Flat Solid
-window.inactive.label.bg.color: #000810
+window.inactive.label.bg.color: #0a0b10
 window.inactive.button.*.bg: Flat Solid
-window.inactive.button.*.bg.color: #000810
+window.inactive.button.*.bg.color: #0a0b10
 window.inactive.button.*.image.color: #002a3a
 menu.border.width: 1
-menu.border.color: #00e5ff
+menu.border.color: #9fdcf5
 menu.bg: Flat Solid
-menu.bg.color: #000810
+menu.bg.color: #0a0b10
 menu.title.bg: Flat Solid
 menu.title.bg.color: #001520
-menu.title.text.color: #00e5ff
+menu.title.text.color: #9fdcf5
 menu.items.bg: Flat Solid
-menu.items.bg.color: #000810
+menu.items.bg.color: #0a0b10
 menu.items.text.color: #80c8d8
 menu.items.active.bg: Flat Solid
-menu.items.active.bg.color: #004455
-menu.items.active.text.color: #00e5ff
+menu.items.active.bg.color: #3a4654
+menu.items.active.text.color: #9fdcf5
 osd.border.width: 1
-osd.border.color: #00e5ff
+osd.border.color: #9fdcf5
 osd.bg: Flat Solid
-osd.bg.color: #000810
-osd.label.text.color: #00e5ff
+osd.bg.color: #0a0b10
+osd.label.text.color: #9fdcf5
 THEMERC
 echo "  ✓ Flynn Openbox TRON theme"
 
@@ -478,17 +478,17 @@ echo "  ✓ OS identity: Flynn OS (no Arch branding on login)"
 # ── GRUB TRON theme ───────────────────────────────────────────────────────────
 mkdir -p /usr/share/grub/themes/flynn
 cat > /usr/share/grub/themes/flynn/theme.txt << 'GRUBTHEME'
-desktop-color: "#000810"
+desktop-color: "#0a0b10"
 title-text: ""
-message-color: "#00e5ff"
-message-bg-color: "#000810"
+message-color: "#9fdcf5"
+message-bg-color: "#0a0b10"
 + boot_menu {
     left   = 20%
     top    = 30%
     width  = 60%
     height = 35%
-    item_color          = "#004455"
-    selected_item_color = "#00e5ff"
+    item_color          = "#3a4654"
+    selected_item_color = "#9fdcf5"
     item_height         = 32
     item_padding        = 10
     item_spacing        = 6
@@ -498,13 +498,13 @@ message-bg-color: "#000810"
 + label {
     top = 12%; left = 25%; width = 50%; align = "center"
     text = "FLYNN OS  //  THE GRID"
-    color = "#00e5ff"
+    color = "#9fdcf5"
     font = "DejaVu Sans Bold 20"
 }
 + label {
     top = 19%; left = 25%; width = 50%; align = "center"
     text = "Arch Linux · linux-zen · ANTIGRAVITY"
-    color = "#004455"
+    color = "#3a4654"
     font = "DejaVu Sans 11"
 }
 GRUBTHEME
