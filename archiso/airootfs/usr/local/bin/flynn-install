@@ -20,27 +20,27 @@ except ImportError:
     sys.exit(0)
 
 CSS = b"""
-window { background: #000810; }
-.title { color: #00e5ff; font-size: 20px; font-weight: bold; font-family: "JetBrains Mono"; }
-.subtitle { color: #004466; font-size: 12px; font-family: "JetBrains Mono"; }
-.label { color: #80c8d8; font-family: "JetBrains Mono"; font-size: 13px; }
-.warn  { color: #ff6600; font-family: "JetBrains Mono"; font-size: 12px; }
-.ok    { color: #00ff88; font-family: "JetBrains Mono"; font-size: 12px; }
-.disk-row { background: #001520; border-radius: 6px; padding: 8px; }
-.disk-row:hover { background: #002030; }
+window { background: #0a0b10; }
+.title { color: #9fdcf5; font-size: 20px; font-weight: bold; font-family: "Noto Sans"; }
+.subtitle { color: #5d6877; font-size: 12px; font-family: "Noto Sans"; }
+.label { color: #98a4b0; font-family: "Noto Sans"; font-size: 13px; }
+.warn  { color: #e5606c; font-family: "Noto Sans"; font-size: 12px; }
+.ok    { color: #6ad9a8; font-family: "Noto Sans"; font-size: 12px; }
+.disk-row { background: #12141c; border-radius: 6px; padding: 8px; }
+.disk-row:hover { background: #181b26; }
 button {
-    background: #001a2a; color: #00e5ff;
-    border: 1px solid #00334d; border-radius: 4px;
-    font-family: "JetBrains Mono"; font-size: 13px;
+    background: #161922; color: #9fdcf5;
+    border: 1px solid #2e3b4a; border-radius: 4px;
+    font-family: "Noto Sans"; font-size: 13px;
     padding: 8px 20px;
 }
-button:hover { background: #003040; border-color: #00e5ff; }
-button.danger { border-color: #ff4400; color: #ff6600; }
-button.danger:hover { background: #200800; }
-progressbar progress { background: #00e5ff; }
-progressbar trough { background: #001520; }
-entry { background: #001520; color: #00e5ff; border: 1px solid #00334d;
-        font-family: "JetBrains Mono"; border-radius: 4px; padding: 6px; }
+button:hover { background: #22303d; border-color: #9fdcf5; }
+button.danger { border-color: #e5606c; color: #e5606c; }
+button.danger:hover { background: #1d1014; }
+progressbar progress { background: #9fdcf5; }
+progressbar trough { background: #12141c; }
+entry { background: #12141c; color: #9fdcf5; border: 1px solid #2e3b4a;
+        font-family: "Noto Sans"; border-radius: 4px; padding: 6px; }
 """
 
 def get_disks():
@@ -106,7 +106,7 @@ class FlynnInstaller(Gtk.ApplicationWindow):
 
         info = Gtk.Label()
         info.set_markup(
-            '<span foreground="#80c8d8" font_family="JetBrains Mono" size="small">'
+            '<span foreground="#98a4b0" font_family="Noto Sans" size="small">'
             '  • Dual-Boot mit Windows wird automatisch erkannt\n'
             '  • GRUB wählt beim Start zwischen Windows und Flynn OS\n'
             '  • Mindestens 20 GB freier Speicher empfohlen\n'
@@ -260,10 +260,10 @@ class FlynnInstaller(Gtk.ApplicationWindow):
         self.prog.set_fraction(1.0)
         status = self._done_status_lbl
         if success:
-            status.set_markup('<span foreground="#00ff88" font_family="JetBrains Mono">'
+            status.set_markup('<span foreground="#6ad9a8" font_family="Noto Sans">'
                               '✓ Installation erfolgreich! ISO entfernen und neu starten.</span>')
         else:
-            status.set_markup('<span foreground="#ff4400" font_family="JetBrains Mono">'
+            status.set_markup('<span foreground="#e5606c" font_family="Noto Sans">'
                               '✗ Fehler — Details im Log oben.</span>')
         self.stack.set_visible_child_name('done')
 

@@ -59,13 +59,22 @@ export ELECTRON_OZONE_PLATFORM_HINT=wayland
 mkdir -p "$XDG_RUNTIME_DIR"
 chmod 700 "$XDG_RUNTIME_DIR"
 
-# Auto-start Sway on tty1 — pixman renderer works in UTM/QEMU/VMware
+# Auto-start Sway on tty1.
+# Real hardware (RX 6800 etc.): GPU rendering via GLES2 + seatd.
+# VMs (UTM/QEMU/VMware): pixman software rendering + noop seat.
 if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
     if command -v sway &>/dev/null; then
-        export WLR_RENDERER=pixman
-        export WLR_NO_HARDWARE_CURSORS=1
-        export LIBSEAT_BACKEND=noop
-        exec dbus-run-session sway --unsupported-gpu 2>/tmp/sway.log
+        if [ "$(systemd-detect-virt 2>/dev/null)" = "none" ] && ls /dev/dri/card* >/dev/null 2>&1; then
+            # Bare metal — let wlroots pick the GPU renderer
+            unset WLR_RENDERER WLR_NO_HARDWARE_CURSORS LIBSEAT_BACKEND
+            exec dbus-run-session sway 2>/tmp/sway.log
+        else
+            # VM — software rendering
+            export WLR_RENDERER=pixman
+            export WLR_NO_HARDWARE_CURSORS=1
+            export LIBSEAT_BACKEND=noop
+            exec dbus-run-session sway --unsupported-gpu 2>/tmp/sway.log
+        fi
     fi
 fi
 exec /usr/local/bin/flynn-ui
@@ -440,6 +449,12 @@ Image.new("RGB", (1, 1), (34, 48, 61)).save(f"{d}/track.png")
 PY
 plymouth-set-default-theme flynnos 2>/dev/null || true
 echo "  ✓ Plymouth: flynnos theme (modern, no arch branding)"
+
+# CRITICAL: the initramfs was generated during package install — BEFORE the
+# flynnos theme existed. Rebuild it now so Plymouth actually shows at boot.
+mkinitcpio -P >/dev/null 2>&1 \
+    && echo "  ✓ initramfs rebuilt — Plymouth theme included" \
+    || echo "  ⚠ initramfs rebuild failed (boot still works, no splash)"
 
 # ── OS identity: Flynn OS everywhere (login prompt, fastfetch, GRUB os-prober)
 rm -f /etc/os-release

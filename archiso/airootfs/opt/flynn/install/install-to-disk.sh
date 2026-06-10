@@ -185,6 +185,16 @@ mount --bind /run  "${MNTROOT}/run" 2>/dev/null || true
 
 # Remove live-ISO-only mkinitcpio config
 rm -f "${MNTROOT}/etc/mkinitcpio.conf.d/archiso.conf"
+
+# Installed-system initramfs: standard hooks + Plymouth boot splash
+cat > "${MNTROOT}/etc/mkinitcpio.conf" << 'MKCONF'
+# Flynn OS — installed system
+MODULES=()
+BINARIES=()
+FILES=()
+HOOKS=(base udev plymouth microcode modconf kms keyboard keymap consolefont block filesystems fsck)
+MKCONF
+
 cat > "${MNTROOT}/etc/mkinitcpio.d/linux-zen.preset" << 'PRESET'
 PRESETS=('default')
 ALL_config='/etc/mkinitcpio.conf'
@@ -192,6 +202,7 @@ ALL_kver='/boot/vmlinuz-linux-zen'
 default_image='/boot/initramfs-linux-zen.img'
 PRESET
 
+chroot "$MNTROOT" plymouth-set-default-theme flynnos 2>/dev/null || true
 chroot "$MNTROOT" mkinitcpio -P linux-zen 2>&1 | tail -5
 
 chroot "$MNTROOT" grub-install --target=x86_64-efi --efi-directory=/boot/efi \

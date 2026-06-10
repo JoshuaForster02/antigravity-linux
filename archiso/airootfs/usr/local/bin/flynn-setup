@@ -1,136 +1,102 @@
 #!/bin/bash
-# Flynn OS — First-Boot Setup Wizard
-# Run after installing to disk. Sets up:
-#   - Compositor (Wayland / TRON Desktop)
-#   - Steam + Proton-GE
-#   - Pi Agent connection
-#   - Notion / Anki sync
-# Usage: flynn-setup
+# Flynn OS — Setup (Steam · Anki · GPU · Proton-GE)
+# Works on the live ISO and on an installed system.
 
-CY='\e[1;36m' GN='\e[1;32m' YL='\e[0;33m' DIM='\e[2;36m' RST='\e[0m'
+CY='\e[1;36m' GN='\e[1;32m' YL='\e[0;33m' RD='\e[0;31m' DIM='\e[2;37m' WHT='\e[1;37m' RST='\e[0m'
 ok()   { printf "${GN}  ✓  %s${RST}\n" "$*"; }
-info() { printf "${CY}  »  %s${RST}\n" "$*"; }
-ask()  { printf "${CY}  ?  %s${RST} " "$*"; }
+info() { printf "${CY}  ›  %s${RST}\n" "$*"; }
+warn() { printf "${YL}  !  %s${RST}\n" "$*"; }
+fail() { printf "${RD}  ✗  %s${RST}\n" "$*"; }
+ask()  { printf "${WHT}  ?  %s${RST} " "$*"; }
 
-printf "${CY}"
-cat << 'BANNER'
-  ╔══════════════════════════════════════════════════════════════╗
-  ║  F L Y N N   O S  —  Setup Wizard                          ║
-  ╚══════════════════════════════════════════════════════════════╝
-BANNER
-printf "${RST}\n"
+echo ""
+printf "   ${CY}◎${RST}  ${WHT}Flynn OS Setup${RST}   ${DIM}Steam · Anki · GPU${RST}\n"
+echo ""
 
-# ── 1. Compositor ─────────────────────────────────────────────────────────────
-info "Step 1/5: Flynn Wayland Compositor"
-if command -v meson &>/dev/null && [ -d /opt/flynn/compositor/src ]; then
-    ask "Build compositor now? [Y/n]"; read -r R
-    if [[ "${R:-y}" =~ ^[Yy] ]]; then
-        /usr/local/bin/flynn-compositor-build
-        ok "Compositor built"
-    fi
-else
-    info "meson not found — run: pacman -S meson ninja wlroots"
+# ── 0. Live-ISO warning ───────────────────────────────────────────────────────
+if [ -d /run/archiso ]; then
+    warn "You are on the LIVE ISO — installs go to RAM and vanish on reboot."
+    warn "For a permanent system run:  flynn-install   first."
+    ask "Continue anyway? [y/N]"; read -r R
+    [[ "${R:-n}" =~ ^[Yy] ]] || exit 0
+    echo ""
 fi
 
-# ── 2. GPU setup ──────────────────────────────────────────────────────────────
-info "Step 2/5: GPU optimization"
-GPU=$(lspci 2>/dev/null | grep -i "VGA\|3D" | head -1)
-info "Detected: ${GPU:-unknown}"
+# ── 1. Network ────────────────────────────────────────────────────────────────
+info "Step 1/4 — Network"
+if ping -c1 -W3 archlinux.org >/dev/null 2>&1; then
+    ok "Online"
+else
+    fail "No internet connection."
+    info "Wi-Fi:  flynn-wifi   ·   Ethernet: should connect automatically"
+    info "Check:  nmcli device status"
+    exit 1
+fi
+echo ""
 
+# ── 2. GPU ────────────────────────────────────────────────────────────────────
+info "Step 2/4 — GPU"
+GPU=$(lspci 2>/dev/null | grep -i "VGA\|3D" | head -1 | cut -d: -f3)
+info "Detected:${GPU:- unknown}"
 if echo "$GPU" | grep -qi "AMD\|ATI\|Radeon"; then
-    ok "AMD GPU — amdgpu driver (already active)"
-    # Enable hardware video decode
     usermod -a -G video,render root 2>/dev/null
-    # Set Vulkan env
-    grep -q "RADV_PERFTEST" /etc/profile.d/flynn-gpu.sh 2>/dev/null || \
-    cat > /etc/profile.d/flynn-gpu.sh << 'GPU'
+    cat > /etc/profile.d/flynn-gpu.sh << 'GPUENV'
 export AMD_VULKAN_ICD=RADV
-export RADV_PERFTEST=aco,ngg
+export RADV_PERFTEST=aco
 export DXVK_ASYNC=1
-export VKD3D_CONFIG=dxr11,dxr
-export MESA_VK_WSI_PRESENT_MODE=mailbox
-GPU
-    ok "AMD performance flags set"
-fi
-
-# ── 3. Steam + Proton-GE ──────────────────────────────────────────────────────
-info "Step 3/5: Gaming layer (Steam + Proton-GE)"
-# Install all gaming + productivity packages removed from live ISO for size
-POSTINSTALL_PKGS=(
-    steam lib32-mesa lib32-vulkan-radeon lib32-gtk3
-    lib32-gamemode lib32-mangohud
-    anki python-pyqt6 python-pyqt6-webengine
-    mpv
-    calamares
-)
-MISSING=()
-for pkg in "${POSTINSTALL_PKGS[@]}"; do
-    pacman -Q "$pkg" &>/dev/null || MISSING+=("$pkg")
-done
-
-if [ ${#MISSING[@]} -gt 0 ]; then
-    ask "Install ${#MISSING[@]} packages (Steam, Anki, Multimedia)? [Y/n]"; read -r R
-    if [[ "${R:-y}" =~ ^[Yy] ]]; then
-        pacman -S --noconfirm "${MISSING[@]}" && ok "Packages installed"
-    fi
+GPUENV
+    ok "AMD: RADV + DXVK flags set"
+elif echo "$GPU" | grep -qi "NVIDIA"; then
+    warn "NVIDIA detected — install drivers manually: pacman -S nvidia-dkms"
 else
-    ok "All packages already installed"
+    info "Using default Mesa drivers"
 fi
+echo ""
 
-if ! command -v steam &>/dev/null; then
-    ask "Install Steam? [Y/n]"; read -r R
-    [[ "${R:-y}" =~ ^[Yy] ]] && pacman -S --noconfirm steam
-fi
+# ── 3. Packages (Steam + Anki + gaming libs) ─────────────────────────────────
+info "Step 3/4 — Packages"
+PKGS=(steam lib32-mesa lib32-vulkan-radeon lib32-gamemode lib32-mangohud anki)
+MISSING=()
+for p in "${PKGS[@]}"; do pacman -Q "$p" &>/dev/null || MISSING+=("$p"); done
 
-ask "Download latest Proton-GE? [Y/n]"; read -r R
-if [[ "${R:-y}" =~ ^[Yy] ]]; then
-    /usr/local/bin/proton-ge-install
-fi
-
-# ── 4. Pi Agent ───────────────────────────────────────────────────────────────
-info "Step 4/5: Pi Agent (presence detection + Wake-on-LAN)"
-ask "Pi IP address (default: 100.74.204.71): "; read -r PI_IP
-PI_IP="${PI_IP:-100.74.204.71}"
-
-ask "Your PC MAC address (for Wake-on-LAN, leave blank to skip): "; read -r PC_MAC
-
-mkdir -p /etc/flynn
-cat > /etc/flynn/config.json << CONF
-{
-  "pi_host": "$PI_IP",
-  "pi_port": 8765,
-  "pc_mac": "$PC_MAC",
-  "daemon_port": 7777,
-  "notion_token": "",
-  "anki_port": 8765
-}
-CONF
-ok "Flynn config written to /etc/flynn/config.json"
-
-# ── 5. Auto-start session ─────────────────────────────────────────────────────
-info "Step 5/5: Auto-start graphical session"
-ask "Auto-start GUI on login? [Y/n]"; read -r R
-if [[ "${R:-y}" =~ ^[Yy] ]]; then
-    cat >> /root/.bash_profile << 'AUTOSTART'
-
-# Auto-start Flynn session on tty1
-if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
-    if command -v flynn-compositor &>/dev/null; then
-        exec /usr/local/bin/flynn-session
-    else
-        exec startx
+if [ ${#MISSING[@]} -eq 0 ]; then
+    ok "Everything already installed"
+else
+    info "To install: ${MISSING[*]}"
+    ask "Install now? [Y/n]"; read -r R
+    if [[ "${R:-y}" =~ ^[Yy] ]]; then
+        info "Syncing package databases…"
+        if ! pacman -Sy; then
+            fail "Database sync failed — check your network and try again."
+            exit 1
+        fi
+        if pacman -S --noconfirm --needed "${MISSING[@]}"; then
+            ok "Installed: ${MISSING[*]}"
+        else
+            fail "Some packages failed — scroll up for pacman's error."
+            warn "You can retry individually, e.g.:  pacman -S steam"
+        fi
     fi
 fi
-AUTOSTART
-    ok "GUI auto-starts on tty1 login"
+echo ""
+
+# ── 4. Proton-GE (optional) ───────────────────────────────────────────────────
+info "Step 4/4 — Proton-GE (better game compatibility, optional)"
+ask "Download latest Proton-GE? [y/N]"; read -r R
+if [[ "${R:-n}" =~ ^[Yy] ]]; then
+    /usr/local/bin/proton-ge-install || warn "Proton-GE install failed — retry later with: proton-ge-install"
 fi
 
-# ── Done ──────────────────────────────────────────────────────────────────────
-printf "\n${GN}"
-echo "  ╔══════════════════════════════════════════════════════╗"
-echo "  ║  Flynn OS setup complete.                           ║"
-echo "  ║                                                      ║"
-echo "  ║  Reboot to start your TRON desktop.                ║"
-echo "  ║  Or type: session   (Wayland) / startx (X11)       ║"
-echo "  ╚══════════════════════════════════════════════════════╝"
-printf "${RST}\n"
+# Default Flynn config (only if absent — never overwrite)
+if [ ! -f /etc/flynn/config.json ]; then
+    mkdir -p /etc/flynn
+    printf '{\n  "daemon_port": 7777,\n  "notion_token": "",\n  "pi_host": "",\n  "pc_mac": ""\n}\n' > /etc/flynn/config.json
+fi
+
+echo ""
+ok "Setup complete."
+info "Steam:  Super+G toggles GameMode  ·  dock has a Steam button"
+info "Anki:   dock button or 'anki' in terminal"
+info "Extras: swayfx (rounded corners/blur) via AUR once installed to disk"
+echo ""
+printf "   ${DIM}END OF LINE_${RST}\n\n"
