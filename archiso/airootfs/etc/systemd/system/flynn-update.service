@@ -4,5 +4,5 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/flynn-update
+ExecStart=/usr/local/bin/flynn-update --auto
 StandardOutput=journal

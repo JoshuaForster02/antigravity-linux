@@ -1,122 +1,110 @@
 #!/bin/bash
-# Flynn OS — Live OTA Update
-# Zieht alle Flynn-Scripts direkt vom GitHub-Repo und wendet sie an.
-# Keine ISO-Neubuild nötig — live auf dem laufenden System.
+# Flynn OS — OTA Update v2 (channels)
+# Pulls the Flynn OS overlay live from GitHub and applies it to the running
+# system. No ISO rebuild needed.
+#
+#   Channel config:  /etc/flynnos/update.conf   CHANNEL=stable|dev
+#     stable -> branch main        dev -> branch dev
+#
+# Usage: flynn-update [--auto] [--channel stable|dev] [--full]
+#   --auto     non-interactive (used by flynn-update.timer)
+#   --full     also run pacman -Syu (package upgrade)
 
-CY='\e[1;36m' GN='\e[1;32m' YL='\e[0;33m' RD='\e[0;31m' DIM='\e[2;36m' RST='\e[0m'
+set -u
+CY='\e[1;36m' GN='\e[1;32m' YL='\e[0;33m' RD='\e[0;31m' DIM='\e[2;37m' RST='\e[0m'
+ok()   { printf "${GN}  ✓  %s${RST}\n" "$*"; }
+info() { printf "${CY}  ›  %s${RST}\n" "$*"; }
+warn() { printf "${YL}  !  %s${RST}\n" "$*"; }
+fail() { printf "${RD}  ✗  %s${RST}\n" "$*"; }
 
 REPO="JoshuaForster02/antigravity-linux"
 REPO_URL="https://github.com/$REPO.git"
 CACHE="/var/cache/flynnos/repo"
+CONF="/etc/flynnos/update.conf"
 LOG="/var/log/flynn-update.log"
+AUTO=0; FULL=0
 
-print_header() {
-  printf "${CY}╔══════════════════════════════════════════════════╗\n"
-  printf "║  Flynn OS — Live OTA Update                      ║\n"
-  printf "║  Repo: %-42s║\n" "$REPO"
-  printf "╚══════════════════════════════════════════════════╝${RST}\n\n"
-}
+mkdir -p /etc/flynnos /var/log "$(dirname "$CACHE")"
+[ -f "$CONF" ] || echo "CHANNEL=stable" > "$CONF"
+CHANNEL=$(grep -oP 'CHANNEL=\K\w+' "$CONF" 2>/dev/null || echo stable)
 
-log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG"; }
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --auto) AUTO=1 ;;
+        --full) FULL=1 ;;
+        --channel) shift; CHANNEL="${1:-stable}"
+                   echo "CHANNEL=$CHANNEL" > "$CONF" ;;
+    esac
+    shift
+done
 
-print_header
-mkdir -p "$CACHE" /var/log
+case "$CHANNEL" in
+    dev) BRANCH=dev ;;
+    *)   BRANCH=main ;;
+esac
 
-# ── 1. Pakete updaten ─────────────────────────────────────────────────────────
-printf "${CY}[1/4] Arch-Pakete aktualisieren...${RST}\n"
-if pacman -Syu --noconfirm 2>&1 | grep -q "there is nothing to do"; then
-  printf "  ${DIM}Pakete bereits aktuell${RST}\n"
-else
-  printf "  ${GN}✓ Pakete aktualisiert${RST}\n"
-fi
+log() { echo "$(date '+%F %T') $*" >> "$LOG"; }
+
+echo ""
+printf "   ${CY}◎${RST}  Flynn OS OTA   ${DIM}channel: ${CHANNEL} (${BRANCH})${RST}\n"
 echo ""
 
-# ── 2. Repo klonen / updaten ──────────────────────────────────────────────────
-printf "${CY}[2/4] Flynn OS Scripts von GitHub holen...${RST}\n"
+# ── 1. Fetch ──────────────────────────────────────────────────────────────────
+info "Fetching ${REPO}@${BRANCH}…"
 if [ -d "$CACHE/.git" ]; then
-  cd "$CACHE"
-  OLD=$(git rev-parse --short HEAD 2>/dev/null)
-  git fetch origin main --depth=1 -q 2>/dev/null && git reset --hard origin/main -q
-  NEW=$(git rev-parse --short HEAD 2>/dev/null)
-  if [ "$OLD" != "$NEW" ]; then
-    printf "  ${GN}✓ $OLD → $NEW (neue Commits)${RST}\n"
-  else
-    printf "  ${DIM}Bereits aktuell ($NEW)${RST}\n"
-  fi
+    git -C "$CACHE" fetch origin "$BRANCH" --depth 1 2>/dev/null \
+        && git -C "$CACHE" reset --hard "origin/$BRANCH" >/dev/null 2>&1
 else
-  printf "  Klone Repository...\n"
-  git clone --depth=1 "$REPO_URL" "$CACHE" -q 2>/dev/null
-  NEW=$(cd "$CACHE" && git rev-parse --short HEAD 2>/dev/null)
-  printf "  ${GN}✓ Geklont ($NEW)${RST}\n"
+    rm -rf "$CACHE"
+    git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$CACHE" 2>/dev/null
 fi
-echo ""
-
-# ── 3. Dateien anwenden ───────────────────────────────────────────────────────
-printf "${CY}[3/4] Aktualisierungen anwenden...${RST}\n"
-UPDATED=0
-
-apply() {
-  local src="$CACHE/$1" dst="$2"
-  [ -f "$src" ] || return
-  if ! diff -q "$src" "$dst" &>/dev/null; then
-    mkdir -p "$(dirname "$dst")"
-    cp "$src" "$dst"
-    [ -x "$src" ] && chmod +x "$dst"
-    printf "  ${GN}✓ %s${RST}\n" "$(basename $dst)"
-    UPDATED=$((UPDATED+1))
-  fi
-}
-
-# Flynn scripts
-for f in $(ls "$CACHE/archiso/airootfs/usr/local/bin/" 2>/dev/null); do
-  apply "archiso/airootfs/usr/local/bin/$f" "/usr/local/bin/$f"
-done
-
-# Flynn opt/
-for f in $(find "$CACHE/archiso/airootfs/opt/flynn" -type f 2>/dev/null | sed "s|$CACHE/archiso/airootfs||"); do
-  apply "archiso/airootfs$f" "$f"
-done
-
-# Sway/Waybar/Mako configs
-for conf in \
-  "archiso/airootfs/root/.config/sway/config:/root/.config/sway/config" \
-  "archiso/airootfs/root/.config/waybar/config:/root/.config/waybar/config" \
-  "archiso/airootfs/root/.config/waybar/style.css:/root/.config/waybar/style.css" \
-  "archiso/airootfs/root/.config/mako/config:/root/.config/mako/config"; do
-  src="${conf%%:*}"; dst="${conf##*:}"
-  apply "$src" "$dst"
-done
-
-if [ $UPDATED -eq 0 ]; then
-  printf "  ${DIM}Keine Änderungen${RST}\n"
+if [ ! -d "$CACHE/archiso/airootfs" ]; then
+    fail "Fetch failed — network down or branch '$BRANCH' missing."
+    log "fetch failed channel=$CHANNEL"
+    exit 1
+fi
+NEW_REV=$(git -C "$CACHE" rev-parse --short HEAD)
+CUR_REV=$(cat /etc/flynnos/.ota-rev 2>/dev/null || echo none)
+if [ "$NEW_REV" = "$CUR_REV" ]; then
+    ok "Already up to date ($NEW_REV)"
+    [ "$FULL" = 1 ] || exit 0
 else
-  printf "\n  ${GN}$UPDATED Datei(en) aktualisiert${RST}\n"
+    info "Update: $CUR_REV → $NEW_REV"
 fi
+
+# ── 2. Apply overlay (scripts, configs, themes) ───────────────────────────────
+SRC="$CACHE/archiso/airootfs"
+info "Applying overlay…"
+rsync -a "$SRC/usr/local/bin/"   /usr/local/bin/   2>/dev/null
+rsync -a "$SRC/usr/local/share/" /usr/local/share/ 2>/dev/null
+rsync -a "$SRC/usr/share/themes/" /usr/share/themes/ 2>/dev/null
+rsync -a "$SRC/usr/share/plymouth/" /usr/share/plymouth/ 2>/dev/null
+rsync -a "$SRC/opt/flynn/"       /opt/flynn/       2>/dev/null
+rsync -a "$SRC/root/.config/"    /root/.config/    2>/dev/null
+rsync -a "$SRC/etc/keyd/"        /etc/keyd/        2>/dev/null
+find /usr/local/bin -type f -exec chmod +x {} \; 2>/dev/null
+find /opt/flynn -name "*.py" -exec chmod +x {} \; 2>/dev/null
+echo "$NEW_REV" > /etc/flynnos/.ota-rev
+log "applied $NEW_REV channel=$CHANNEL"
+ok "Overlay applied ($NEW_REV)"
+
+# ── 3. Reload live components ─────────────────────────────────────────────────
+if [ -n "${WAYLAND_DISPLAY:-}" ] || pgrep -x sway >/dev/null; then
+    swaymsg reload >/dev/null 2>&1 && ok "Desktop reloaded" || true
+fi
+systemctl restart keyd 2>/dev/null || true
+
+# ── 4. Optional full package upgrade ──────────────────────────────────────────
+if [ "$FULL" = 1 ]; then
+    info "Package upgrade (pacman -Syu)…"
+    if [ "$AUTO" = 1 ]; then
+        pacman -Syu --noconfirm >/dev/null 2>&1 && ok "Packages updated" || warn "pacman failed — run manually"
+    else
+        pacman -Syu
+    fi
+fi
+
 echo ""
-
-# ── 4. Services neu starten wenn nötig ───────────────────────────────────────
-printf "${CY}[4/4] Services aktualisieren...${RST}\n"
-if [ $UPDATED -gt 0 ]; then
-  systemctl is-active --quiet flynn-daemon && systemctl restart flynn-daemon \
-    && printf "  ${GN}✓ Flynn daemon neu gestartet${RST}\n"
-  # Waybar neu laden (Wayland)
-  if [ -n "$WAYLAND_DISPLAY" ]; then
-    pkill waybar 2>/dev/null
-    sleep 0.3
-    waybar -c /root/.config/waybar/config -s /root/.config/waybar/style.css &
-    printf "  ${GN}✓ Waybar neu gestartet${RST}\n"
-    # Mako neu laden
-    pkill mako 2>/dev/null
-    mako --config /root/.config/mako/config &
-  fi
-fi
-
-# Sway config neu laden wenn aktiv
-if pgrep -x sway &>/dev/null && [ $UPDATED -gt 0 ]; then
-  swaymsg reload 2>/dev/null && printf "  ${GN}✓ Sway config neu geladen${RST}\n"
-fi
-
-VERSION=$(cd "$CACHE" 2>/dev/null && git log -1 --format="%h %s" 2>/dev/null || echo "unknown")
-printf "\n${GN}Flynn OS Update abgeschlossen.${RST}\n"
-printf "${DIM}Version: %s${RST}\n" "$VERSION"
-log "OTA completed — $UPDATED files updated — $VERSION"
+ok "Flynn OS is current.  ${DIM}channel: $CHANNEL · rev: $NEW_REV${RST}"
+info "Switch channel:  flynn-update --channel dev   (back: --channel stable)"
+echo ""

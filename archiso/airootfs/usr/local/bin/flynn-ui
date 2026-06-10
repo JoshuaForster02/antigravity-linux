@@ -15,7 +15,7 @@ HIDE='\e[?25l' SHOW='\e[?25h' CLS='\e[2J\e[H'
 get_size() { COLS=$(tput cols 2>/dev/null||echo 80); ROWS=$(tput lines 2>/dev/null||echo 24); }
 get_size
 
-hline() { local c="${1:-═}" k="${2:-$CY}"; printf "${k}"; printf '%*s' "$COLS" ''|tr ' ' "$c"; printf "${RST}\n"; }
+hline() { local c="${1:-─}" k="${2:-$CY}"; printf "${k}"; printf '%*s' "$COLS" ''|tr ' ' "$c"; printf "${RST}\n"; }
 center() { local txt="$1" col="${2:-$LCY}" len="${#1}" pad; pad=$(( (COLS-len)/2 )); [ $pad -lt 0 ]&&pad=0; printf "%${pad}s${col}%s${RST}\n" "" "$txt"; }
 bar() { local pct=$1 w=${2:-20} fc="${3:-$LCY}" ec="${4:-$DIM}"; local f=$(( pct*w/100 )); [ $f -gt $w ]&&f=$w; local e=$((w-f)); printf "${fc}"; printf '%*s' "$f" ''|tr ' ' '█'; printf "${ec}"; printf '%*s' "$e" ''|tr ' ' '░'; printf "${RST}"; }
 color_pct() { [ "$1" -gt 85 ]&&echo "$RED"&&return; [ "$1" -gt 60 ]&&echo "$YEL"&&return; echo "$LCY"; }
@@ -61,9 +61,9 @@ cmd_status() {
     local disk_pct=$(df / 2>/dev/null|awk 'NR==2{gsub(/%/,"",$5);print $5+0}')
     local cc=$(color_pct $cpu) mc=$(color_pct $mem) dc=$(color_pct ${disk_pct:-0})
     local ts=$(date '+%a %d %b  %H:%M:%S')
-    hline "═" "$DIM"
+    hline "─" "$DIM"
     printf "  ${LCY}SYSTEM STATUS${RST}%$(( COLS-18-${#ts} ))s${DRK}%s${RST}\n" "" "$ts"
-    hline "═" "$DIM"; echo ""
+    hline "─" "$DIM"; echo ""
     printf "  ${DIM}CPU   "; bar $cpu 36 "$cc" "$DIM"; printf "  ${cc}%3d%%${RST}\n" $cpu
     printf "  ${DIM}MEM   "; bar $mem 36 "$mc" "$DIM"; printf "  ${mc}%3d%%  ${DRK}%s${RST}\n" $mem "$(get_mem_str)"
     printf "  ${DIM}DISK  "; bar ${disk_pct:-0} 36 "$dc" "$DIM"; printf "  ${dc}%3d%%  ${DRK}%s / %s${RST}\n" ${disk_pct:-0} "$(df -h / 2>/dev/null|awk 'NR==2{print $3}')" "$(df -h / 2>/dev/null|awk 'NR==2{print $2}')"
@@ -80,7 +80,7 @@ cmd_status() {
       while read pid comm cpu mem; do
         printf "  ${GRY}%-6s  ${WHT}%-22s  ${CY}%-6s  ${GRN}%-6s${RST}\n" "$pid" "$comm" "$cpu" "$mem"
       done
-    echo ""; hline "═" "$DIM"
+    echo ""; hline "─" "$DIM"
     printf "  ${DRK}[any key to return]${RST}"; printf "${SHOW}"; read -r -n1; echo ""
 }
 
@@ -245,7 +245,7 @@ cmd_ssh_info() {
 }
 
 cmd_install() {
-    echo ""; hline "═" "$LCY"; center "FLYNN OS  —  INSTALL TO DISK" "$LCY"; hline "═" "$LCY"; echo ""
+    echo ""; hline "─" "$LCY"; center "FLYNN OS  —  INSTALL TO DISK" "$LCY"; hline "─" "$LCY"; echo ""
     printf "  ${LCY}Detected disks:${RST}\n\n"
     command -v lsblk &>/dev/null && lsblk -d -o NAME,SIZE,MODEL 2>/dev/null | awk 'NR==1{next}{printf "  \033[1;37m/dev/%-8s\033[0;36m %-8s \033[2;37m%s\033[0m\n",$1,$2,$3}'
     echo ""
@@ -260,7 +260,7 @@ cmd_install() {
 }
 
 cmd_help() {
-    echo ""; hline "═" "$DIM"; center "COMMAND REFERENCE  —  Flynn OS v2.0" "$LCY"; hline "─" "$DIM"; echo ""
+    echo ""; hline "─" "$DIM"; center "COMMAND REFERENCE  —  Flynn OS v2.0" "$LCY"; hline "─" "$DIM"; echo ""
     printf "  ${LCY}SYSTEM${RST}\n"
     printf "  ${CY}  status        ${DRK}live CPU · RAM · disk · processes${RST}\n"
     printf "  ${CY}  version       ${DRK}Flynn OS version info${RST}\n"
@@ -303,7 +303,7 @@ cmd_help() {
     printf "  ${CY}  matrix        ${DRK}matrix rain animation${RST}\n"
     printf "  ${CY}  tron/clear    ${DRK}redisplay boot splash${RST}\n"
     printf "  ${CY}  sh            ${DRK}drop to bash${RST}\n\n"
-    hline "═" "$DIM"; echo ""
+    hline "─" "$DIM"; echo ""
 }
 
 prompt() {

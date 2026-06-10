@@ -322,3 +322,22 @@ dialog .dialog-action-area {
 .sidebar row { padding: 8px 14px; color: @fg_normal; border-radius: 4px; }
 .sidebar row:selected { background-color: @bg_selected; color: @accent_bright; }
 .sidebar row:hover { background-color: @bg_hover; }
+
+
+/* ── macOS-style window controls (traffic lights) ─────────────────────────── */
+windowcontrols button {
+  min-width: 12px; min-height: 12px;
+  border-radius: 50%; padding: 0; margin: 0 4px; border: none;
+  background-image: none; box-shadow: none;
+}
+windowcontrols button.close    { background-color: #ff5f57; }
+windowcontrols button.minimize { background-color: #febc2e; }
+windowcontrols button.maximize { background-color: #28c840; }
+windowcontrols button image { opacity: 0; }
+headerbar button.titlebutton {
+  min-width: 12px; min-height: 12px;
+  border-radius: 50%; padding: 0; margin: 0 4px; border: none;
+}
+headerbar button.titlebutton.close    { background-color: #ff5f57; color: transparent; }
+headerbar button.titlebutton.minimize { background-color: #febc2e; color: transparent; }
+headerbar button.titlebutton.maximize { background-color: #28c840; color: transparent; }

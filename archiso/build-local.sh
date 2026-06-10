@@ -80,7 +80,8 @@ docker run --rm \
         echo '=== Rechte setzen ==='
         find /build/airootfs/usr/local/bin/ -type f -exec chmod +x {} \; 2>/dev/null || true
         find /build/airootfs/opt/flynn/ -name '*.py' -exec chmod +x {} \; 2>/dev/null || true
-        chmod +x /build/customize_airootfs.sh
+        chmod +x /build/airootfs/root/customize_airootfs.sh
+        find /build/airootfs/usr/local/bin -type f -exec chmod +x {} \;
 
         echo '=== ISO bauen ==='
         mkarchiso -v -w /work -o /isoout /build

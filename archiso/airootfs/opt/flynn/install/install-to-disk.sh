@@ -64,20 +64,43 @@ for part in ${TARGET}*; do
     fi
 done
 
-if [ -n "$WINDOWS_EFI" ]; then
-    warn "Windows EFI partition detected at $WINDOWS_EFI"
-    printf "  ${YL}Install mode:${RS}\n"
-    printf "    ${WH}1${RS}  ${DM}Dual-boot — keep Windows, add Flynn OS partition${RS}\n"
-    printf "    ${WH}2${RS}  ${DM}Full wipe  — erase everything, Flynn OS only${RS}\n"
-    printf "    ${WH}q${RS}  ${DM}Quit${RS}\n\n"
-    printf "  ${WH}Choice: ${RS}"; read -r choice
-    case "$choice" in
-        1) MODE="dualboot" ;;
-        2) MODE="full" ;;
-        *) echo "  Aborted." && exit 0 ;;
-    esac
+[ -n "$WINDOWS_EFI" ] && warn "Windows EFI partition detected at $WINDOWS_EFI"
+printf "  ${YL}Install mode:${RS}\n"
+printf "    ${WH}1${RS}  ${DM}Dual-boot — keep Windows, use free space automatically${RS}\n"
+printf "    ${WH}2${RS}  ${DM}Full wipe — erase EVERYTHING, Flynn OS only${RS}\n"
+printf "    ${WH}3${RS}  ${DM}Advanced  — pick existing partitions yourself (nothing auto-deleted)${RS}\n"
+printf "    ${WH}q${RS}  ${DM}Quit${RS}\n\n"
+printf "  ${WH}Choice: ${RS}"; read -r choice
+case "$choice" in
+    1) MODE="dualboot" ;;
+    2) MODE="full" ;;
+    3) MODE="advanced" ;;
+    *) echo "  Aborted." && exit 0 ;;
+esac
+
+if [ "$MODE" = "advanced" ]; then
+    # ── Advanced: user picks partitions (prepare them beforehand, e.g. in
+    #    Windows Disk Management or with: cfdisk $TARGET ) ────────────────────
+    echo ""
+    info "Current layout:"
+    lsblk -o NAME,SIZE,FSTYPE,LABEL,MOUNTPOINTS "$TARGET" | sed 's/^/    /'
+    echo ""
+    printf "  ${WH}Root partition for Flynn OS (e.g. ${TARGET}3) — WILL BE FORMATTED ext4: ${RS}"
+    read -r ROOT_PART
+    [ -b "$ROOT_PART" ] || { warn "Not a block device: $ROOT_PART"; exit 1; }
+    printf "  ${WH}EFI partition (e.g. ${TARGET}1) — kept as-is, NOT formatted: ${RS}"
+    read -r EFI_PART
+    [ -b "$EFI_PART" ] || { warn "Not a block device: $EFI_PART"; exit 1; }
+    SWAP_PART=""
+    echo ""
+    warn "ONLY $ROOT_PART will be formatted. $EFI_PART stays untouched."
+    printf "  ${RD}Type YES to confirm: ${WH}"; read -r confirm; printf "${RS}"
+    [ "$confirm" = "YES" ] || { echo "  Aborted."; exit 0; }
+    mkfs.ext4 -L "FLYNNOS_ROOT" -q -F "$ROOT_PART"
+    ok "Root formatted: $ROOT_PART"
 fi
 
+if [ "$MODE" != "advanced" ]; then
 echo ""
 if [ "$MODE" = "dualboot" ]; then
     info "Mode: DUAL-BOOT  (Windows preserved)"
@@ -134,8 +157,9 @@ else
 
     mkfs.ext4 -L "FLYNNOS_ROOT" -q "$ROOT_PART"
 fi
+fi   # end non-advanced partitioning
 
-ok "Partitions created: root=$ROOT_PART  efi=$EFI_PART"
+ok "Partitions ready: root=$ROOT_PART  efi=$EFI_PART"
 
 # ── Mount ─────────────────────────────────────────────────────────────────────
 MNTROOT="/mnt/flynnos-install"

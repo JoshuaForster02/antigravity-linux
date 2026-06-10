@@ -63,7 +63,7 @@ jobs:
               echo '=== Setting permissions ==='
               find /build/airootfs/usr/local/bin/ -type f -exec chmod +x {} \; 2>/dev/null || true
               find /build/airootfs/opt/flynn/ -name '*.py' -exec chmod +x {} \; 2>/dev/null || true
-              chmod +x /build/customize_airootfs.sh
+              chmod +x /build/airootfs/root/customize_airootfs.sh
 
               echo '=== Building Flynn OS ISO ==='
               mkarchiso -v -w /work -o /isoout /build

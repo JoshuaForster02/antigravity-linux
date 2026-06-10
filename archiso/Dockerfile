@@ -44,7 +44,7 @@ WORKDIR /build
 COPY profiledef.sh          ./
 COPY packages.x86_64        ./
 COPY pacman.conf            ./pacman-iso.conf
-COPY customize_airootfs.sh  airootfs/customize_airootfs.sh
+# customize_airootfs.sh now lives in airootfs/root/ (mkarchiso executes it there)
 COPY airootfs/              airootfs/
 
 # ── Fix permissions ───────────────────────────────────────────────────────────

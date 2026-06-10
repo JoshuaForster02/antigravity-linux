@@ -252,7 +252,7 @@ for_window [app_id="anki"] move to workspace ANKI
 for_window [app_id="steam"] move to workspace GAME
 for_window [title="Steam Big Picture"] fullscreen enable, move to workspace GAME
 # Flynn terminal → floating, centered, workspace 1
-for_window [app_id="flynn-ui"] floating enable, resize set 1100 650, move position center, border pixel 2
+for_window [app_id="flynn-ui"] floating enable, resize set 1100 650, move position center
 # Flynn Browser → floating, right side
 for_window [title="Flynn Browser.*Amboss"] move to workspace STUDY
 # Picture-in-picture → floating, top-right, always on top
