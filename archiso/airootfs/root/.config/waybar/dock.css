@@ -28,7 +28,7 @@ window#waybar.dock {
 /* ── Launcher icons ──────────────────────────────────────────────────────── */
 #custom-term, #custom-launcher, #custom-files, #custom-browser,
 #custom-anki, #custom-steam, #custom-mode, #custom-wifi,
-#custom-volume, #custom-settings, #custom-lock {
+#custom-volume, #custom-settings, #custom-help, #custom-lock {
     padding: 6px 13px;
     margin: 3px 1px;
     border-radius: 12px;
@@ -39,7 +39,7 @@ window#waybar.dock {
 #custom-term:hover, #custom-launcher:hover, #custom-files:hover,
 #custom-browser:hover, #custom-anki:hover, #custom-steam:hover,
 #custom-mode:hover, #custom-wifi:hover, #custom-volume:hover,
-#custom-settings:hover {
+#custom-settings:hover, #custom-help:hover {
     color: #ffffff;
     background: rgba(122, 216, 248, 0.14);
 }

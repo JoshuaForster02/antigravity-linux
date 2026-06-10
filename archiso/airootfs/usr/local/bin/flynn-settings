@@ -137,6 +137,8 @@ class SettingsApp(Gtk.Application):
 
         # ── System
         box.append(self._section('SYSTEM'))
+        box.append(self._row('Keyboard Shortcuts', 'Show all key bindings',
+                              lambda: run("foot --app-id=flynn-help -e bash -c 'cat /usr/local/share/flynn-help.txt; echo; read'")))
         box.append(self._row('Do Not Disturb', 'Toggle notifications (Super+F5)',
                               lambda: run('/usr/local/bin/flynn-dnd')))
         box.append(self._row('Screen Recording', 'Start/stop recorder (Super+F9)',

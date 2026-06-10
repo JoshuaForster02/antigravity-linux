@@ -22,6 +22,7 @@
     "custom/wifi",
     "custom/volume",
     "custom/settings",
+    "custom/help",
     "custom/lock"
   ],
   "custom/term": {
@@ -97,6 +98,11 @@
     "format": "",
     "tooltip-format": "Settings  (Super+,)",
     "on-click": "/usr/local/bin/flynn-settings"
+  },
+  "custom/help": {
+    "format": "",
+    "tooltip-format": "All shortcuts & help  (Super+?)",
+    "on-click": "foot --app-id=flynn-help -e bash -c 'cat /usr/local/share/flynn-help.txt; echo; read -p \"  [Enter] to close\"'"
   },
   "custom/lock": {
     "format": "",
