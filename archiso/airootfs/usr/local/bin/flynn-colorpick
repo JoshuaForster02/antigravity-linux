@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+"""Flynn OS — Color picker: click a pixel, hex lands in the clipboard."""
+import subprocess, sys
+
+def notify(kind, msg):
+    subprocess.run(["/usr/local/bin/flynn-notify", kind, msg])
+
+try:
+    geo = subprocess.check_output(["slurp", "-p"], text=True).strip()
+except subprocess.CalledProcessError:
+    sys.exit(0)   # user cancelled
+
+try:
+    ppm = subprocess.check_output(
+        ["grim", "-g", geo, "-t", "ppm", "-"], stderr=subprocess.DEVNULL)
+    # Parse PPM (P6): header lines then binary RGB
+    parts = ppm.split(b"\n", 3)
+    # P6 / "W H" / maxval / data
+    data = parts[3]
+    r, g, b = data[0], data[1], data[2]
+    hexcol = f"#{r:02x}{g:02x}{b:02x}"
+    subprocess.run(["wl-copy"], input=hexcol.encode())
+    notify("clipboard", f"Color {hexcol} copied")
+except Exception:
+    notify("error", "Could not pick color")

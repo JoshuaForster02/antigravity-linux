@@ -33,3 +33,6 @@ border-radius=14
 
 [app-name="Flynn OS"]
 border-color=#7ad8f855
+
+[mode=do-not-disturb]
+invisible=1

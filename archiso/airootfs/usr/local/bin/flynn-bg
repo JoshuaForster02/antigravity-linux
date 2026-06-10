@@ -1,0 +1,29 @@
+#!/bin/bash
+# Flynn OS — Live background control
+# Usage: flynn-bg [on|off|toggle|start]
+CONF=/etc/flynnos/bg.conf
+mkdir -p /etc/flynnos
+
+mode() { grep -oP 'MODE=\K\w+' "$CONF" 2>/dev/null || echo live; }
+
+start_daemon() {
+    pgrep -f flynn-bg-daemon >/dev/null || \
+        nohup /usr/local/bin/flynn-bg-daemon >/dev/null 2>&1 &
+}
+stop_daemon() { pkill -f flynn-bg-daemon 2>/dev/null; }
+
+case "${1:-toggle}" in
+    start)   # called by sway on login — respects saved setting
+        [ "$(mode)" = "off" ] || start_daemon ;;
+    on)
+        printf 'MODE=live\nFPS=20\n' > "$CONF"
+        start_daemon
+        /usr/local/bin/flynn-notify display "Live background: on" ;;
+    off)
+        printf 'MODE=off\nFPS=20\n' > "$CONF"
+        stop_daemon
+        /usr/local/bin/flynn-notify display "Live background: off" ;;
+    toggle)
+        if [ "$(mode)" = "off" ]; then exec "$0" on; else exec "$0" off; fi ;;
+    *) echo "usage: flynn-bg [on|off|toggle|start]"; exit 1 ;;
+esac

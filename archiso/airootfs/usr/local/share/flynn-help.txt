@@ -16,6 +16,12 @@
   Super+R           Resize mode
   Super+F2          Keyboard layout US/DE toggle
   Super+F3          Display scale (HiDPI/Retina)
+  Super+F4          Night light (warm colors)
+  Super+F5          Do Not Disturb toggle
+  Super+F6          Live background on/off
+  Super+F9          Screen recording start/stop
+  Super+Shift+F9    Record a region
+  Super+Shift+C     Color picker (hex to clipboard)
   Super+Shift+V     Clipboard history
   Super+Shift+R     Reload Sway config
   Super+Shift+E     Exit Sway (logout)

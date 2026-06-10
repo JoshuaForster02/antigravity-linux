@@ -184,3 +184,8 @@ nwg-look
 papirus-icon-theme
 libevdev
 lm_sensors
+
+# Desktop features: night light, screen recording, thunar trash/mounts
+wlsunset
+wf-recorder
+gvfs

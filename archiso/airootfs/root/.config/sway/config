@@ -83,7 +83,7 @@ exec wl-paste --type image --watch cliphist store
 
 # VM clipboard (UTM/QEMU)
 exec bash -c 'sleep 0.5 && /usr/local/bin/flynn-chrome 2>/tmp/chrome.log'
-exec bash -c 'sleep 0.8 && /usr/local/bin/flynn-bg-daemon 2>/tmp/bg-daemon.log'
+exec bash -c 'sleep 0.8 && /usr/local/bin/flynn-bg start 2>/tmp/bg-daemon.log'
 exec bash -c 'sleep 0.6 && swaymsg rename workspace number 1 GRID && swaymsg rename workspace number 2 STUDY && swaymsg rename workspace number 3 ANKI && swaymsg rename workspace number 4 GAME && swaymsg rename workspace number 5 SYS'
 
 exec bash -c 'sleep 0.5 && spice-vdagent 2>/dev/null || true'
@@ -138,6 +138,12 @@ bindsym $mod+u           exec /usr/local/bin/flynn-update
 bindsym $mod+w           exec /usr/local/bin/flynn-wifi
 bindsym $mod+F2          exec /usr/local/bin/flynn-keyboard toggle
 bindsym $mod+F3          exec /usr/local/bin/flynn-display
+bindsym $mod+F4          exec /usr/local/bin/flynn-nightlight
+bindsym $mod+F5          exec /usr/local/bin/flynn-dnd
+bindsym $mod+F6          exec /usr/local/bin/flynn-bg toggle
+bindsym $mod+F9          exec /usr/local/bin/flynn-record
+bindsym $mod+Shift+F9    exec /usr/local/bin/flynn-record --region
+bindsym $mod+Shift+c     exec /usr/local/bin/flynn-colorpick
 
 bindsym $mod+Shift+s  exec /usr/local/bin/flynn-sunshine --status
 bindsym $mod+Shift+a  exec /usr/local/bin/flynn-ambient toggle

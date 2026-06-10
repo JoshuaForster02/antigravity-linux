@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-Flynn OS — ANTIGRAVITY Live Background Daemon
-Animated TRON grid rendered via Cairo + GTK4 layer shell.
-Runs at BACKGROUND layer — below all windows, above wallpaper color.
+Flynn OS — Live Background Daemon  (ENCOM clean)
+Animated grid rendered via Cairo + GTK4 layer shell at the BACKGROUND layer.
 
-Visual elements:
-  • Slow-breathing TRON grid (dark cyan lines on near-black)
-  • Data packets — cyan rectangles traversing grid paths
-  • Intersection pulses — random node flashes
-  • Corner decorations — TRON-style UI chrome
+Performance: the static layer (gradient, grid, dots, corners) is rendered ONCE
+into a cached surface and blitted per frame — only packets, pulses and the
+breathing glow are dynamic. ~10x cheaper than a full redraw, fine for
+software rendering (UTM/QEMU pixman).
+
+Config:  /etc/flynnos/bg.conf      MODE=live|off   FPS=20
+Control: flynn-bg [on|off|toggle]
 """
 
-import gi, math, random, time
+import gi, math, random, os
 gi.require_version('Gtk', '4.0')
-gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib
 
 try:
@@ -25,101 +25,116 @@ except Exception:
 
 import cairo
 
-# ── Constants ──────────────────────────────────────────────────────────────────
-BG       = (0.0,  0.031, 0.063)   # #000810
-GRID_COL = (0.0,  0.28,  0.42)    # dim cyan grid
-LINE_COL = (0.0,  0.72,  0.88)    # bright grid accent lines
-CYAN     = (0.0,  0.898, 1.0)     # #00e5ff — full TRON cyan
-DCYAN    = (0.0,  0.40,  0.60)    # dim cyan for nodes
+# ── Config ─────────────────────────────────────────────────────────────────────
+CONF = "/etc/flynnos/bg.conf"
+def read_conf():
+    cfg = {"MODE": "live", "FPS": "20"}
+    try:
+        with open(CONF) as f:
+            for line in f:
+                if "=" in line:
+                    k, v = line.strip().split("=", 1)
+                    cfg[k.strip()] = v.strip()
+    except Exception:
+        pass
+    return cfg
 
-GRID     = 72          # grid cell size px
-FPS      = 30
+CFG = read_conf()
+if CFG.get("MODE") == "off":
+    raise SystemExit(0)
+
+FPS      = max(5, min(30, int(CFG.get("FPS", "20"))))
 INTERVAL = 1000 // FPS
+GRID     = 72
 
-W, H     = 1920, 1080  # updated from display at runtime
+# ── Palette (matches the ENCOM design system) ─────────────────────────────────
+BG_TOP    = (0.024, 0.039, 0.071)   # #060a12
+BG_MID    = (0.047, 0.078, 0.133)   # #0c1422
+LINE_COL  = (0.353, 0.784, 0.973)   # #5ac8f8
+ACCENT    = (0.353, 0.843, 1.000)   # #5ad7ff
+NODE_COL  = (0.251, 0.549, 0.686)   # #408caf
 
 # ── Data Packet ───────────────────────────────────────────────────────────────
 class Packet:
-    """A small cyan rectangle that travels along grid lines."""
+    """A small light streak traveling along grid lines."""
     def __init__(self, w, h):
         self.reset(w, h)
 
     def reset(self, w, h):
-        # Pick a random axis-aligned grid path
         if random.random() < 0.5:           # horizontal
-            self.x  = -20.0
-            self.y  = random.randint(1, h // GRID - 1) * GRID
-            self.dx = random.uniform(2.5, 5.5)
+            self.x  = -60.0
+            self.y  = random.randint(1, max(1, h // GRID - 1)) * GRID
+            self.dx = random.uniform(1.8, 4.2)
             self.dy = 0.0
-            self.w, self.h_px = random.randint(18, 48), 3
+            self.w, self.h_px = random.randint(22, 56), 2
         else:                               # vertical
-            self.x  = random.randint(1, w // GRID - 1) * GRID
-            self.y  = -20.0
+            self.x  = random.randint(1, max(1, w // GRID - 1)) * GRID
+            self.y  = -60.0
             self.dx = 0.0
-            self.dy = random.uniform(2.0, 4.5)
-            self.w, self.h_px = 3, random.randint(18, 48)
-        self.alpha = random.uniform(0.6, 1.0)
+            self.dy = random.uniform(1.5, 3.5)
+            self.w, self.h_px = 2, random.randint(22, 56)
+        self.alpha = random.uniform(0.35, 0.75)
         self._W, self._H = w, h
 
     def step(self):
         self.x += self.dx
         self.y += self.dy
-        if self.x > self._W + 60 or self.y > self._H + 60:
+        if self.x > self._W + 80 or self.y > self._H + 80:
             self.reset(self._W, self._H)
 
     def draw(self, ctx):
-        ctx.set_source_rgba(CYAN[0], CYAN[1], CYAN[2], self.alpha)
+        ctx.set_source_rgba(*ACCENT, self.alpha)
         ctx.rectangle(self.x, self.y, self.w, self.h_px)
         ctx.fill()
-        # leading glow
-        ctx.set_source_rgba(CYAN[0], CYAN[1], CYAN[2], self.alpha * 0.25)
+        # soft trailing glow
+        ctx.set_source_rgba(*ACCENT, self.alpha * 0.20)
         if self.dx > 0:
-            ctx.rectangle(self.x + self.w, self.y - 1, 12, 5)
-        elif self.dy > 0:
-            ctx.rectangle(self.x - 1, self.y + self.h_px, 5, 12)
+            ctx.rectangle(self.x - 14, self.y, 14, self.h_px)
+        else:
+            ctx.rectangle(self.x, self.y - 14, self.w, 14)
         ctx.fill()
 
-# ── Pulse node ────────────────────────────────────────────────────────────────
+# ── Pulse ring ────────────────────────────────────────────────────────────────
 class Pulse:
     def __init__(self, x, y):
         self.x, self.y = x, y
-        self.r   = 0.0
-        self.max_r = random.uniform(18, 36)
-        self.alpha = 0.8
+        self.r     = 0.0
+        self.alpha = 0.55
 
     @property
     def done(self):
         return self.alpha <= 0.02
 
     def step(self):
-        self.r     += 1.4
-        self.alpha *= 0.88
+        self.r     += 1.2
+        self.alpha *= 0.90
 
     def draw(self, ctx):
-        ctx.set_source_rgba(CYAN[0], CYAN[1], CYAN[2], self.alpha * 0.7)
+        ctx.set_source_rgba(*ACCENT, self.alpha * 0.6)
         ctx.arc(self.x, self.y, self.r, 0, 2 * math.pi)
         ctx.stroke()
 
 # ── Background window ─────────────────────────────────────────────────────────
-class TronBackground(Gtk.ApplicationWindow):
+class FlynnBackground(Gtk.ApplicationWindow):
     def __init__(self, app):
         super().__init__(application=app)
         self.set_decorated(False)
-        self.set_default_size(W, H)
+        self.set_default_size(1920, 1080)
 
         if HAS_LAYER:
             GtkLayerShell.init_for_window(self)
             GtkLayerShell.set_layer(self, GtkLayerShell.Layer.BACKGROUND)
-            GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP,    True)
-            GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.BOTTOM, True)
-            GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.LEFT,   True)
-            GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.RIGHT,  True)
+            for edge in (GtkLayerShell.Edge.TOP, GtkLayerShell.Edge.BOTTOM,
+                         GtkLayerShell.Edge.LEFT, GtkLayerShell.Edge.RIGHT):
+                GtkLayerShell.set_anchor(self, edge, True)
             GtkLayerShell.set_exclusive_zone(self, -1)
 
-        self._t       = 0
-        self._packets = [Packet(W, H) for _ in range(14)]
-        self._pulses  = []
-        self._next_pulse = random.randint(30, 90)
+        self._t          = 0
+        self._packets    = []
+        self._pulses     = []
+        self._next_pulse = random.randint(40, 110)
+        self._static     = None          # cached static layer
+        self._size       = (0, 0)
 
         area = Gtk.DrawingArea()
         area.set_draw_func(self._draw)
@@ -127,6 +142,52 @@ class TronBackground(Gtk.ApplicationWindow):
         self._area = area
 
         GLib.timeout_add(INTERVAL, self._tick)
+
+    # ── Static layer: rendered once per size ──────────────────────────────────
+    def _build_static(self, w, h):
+        surf = cairo.ImageSurface(cairo.FORMAT_RGB24, w, h)
+        ctx  = cairo.Context(surf)
+
+        # Vertical gradient — deep navy, brighter towards center
+        grad = cairo.LinearGradient(0, 0, 0, h)
+        grad.add_color_stop_rgb(0.0, *BG_TOP)
+        grad.add_color_stop_rgb(0.5, *BG_MID)
+        grad.add_color_stop_rgb(1.0, *BG_TOP)
+        ctx.set_source(grad)
+        ctx.paint()
+
+        # Grid
+        ctx.set_line_width(1)
+        for gx in range(0, w + GRID, GRID):
+            accent = (gx % (GRID * 4) == 0)
+            ctx.set_source_rgba(*LINE_COL, 0.16 if accent else 0.06)
+            ctx.move_to(gx, 0); ctx.line_to(gx, h); ctx.stroke()
+        for gy in range(0, h + GRID, GRID):
+            accent = (gy % (GRID * 4) == 0)
+            ctx.set_source_rgba(*LINE_COL, 0.16 if accent else 0.06)
+            ctx.move_to(0, gy); ctx.line_to(w, gy); ctx.stroke()
+
+        # Sparse node dots
+        rng = random.Random(2049)
+        ctx.set_source_rgba(*NODE_COL, 0.30)
+        for gx in range(GRID, w, GRID):
+            for gy in range(GRID, h, GRID):
+                if rng.random() < 0.10:
+                    ctx.arc(gx, gy, 1.6, 0, 2 * math.pi)
+                    ctx.fill()
+
+        # Corner chrome
+        ctx.set_line_width(1.5)
+        ctx.set_source_rgba(*ACCENT, 0.38)
+        pad, size = 24, 30
+        for cx, cy, sx, sy in [(pad, pad, 1, 1), (w - pad, pad, -1, 1),
+                               (pad, h - pad, 1, -1), (w - pad, h - pad, -1, -1)]:
+            ctx.move_to(cx, cy + sy * size)
+            ctx.line_to(cx, cy)
+            ctx.line_to(cx + sx * size, cy)
+            ctx.stroke()
+
+        return surf
 
     def _tick(self):
         self._t += 1
@@ -137,91 +198,44 @@ class TronBackground(Gtk.ApplicationWindow):
         self._pulses = [p for p in self._pulses if not p.done]
 
         self._next_pulse -= 1
-        if self._next_pulse <= 0:
-            gx = random.randint(1, W // GRID - 1) * GRID
-            gy = random.randint(1, H // GRID - 1) * GRID
+        if self._next_pulse <= 0 and self._size[0] > 0:
+            w, h = self._size
+            gx = random.randint(1, max(1, w // GRID - 1)) * GRID
+            gy = random.randint(1, max(1, h // GRID - 1)) * GRID
             self._pulses.append(Pulse(gx, gy))
-            self._next_pulse = random.randint(20, 60)
+            self._next_pulse = random.randint(40, 120)
 
         self._area.queue_draw()
-        return True   # keep firing
+        return True
 
     def _draw(self, area, ctx, w, h):
-        # ── Background ──────────────────────────────────────────────────────
-        ctx.set_source_rgb(*BG)
+        # (Re)build cache on first draw or resize
+        if self._static is None or self._size != (w, h):
+            self._static = self._build_static(w, h)
+            self._size   = (w, h)
+            self._packets = [Packet(w, h) for _ in range(10)]
+
+        # Blit static layer
+        ctx.set_source_surface(self._static, 0, 0)
         ctx.paint()
 
-        # ── Breathe: very slow global brightness oscillation ─────────────
-        breath = 0.5 + 0.5 * math.sin(self._t * 0.018)
-
-        # ── Grid lines ──────────────────────────────────────────────────────
-        ctx.set_line_width(1)
-        for gx in range(0, w + GRID, GRID):
-            accent = (gx % (GRID * 4) == 0)
-            alpha  = (0.28 if accent else 0.10) * (0.8 + 0.2 * breath)
-            ctx.set_source_rgba(LINE_COL[0], LINE_COL[1], LINE_COL[2], alpha)
-            ctx.move_to(gx, 0); ctx.line_to(gx, h); ctx.stroke()
-
-        for gy in range(0, h + GRID, GRID):
-            accent = (gy % (GRID * 4) == 0)
-            alpha  = (0.28 if accent else 0.10) * (0.8 + 0.2 * breath)
-            ctx.set_source_rgba(LINE_COL[0], LINE_COL[1], LINE_COL[2], alpha)
-            ctx.move_to(0, gy); ctx.line_to(w, gy); ctx.stroke()
-
-        # ── Node dots at intersections (sparse) ─────────────────────────────
-        random.seed(12345)   # fixed seed for stable dots
-        ctx.set_source_rgba(DCYAN[0], DCYAN[1], DCYAN[2], 0.35)
-        for gx in range(GRID, w, GRID):
-            for gy in range(GRID, h, GRID):
-                if random.random() < 0.12:
-                    ctx.arc(gx, gy, 2, 0, 2 * math.pi)
-                    ctx.fill()
-        random.seed()        # restore random state
-
-        # ── Corner decorations — TRON HUD chrome ─────────────────────────
-        ctx.set_line_width(1.5)
-        ctx.set_source_rgba(CYAN[0], CYAN[1], CYAN[2], 0.55)
-        pad, size = 24, 32
-        for cx, cy, sx, sy in [
-            (pad, pad,       1,  1),
-            (w - pad, pad,  -1,  1),
-            (pad, h - pad,   1, -1),
-            (w - pad, h - pad, -1, -1)
-        ]:
-            ctx.move_to(cx, cy + sy * size)
-            ctx.line_to(cx, cy)
-            ctx.line_to(cx + sx * size, cy)
-            ctx.stroke()
-
-        # ── Faint scan-line effect (every 4 px) ──────────────────────────
-        ctx.set_source_rgba(0, 0, 0, 0.06)
-        for sy in range(0, h, 4):
-            ctx.rectangle(0, sy, w, 1)
+        # Breathing top edge glow
+        breath = 0.5 + 0.5 * math.sin(self._t * 0.015)
+        ctx.set_source_rgba(*ACCENT, 0.05 + 0.05 * breath)
+        ctx.rectangle(0, 0, w, 2)
         ctx.fill()
 
-        # ── Data packets ─────────────────────────────────────────────────
-        ctx.set_line_width(1)
+        # Dynamic elements
         for p in self._packets:
             p.draw(ctx)
-
-        # ── Pulse rings ───────────────────────────────────────────────────
         ctx.set_line_width(1.2)
         for p in self._pulses:
             p.draw(ctx)
 
-        # ── Top edge glow bar ─────────────────────────────────────────────
-        glow_alpha = 0.12 + 0.06 * breath
-        ctx.set_source_rgba(CYAN[0], CYAN[1], CYAN[2], glow_alpha)
-        ctx.rectangle(0, 0, w, 2)
-        ctx.fill()
 
 class App(Gtk.Application):
     def __init__(self):
         super().__init__(application_id='os.flynnos.background')
-        self.connect('activate', self._on_activate)
-
-    def _on_activate(self, app):
-        win = TronBackground(app)
-        win.present()
+        self.connect('activate', lambda app: FlynnBackground(app).present())
 
 App().run([])

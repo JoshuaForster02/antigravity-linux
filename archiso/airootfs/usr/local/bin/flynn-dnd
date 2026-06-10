@@ -1,0 +1,10 @@
+#!/bin/bash
+# Flynn OS — Do Not Disturb toggle (mako modes)
+if makoctl mode 2>/dev/null | grep -q do-not-disturb; then
+    makoctl mode -r do-not-disturb >/dev/null 2>&1
+    /usr/local/bin/flynn-notify info "Do Not Disturb: off"
+else
+    /usr/local/bin/flynn-notify info "Do Not Disturb: on"
+    sleep 1.6   # let the toast show before silencing
+    makoctl mode -a do-not-disturb >/dev/null 2>&1
+fi

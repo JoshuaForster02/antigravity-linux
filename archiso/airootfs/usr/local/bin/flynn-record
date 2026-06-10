@@ -1,0 +1,24 @@
+#!/bin/bash
+# Flynn OS — Screen recorder toggle (wf-recorder)
+# 1st call: start recording (full screen, or region with --region)
+# 2nd call: stop + notify with file path
+DIR=/root/Videos
+mkdir -p "$DIR"
+
+if pgrep -x wf-recorder >/dev/null; then
+    pkill -INT -x wf-recorder
+    sleep 0.5
+    LAST=$(ls -t "$DIR"/flynn-rec-*.mp4 2>/dev/null | head -1)
+    /usr/local/bin/flynn-notify screenshot "Recording saved: ${LAST:-$DIR}"
+    exit 0
+fi
+
+FILE="$DIR/flynn-rec-$(date +%Y%m%d-%H%M%S).mp4"
+
+if [ "${1:-}" = "--region" ]; then
+    GEO=$(slurp) || exit 0
+    nohup wf-recorder -g "$GEO" -f "$FILE" >/dev/null 2>&1 &
+else
+    nohup wf-recorder -f "$FILE" >/dev/null 2>&1 &
+fi
+/usr/local/bin/flynn-notify screenshot "Recording… press Super+F9 to stop"
