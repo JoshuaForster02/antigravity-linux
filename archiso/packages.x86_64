@@ -171,8 +171,10 @@ cliphist
 xdg-desktop-portal-wlr
 fuzzel
 
-# Phase 5: ANTIGRAVITY Layer Shell
+# Phase 5: ANTIGRAVITY Layer Shell (gtk4-layer-shell: required for GTK4 apps
+# like AGD palette + bg-daemon to anchor as bars/backgrounds instead of windows)
 gtk-layer-shell
+gtk4-layer-shell
 python-pillow
 
 # Productivity (lightweight live ISO — Steam/Anki via flynn-setup)

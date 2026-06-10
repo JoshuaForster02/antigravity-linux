@@ -42,7 +42,9 @@ tron_splash() {
     printf "   ${LCY}◎${RST}  ${WHT}FLYNN OS${RST}   ${DRK}The Grid${RST}\n"
     printf "      ${DRK}$(uname -r 2>/dev/null | cut -d- -f1)  ·  $(uname -m)  ·  $(nproc 2>/dev/null || echo 1) cores${RST}\n"
     echo ""
-    printf "      ${DRK}mem ${GRY}$(get_mem_pct)%%${DRK}  ·  load ${GRY}$(get_load)${DRK}  ·  ${GRY}$(get_ip || echo offline)${DRK} via $(get_iface)${RST}\n"
+    local _ip _if; _ip=$(get_ip); _if=$(get_iface)
+    [ -z "$_ip" ] && _ip="offline"; [ -z "$_if" ] && _if="—"
+    printf "      ${DRK}mem ${GRY}$(get_mem_pct)%%${DRK}  ·  load ${GRY}$(get_load)${DRK}  ·  ${GRY}${_ip}${DRK} via ${_if}${RST}\n"
     printf "      ${DRK}ssh :22  ·  daemon :7777${RST}\n"
     echo ""
     # Rotating greeting (small TRON moment)

@@ -89,8 +89,9 @@ exec bash -c 'sleep 0.6 && swaymsg rename workspace number 1 GRID && swaymsg ren
 exec bash -c 'sleep 0.5 && spice-vdagent 2>/dev/null || true'
 
 # ── Waybar: top menubar + bottom dock (restart-safe)
-exec_always sh -c 'pkill -f "waybar.*waybar/config" 2>/dev/null; sleep 0.3; waybar -c /root/.config/waybar/config -s /root/.config/waybar/style.css 2>/tmp/waybar.log &'
-exec_always sh -c 'pkill -f "waybar.*dock.json"     2>/dev/null; sleep 0.4; waybar -c /root/.config/waybar/dock.json  -s /root/.config/waybar/dock.css  2>/tmp/dock.log  &'
+# NOTE: pkill -x matches the process NAME only — never use pkill -f here,
+# it matches the launching shell's own cmdline and kills it before waybar starts.
+exec_always sh -c 'pkill -x waybar 2>/dev/null; sleep 0.3; waybar -c /root/.config/waybar/config -s /root/.config/waybar/style.css >/tmp/waybar.log 2>&1 & waybar -c /root/.config/waybar/dock.json -s /root/.config/waybar/dock.css >/tmp/dock.log 2>&1 &'
 exec_always sh -c 'pkill -x mako 2>/dev/null; sleep 0.3; mako --config /root/.config/mako/config 2>/dev/null &'
 
 # ── TRON wallpaper (pre-generated during build, re-applies on reload)
@@ -99,9 +100,9 @@ exec_always bash -c 'sleep 0.2 && swaymsg "output * bg /root/.config/sway/tron-b
 # ── Flynn daemon (REST API + system monitor)
 exec bash -c 'sleep 1.0 && /usr/local/bin/flynn-daemon 2>/tmp/daemon.log'
 
-# ── Boot chime + AGD palette
+# ── Boot chime  (AGD bar NOT autostarted — menubar+dock cover it;
+#    the command palette opens standalone via Super+Space / flynn-palette)
 exec bash -c 'sleep 1.2 && /usr/local/bin/flynn-boot-chime 2>/dev/null'
-exec bash -c 'sleep 1.5 && python3 /opt/flynn/agd/antigravity.py 2>/tmp/agd.log'
 
 # ── Welcome terminal on first open (workspace 1)
 exec bash -c 'sleep 1.8 && swaymsg "workspace GRID" && foot --app-id=flynn-ui -e /usr/local/bin/flynn-ui'

@@ -13,18 +13,27 @@ Features:
 Runs as a Wayland client alongside the compositor.
 """
 
+# gtk4-layer-shell MUST be loaded before GTK initializes (PyGObject quirk)
+import ctypes
+for _lib in ("libgtk4-layer-shell.so.0", "libgtk4-layer-shell.so"):
+    try:
+        ctypes.CDLL(_lib)
+        break
+    except OSError:
+        continue
+
 import gi, sys, os, json, socket, threading, time, subprocess
 gi.require_version('Gtk',     '4.0')
 gi.require_version('Gdk',     '4.0')
-gi.require_version('GtkLayerShell', '0.1')
 
 from gi.repository import Gtk, Gdk, GLib
 try:
-    from gi.repository import GtkLayerShell
+    gi.require_version('Gtk4LayerShell', '1.0')
+    from gi.repository import Gtk4LayerShell as GtkLayerShell
     HAS_LAYER_SHELL = True
-except ImportError:
+except (ImportError, ValueError):
     HAS_LAYER_SHELL = False
-    print("[agd] gtk-layer-shell not available — statusbar disabled")
+    print("[agd] gtk4-layer-shell not available — statusbar disabled")
 
 # ─── Compositor IPC ──────────────────────────────────────────────────────────
 
