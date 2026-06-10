@@ -14,6 +14,11 @@ stop_daemon() { pkill -f flynn-bg-daemon 2>/dev/null; }
 
 case "${1:-toggle}" in
     start)   # called by sway on login — respects saved setting
+        # In VMs (software rendering) the animated background costs real CPU.
+        # Default: OFF in VMs unless the user explicitly enabled it.
+        if [ ! -f "$CONF" ] && [ "$(systemd-detect-virt 2>/dev/null)" != "none" ]; then
+            exit 0
+        fi
         [ "$(mode)" = "off" ] || start_daemon ;;
     on)
         printf 'MODE=live\nFPS=20\n' > "$CONF"

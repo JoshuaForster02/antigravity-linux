@@ -1,28 +1,28 @@
-# Flynn OS Plymouth Theme — modern minimal boot
-# Deep navy backdrop, soft fade-in wordmark, thin cyan progress line.
+// Flynn OS Plymouth Theme — modern minimal boot
+// Deep navy backdrop, soft fade-in wordmark, thin cyan progress line.
 
-Window.SetBackgroundTopColor(0.027, 0.031, 0.047);     # #07080c
-Window.SetBackgroundBottomColor(0.055, 0.063, 0.086);  # #0e1016
+Window.SetBackgroundTopColor(0.027, 0.031, 0.047);   // #07080c
+Window.SetBackgroundBottomColor(0.055, 0.063, 0.086);   // #0e1016
 
 W = Window.GetWidth();
 H = Window.GetHeight();
 
-# ── Wordmark ──────────────────────────────────────────────────────────────────
-logo_img = Image.Text("FLYNN OS", 0.902, 0.957, 0.984, 1.0);   # near-white
+// ── Wordmark ──────────────────────────────────────────────────────────────────
+logo_img = Image.Text("FLYNN OS", 0.902, 0.957, 0.984, 1.0);   // near-white
 logo_sprite = Sprite();
 logo_sprite.SetImage(logo_img);
 logo_sprite.SetX((W - logo_img.GetWidth()) / 2);
 logo_sprite.SetY(H / 2 - 70);
 logo_sprite.SetOpacity(0);
 
-sub_img = Image.Text("T H E   G R I D", 0.624, 0.863, 0.961, 1.0);  # #9fdcf5
+sub_img = Image.Text("T H E   G R I D", 0.624, 0.863, 0.961, 1.0);   // #9fdcf5
 sub_sprite = Sprite();
 sub_sprite.SetImage(sub_img);
 sub_sprite.SetX((W - sub_img.GetWidth()) / 2);
 sub_sprite.SetY(H / 2 - 34);
 sub_sprite.SetOpacity(0);
 
-# ── Progress line (220px, 2px) ───────────────────────────────────────────────
+// ── Progress line (220px, 2px) ───────────────────────────────────────────────
 bar_w_max = 220;
 bar_x = (W - bar_w_max) / 2;
 bar_y = H / 2 + 26;
@@ -40,11 +40,11 @@ fill_sprite.SetX(bar_x);
 fill_sprite.SetY(bar_y);
 fill_sprite.SetZ(1);
 
-# ── Fade-in animation ────────────────────────────────────────────────────────
+// ── Fade-in animation ────────────────────────────────────────────────────────
 tick = 0;
 fun refresh_callback() {
     tick++;
-    fade = tick / 40;            # ~0.8s to full
+    fade = tick / 40;   // ~0.8s to full
     if (fade > 1) { fade = 1; }
     logo_sprite.SetOpacity(fade);
     sub_sprite.SetOpacity(fade * 0.85);
@@ -59,7 +59,7 @@ fun boot_progress_callback(time, progress) {
 }
 Plymouth.SetBootProgressFunction(boot_progress_callback);
 
-# ── Password prompt (encrypted disks) ────────────────────────────────────────
+// ── Password prompt (encrypted disks) ────────────────────────────────────────
 fun display_password_callback(prompt, bullets) {
     msg = Image.Text(prompt, 0.62, 0.76, 0.83, 1.0);
     msg_sprite = Sprite();

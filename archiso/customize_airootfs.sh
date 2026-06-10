@@ -399,6 +399,10 @@ echo "  ✓ Flynn Openbox TRON theme"
 systemctl enable NetworkManager
 systemctl enable sshd
 systemctl enable keyd 2>/dev/null || true
+# Prevent network-manager conflicts: exactly ONE network stack (NetworkManager)
+systemctl disable dhcpcd 2>/dev/null || true
+systemctl disable iwd    2>/dev/null || true
+systemctl mask dhcpcd    2>/dev/null || true
 systemctl enable bluetooth.service    2>/dev/null || true
 systemctl enable seatd                2>/dev/null || true
 systemctl enable tailscaled           2>/dev/null || true

@@ -28,7 +28,6 @@ default-timeout=0
 
 [category=osd]
 default-timeout=1500
-anchor=top-center
 border-radius=14
 
 [app-name="Flynn OS"]

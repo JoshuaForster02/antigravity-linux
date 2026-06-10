@@ -351,7 +351,7 @@ while true; do
         disk|df|storage)         cmd_disk ;;
         install|flynn-install)   cmd_install ;;
         startx|gui|x11)          startx -- -nolisten tcp 2>/dev/null || printf "  \e[0;33mstartx not available\e[0m\n" ;;
-        session|wayland)         exec /usr/local/bin/flynn-session ;;
+        session|wayland)         printf "  ${DIM}Sway is the session — it starts automatically on tty1.${RST}\n" ;;
         compositor)              /usr/local/bin/flynn-compositor-build ;;
         proton|proton-ge)        /usr/local/bin/proton-ge-install ;;
         steam)                   steam 2>/dev/null & echo "  Steam launching..." ;;

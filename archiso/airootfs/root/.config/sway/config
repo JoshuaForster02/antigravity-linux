@@ -94,8 +94,8 @@ exec bash -c 'sleep 0.5 && spice-vdagent 2>/dev/null || true'
 exec_always sh -c 'pkill -x waybar 2>/dev/null; sleep 0.3; waybar -c /root/.config/waybar/config -s /root/.config/waybar/style.css >/tmp/waybar.log 2>&1 & waybar -c /root/.config/waybar/dock.json -s /root/.config/waybar/dock.css >/tmp/dock.log 2>&1 &'
 exec_always sh -c 'pkill -x mako 2>/dev/null; sleep 0.3; mako --config /root/.config/mako/config 2>/dev/null &'
 
-# ── TRON wallpaper (pre-generated during build, re-applies on reload)
-exec_always bash -c 'sleep 0.2 && swaymsg "output * bg /root/.config/sway/tron-bg.png fill" 2>/dev/null || swaymsg "output * bg #0a0b10 solid_color"'
+# ── Wallpaper (pre-generated during build; self-heals if missing)
+exec_always bash -c '[ -f /root/.config/sway/tron-bg.png ] || python3 /usr/local/bin/flynn-wallpaper-sway >/tmp/wallpaper.log 2>&1; sleep 0.2; swaymsg "output * bg /root/.config/sway/tron-bg.png fill" 2>/dev/null || swaymsg "output * bg #0a0b10 solid_color"'
 
 # ── Flynn daemon (REST API + system monitor)
 exec bash -c 'sleep 1.0 && /usr/local/bin/flynn-daemon 2>/tmp/daemon.log'

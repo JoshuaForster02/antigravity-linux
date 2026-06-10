@@ -1,19 +1,14 @@
 # Flynn OS — Lock screen · Ice Grid
+# NOTE: vanilla swaylock only — no swaylock-effects options (clock, fade-in,
+# indicator, font-size are NOT supported and abort the locker).
 image=/root/.config/sway/tron-bg.png
 scaling=fill
 color=0a0b10
 
 font=Noto Sans
-font-size=14
 
-clock
-timestr=%H:%M
-datestr=%A, %d %B
-
-indicator
 indicator-radius=86
 indicator-thickness=3
-indicator-idle-visible
 
 # Ring — thin ice ring, red on wrong
 ring-color=22303d
@@ -42,6 +37,5 @@ separator-color=00000000
 layout-bg-color=0a0b10cc
 layout-text-color=98a4b0
 
-fade-in=0.2
 show-failed-attempts
 ignore-empty-password
