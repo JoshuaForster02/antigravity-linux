@@ -431,8 +431,8 @@ python3 - << 'PY' 2>/dev/null || true
 from PIL import Image
 d = "/usr/share/plymouth/themes/flynnos"
 import os; os.makedirs(d, exist_ok=True)
-Image.new("RGB", (1, 1), (90, 215, 255)).save(f"{d}/bar.png")
-Image.new("RGB", (1, 1), (28, 56, 80)).save(f"{d}/track.png")
+Image.new("RGB", (1, 1), (159, 220, 245)).save(f"{d}/bar.png")
+Image.new("RGB", (1, 1), (34, 48, 61)).save(f"{d}/track.png")
 PY
 plymouth-set-default-theme flynnos 2>/dev/null || true
 echo "  ✓ Plymouth: flynnos theme (modern, no arch branding)"

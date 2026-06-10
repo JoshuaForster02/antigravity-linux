@@ -5,5 +5,5 @@ FLAG=/run/flynn-welcome.done
 touch "$FLAG"
 sleep 1.2
 notify-send -a "Flynn OS" -u low -t 8000 -i dialog-information \
-    "Welcome to the Grid" \
-    "Super+D Launcher  ·  Super+Tab Windows  ·  Super+W Wi-Fi\nSuper+, Settings  ·  Super+? All shortcuts" 2>/dev/null || true
+    "Greetings, program." \
+    "Super+D Launcher  ·  Super+Tab Windows  ·  Super+I Wi-Fi\nSuper+, Settings  ·  Super+? All shortcuts" 2>/dev/null || true

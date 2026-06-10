@@ -9,22 +9,22 @@ from gi.repository import Gtk, Gdk, GLib
 
 CSS = b"""
 window {
-    background: rgba(12, 20, 34, 0.97);
-    color: #dcedf7;
+    background: rgba(13, 14, 20, 0.97);
+    color: #e2eaf0;
     border-radius: 16px;
 }
 .settings-header {
     font-family: "Noto Sans", sans-serif;
     font-size: 15px;
     font-weight: 700;
-    color: #e6f4fb;
+    color: #e9f0f5;
     padding: 16px 20px 6px;
 }
 .section-title {
     font-family: "Noto Sans", sans-serif;
     font-size: 11px;
     font-weight: 700;
-    color: #5ad7ff;
+    color: #9fdcf5;
     padding: 14px 20px 4px;
 }
 .setting-row {
@@ -32,31 +32,31 @@ window {
     border-radius: 10px;
     margin: 1px 10px;
 }
-.setting-row:hover { background: rgba(122, 216, 248, 0.08); }
+.setting-row:hover { background: rgba(159, 220, 245, 0.07); }
 .setting-label {
     font-family: "Noto Sans", sans-serif;
     font-size: 13px;
-    color: #dcedf7;
+    color: #e2eaf0;
 }
 .setting-sub {
     font-family: "Noto Sans", sans-serif;
     font-size: 10px;
-    color: #56788c;
+    color: #5d6877;
 }
 button {
-    background:    rgba(122, 216, 248, 0.10);
-    border:        1px solid rgba(122, 216, 248, 0.22);
+    background:    rgba(159, 220, 245, 0.08);
+    border:        1px solid rgba(159, 220, 245, 0.18);
     border-radius: 10px;
-    color:         #cfe9f5;
+    color:         #cdd8e0;
     font-family:   "Noto Sans", sans-serif;
     font-size:     12px;
     padding:       5px 14px;
 }
-button:hover { background: rgba(122, 216, 248, 0.18); color: #ffffff; }
-scale trough { background: rgba(122, 216, 248, 0.10); min-height: 4px; border-radius: 2px; }
-scale highlight { background: #5ad7ff; border-radius: 2px; }
+button:hover { background: rgba(159, 220, 245, 0.15); color: #ffffff; }
+scale trough { background: rgba(159, 220, 245, 0.08); min-height: 4px; border-radius: 2px; }
+scale highlight { background: #9fdcf5; border-radius: 2px; }
 scale slider { background: #ffffff; min-width: 16px; min-height: 16px; border-radius: 50%; }
-separator { background: rgba(122, 216, 248, 0.10); min-height: 1px; margin: 4px 16px; }
+separator { background: rgba(159, 220, 245, 0.08); min-height: 1px; margin: 4px 16px; }
 """
 
 def run(cmd): subprocess.Popen(cmd, shell=True)

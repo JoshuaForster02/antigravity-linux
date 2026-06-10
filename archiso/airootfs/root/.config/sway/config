@@ -13,16 +13,16 @@ set $right l
 set $term  foot
 set $menu  fuzzel
 
-# ── Flynn Colors (ENCOM clean) ────────────────────────────────────────────────
-set $bg      #0c1422
-set $accent  #5ad7ff
-set $muted   #2c4258
-set $dborder #16283a
-set $text    #dcedf7
-set $urgent  #ff5d6c
+# ── Flynn Colors (Ice Grid) ───────────────────────────────────────────────────
+set $bg      #0a0b10
+set $accent  #7fb8d4
+set $muted   #2a2f3c
+set $dborder #1c2230
+set $text    #e2eaf0
+set $urgent  #e5606c
 
-# ── Background — solid navy until wallpaper applies ──────────────────────────
-output * bg #0c1422 solid_color
+# ── Background — solid graphite until wallpaper applies ──────────────────────
+output * bg #0a0b10 solid_color
 
 # ── Window appearance ─────────────────────────────────────────────────────────
 # class                  border   bg       text    indicator child_border
@@ -94,7 +94,7 @@ exec_always sh -c 'pkill -f "waybar.*dock.json"     2>/dev/null; sleep 0.4; wayb
 exec_always sh -c 'pkill -x mako 2>/dev/null; sleep 0.3; mako --config /root/.config/mako/config 2>/dev/null &'
 
 # ── TRON wallpaper (pre-generated during build, re-applies on reload)
-exec_always bash -c 'sleep 0.2 && swaymsg "output * bg /root/.config/sway/tron-bg.png fill" 2>/dev/null || swaymsg "output * bg #0c1422 solid_color"'
+exec_always bash -c 'sleep 0.2 && swaymsg "output * bg /root/.config/sway/tron-bg.png fill" 2>/dev/null || swaymsg "output * bg #0a0b10 solid_color"'
 
 # ── Flynn daemon (REST API + system monitor)
 exec bash -c 'sleep 1.0 && /usr/local/bin/flynn-daemon 2>/tmp/daemon.log'

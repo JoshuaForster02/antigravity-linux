@@ -1,8 +1,8 @@
 # Flynn OS Plymouth Theme — modern minimal boot
 # Deep navy backdrop, soft fade-in wordmark, thin cyan progress line.
 
-Window.SetBackgroundTopColor(0.020, 0.035, 0.067);     # #050911
-Window.SetBackgroundBottomColor(0.047, 0.086, 0.149);  # #0c1626
+Window.SetBackgroundTopColor(0.027, 0.031, 0.047);     # #07080c
+Window.SetBackgroundBottomColor(0.055, 0.063, 0.086);  # #0e1016
 
 W = Window.GetWidth();
 H = Window.GetHeight();
@@ -15,7 +15,7 @@ logo_sprite.SetX((W - logo_img.GetWidth()) / 2);
 logo_sprite.SetY(H / 2 - 70);
 logo_sprite.SetOpacity(0);
 
-sub_img = Image.Text("T H E   G R I D", 0.353, 0.843, 1.0, 1.0);  # #5ad7ff
+sub_img = Image.Text("T H E   G R I D", 0.624, 0.863, 0.961, 1.0);  # #9fdcf5
 sub_sprite = Sprite();
 sub_sprite.SetImage(sub_img);
 sub_sprite.SetX((W - sub_img.GetWidth()) / 2);

@@ -25,7 +25,7 @@
     "custom/power"
   ],
   "custom/logo": {
-    "format": "  FLYNN OS",
+    "format": "◎  Flynn OS",
     "tooltip-format": "App Launcher  (Super+D)",
     "on-click": "fuzzel"
   },

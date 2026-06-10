@@ -5,28 +5,28 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ─── Color tokens ─────────────────────────────────────────────────────────── */
-@define-color bg_dark          #06091a;
-@define-color bg_base          #0a0f1a;
-@define-color bg_raised        #0d1624;
-@define-color bg_hover         #111d2e;
-@define-color bg_selected      #0d2233;
+@define-color bg_dark          #07080c;
+@define-color bg_base          #0a0b10;
+@define-color bg_raised        #12141c;
+@define-color bg_hover         #181b26;
+@define-color bg_selected      #1d2733;
 
-@define-color border_dim       #1a3344;
-@define-color border_normal    #22446655;
-@define-color border_bright    #22aacc66;
+@define-color border_dim       #232a36;
+@define-color border_normal    #2e3b4a55;
+@define-color border_bright    #9fdcf566;
 
-@define-color fg_dim           #335566;
-@define-color fg_normal        #7799aa;
-@define-color fg_bright        #aaddee;
-@define-color fg_white         #ddeeff;
+@define-color fg_dim           #5d6877;
+@define-color fg_normal        #98a4b0;
+@define-color fg_bright        #cdd8e0;
+@define-color fg_white         #e9f0f5;
 
-@define-color accent_cyan      #22aacc;
-@define-color accent_bright    #33ddff;
-@define-color accent_glow      rgba(34, 170, 204, 0.15);
+@define-color accent_cyan      #6fb6d6;
+@define-color accent_bright    #9fdcf5;
+@define-color accent_glow      rgba(159, 220, 245, 0.12);
 
-@define-color success_color    #22cc88;
-@define-color warning_color    #ccaa22;
-@define-color error_color      #ee4455;
+@define-color success_color    #6ad9a8;
+@define-color warning_color    #d9b96a;
+@define-color error_color      #e5606c;
 
 /* ─── Root window ──────────────────────────────────────────────────────────── */
 window {
@@ -67,9 +67,9 @@ headerbar button:hover {
   border-color: @border_bright;
   color: @accent_cyan;
 }
-headerbar .close { color: #ee4455; border-color: #ee445533; }
-headerbar .minimize { color: @warning_color; border-color: #ccaa2233; }
-headerbar .maximize { color: @success_color; border-color: #22cc8833; }
+headerbar .close { color: #e5606c; border-color: #e5606c33; }
+headerbar .minimize { color: @warning_color; border-color: #d9b96a33; }
+headerbar .maximize { color: @success_color; border-color: #6ad9a833; }
 
 /* ─── Buttons ──────────────────────────────────────────────────────────────── */
 button {
@@ -93,13 +93,13 @@ button:active {
   color: @accent_bright;
 }
 button.suggested-action {
-  background-color: #0d2233;
+  background-color: #1d2733;
   border-color: @accent_cyan;
   color: @accent_bright;
 }
 button.suggested-action:hover {
-  background-color: #1a3344;
-  box-shadow: 0 0 12px rgba(34, 170, 204, 0.3);
+  background-color: #232a36;
+  box-shadow: 0 0 12px rgba(159, 220, 245, 0.25);
 }
 button.destructive-action {
   background-color: #220a0a;
@@ -217,14 +217,14 @@ progressbar trough { background-color: @bg_raised; border-radius: 4px; }
 progressbar progress {
   background-color: @accent_cyan;
   border-radius: 4px;
-  box-shadow: 0 0 6px rgba(34, 170, 204, 0.4);
+  box-shadow: 0 0 6px rgba(159, 220, 245, 0.35);
 }
 scale trough { background-color: @bg_raised; }
 scale highlight { background-color: @accent_cyan; }
 scale slider {
   background-color: @accent_bright;
   border-radius: 50%;
-  box-shadow: 0 0 6px rgba(34, 170, 204, 0.5);
+  box-shadow: 0 0 6px rgba(159, 220, 245, 0.45);
 }
 
 /* ─── Checkboxes / Switches ────────────────────────────────────────────────── */
@@ -244,7 +244,7 @@ switch {
   border-radius: 14px;
 }
 switch:checked {
-  background-color: #0d2233;
+  background-color: #1d2733;
   border-color: @accent_cyan;
   box-shadow: 0 0 6px @accent_glow;
 }

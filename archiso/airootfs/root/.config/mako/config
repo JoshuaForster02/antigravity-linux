@@ -1,4 +1,4 @@
-# Flynn OS — Notifications (mako)
+# Flynn OS — Notifications (mako) · Ice Grid
 font=Noto Sans 11
 width=360
 height=120
@@ -6,10 +6,10 @@ margin=12
 padding=14
 border-size=1
 border-radius=14
-background-color=#0c1422ee
-text-color=#dcedf7
-border-color=#7ad8f82e
-progress-color=over #5ad7ff66
+background-color=#0f1118f0
+text-color=#e2eaf0
+border-color=#9fdcf528
+progress-color=over #9fdcf555
 anchor=top-right
 default-timeout=5000
 max-visible=5
@@ -18,12 +18,12 @@ max-icon-size=40
 group-by=app-name
 
 [urgency=low]
-border-color=#7ad8f81e
-text-color=#9ec1d4
+border-color=#9fdcf518
+text-color=#98a4b0
 
 [urgency=critical]
-border-color=#ff5d6c88
-text-color=#ffd5d9
+border-color=#e5606c88
+text-color=#f5d6d9
 default-timeout=0
 
 [category=osd]
@@ -32,7 +32,7 @@ anchor=top-center
 border-radius=14
 
 [app-name="Flynn OS"]
-border-color=#7ad8f855
+border-color=#9fdcf548
 
 [mode=do-not-disturb]
 invisible=1

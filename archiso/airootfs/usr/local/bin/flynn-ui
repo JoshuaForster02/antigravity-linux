@@ -3,7 +3,7 @@
 # ║   F L Y N N   O S   —   TRON Interface Shell  v2.0                     ║
 # ║   The Grid  ·  Secure Line Established  ·  All systems nominal          ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
-export TERM=linux
+case "$(tty 2>/dev/null)" in /dev/tty[0-9]*) export TERM=linux ;; esac
 export HOME=/root
 export PATH=/usr/local/bin:/usr/bin:/bin:/sbin:/usr/sbin
 
@@ -37,30 +37,20 @@ get_iface()    { cat /run/flynn-netif 2>/dev/null || ip route 2>/dev/null|awk '/
 get_load()     { cut -d' ' -f1 /proc/loadavg 2>/dev/null||echo "0.00"; }
 
 tron_splash() {
-    printf "${CLS}${HIDE}"; get_size
-    for ((i=1; i<=COLS; i+=3)); do printf "\r${DIM}%${i}s${LCY}▓${RST}" ""; sleep 0.002; done
-    printf "\r%${COLS}s\r\n"
-    center "███████╗██╗  ██╗   ██╗███╗   ██╗███╗   ██╗" "$LCY"
-    center "██╔════╝██║  ╚██╗ ██╔╝████╗  ██║████╗  ██║" "$LCY"
-    center "█████╗  ██║   ╚████╔╝ ██╔██╗ ██║██╔██╗ ██║" "$LCY"
-    center "██╔══╝  ██║    ╚██╔╝  ██║╚██╗██║██║╚██╗██║" "$CY"
-    center "██║     ███████╗██║   ██║ ╚████║██║ ╚████║" "$CY"
-    center "╚═╝     ╚══════╝╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═══╝" "$DIM"
-    echo ""; center "O  S   ·   L I N U X   2 . 0   ·   T H E   G R I D" "$DIM"; echo ""
-    hline "═" "$DIM"; echo ""
-    local items=("KERNEL:Linux $(uname -r 2>/dev/null|cut -d- -f1||echo '6.x')" "ARCH:$(uname -m)  ·  $(nproc 2>/dev/null||echo 1) core(s)" "MEMORY:$(get_mem_str)  ·  load $(get_load)" "NETWORK:$(get_ip||echo 'acquiring...')  via $(get_iface)" "SSH:port 22  ·  user root  ·  pass tron" "DAEMON:REST API  ·  port 7777" "SYSTEM:The Grid is online")
-    local n=${#items[@]}
-    for ((i=0; i<n; i++)); do
-        local k="${items[$i]%%:*}" v="${items[$i]#*:}"
-        local pct=$(( (i+1)*100/n ))
-        printf "  ${DIM}[${LCY}"; printf '%*s' "$((pct*24/100))" ''|tr ' ' '▓'
-        printf "${DIM}"; printf '%*s' "$((24-pct*24/100))" ''|tr ' ' '░'
-        printf "${DIM}]  %-10s${GRN}  ${WHT}%s${RST}\n" "$k" "$v"
-        sleep 0.05
-    done
-    echo ""; hline "═" "$DIM"; echo ""
-    printf "  ${WHT}System online.${DRK}  ${LCY}help${DRK} for commands  ·  ${LCY}matrix${DRK} for fun  ·  ${LCY}scan${DRK} for LAN\n\n"
-    printf "${SHOW}"
+    printf "${CLS}"; get_size; echo ""
+    # Identity disc + wordmark — minimal, no ASCII art
+    printf "   ${LCY}◎${RST}  ${WHT}FLYNN OS${RST}   ${DRK}The Grid${RST}\n"
+    printf "      ${DRK}$(uname -r 2>/dev/null | cut -d- -f1)  ·  $(uname -m)  ·  $(nproc 2>/dev/null || echo 1) cores${RST}\n"
+    echo ""
+    printf "      ${DRK}mem ${GRY}$(get_mem_pct)%%${DRK}  ·  load ${GRY}$(get_load)${DRK}  ·  ${GRY}$(get_ip || echo offline)${DRK} via $(get_iface)${RST}\n"
+    printf "      ${DRK}ssh :22  ·  daemon :7777${RST}\n"
+    echo ""
+    # Rotating greeting (small TRON moment)
+    local greets=("Greetings, program." "The Grid. A digital frontier." "Welcome back, Flynn." "All systems nominal.")
+    printf "      ${CY}${greets[$((RANDOM % ${#greets[@]}))]}${RST}\n"
+    echo ""
+    printf "      ${LCY}help${DRK} commands   ${LCY}status${DRK} system   ${LCY}study${DRK} hub   ${LCY}matrix${DRK} rain${RST}\n"
+    echo ""
 }
 
 cmd_status() {
@@ -384,6 +374,13 @@ while true; do
         top)           top ;;
         htop)          htop 2>/dev/null || top ;;
         clear|cls|tron) tron_splash ;;
+        flynn)
+            FQ=("I fight for the Users." "The Grid. A digital frontier. I tried to picture clusters of information as they moved through the computer." "Greetings, programs!" "It's all in the wrists." "The game has changed, son of Flynn." "Your old man's about to knock on the sky and listen to the sound.")
+            printf "\n  ${CY}\"${FQ[$((RANDOM % ${#FQ[@]}))]}\"${RST}\n  ${DRK}— Kevin Flynn${RST}\n" ;;
+        eol|endofline)
+            printf "\n  ${LCY}END OF LINE_${RST}\n" ;;
+        derez|derezz)
+            printf "\n  ${RED}Program derezzed.${RST}\n"; sleep 0.6; tron_splash ;;
         version|ver)
             printf "\n  ${LCY}Flynn OS Linux 2.0${RST}  ${DIM}$(cat /etc/flynnos-version 2>/dev/null)${RST}\n"
             printf "  ${DIM}Kernel ${WHT}%s  ${DIM}Arch ${WHT}%s${RST}\n\n" "$(uname -r)" "$(uname -m)" ;;

@@ -1,6 +1,5 @@
 /* ════════════════════════════════════════════════════════════════════════════
-   Flynn OS — Dock  (floating frosted pill, macOS style)
-   The waybar window itself is transparent; the centered module box is the dock.
+   Flynn OS — Dock · Ice Grid  (floating graphite pill)
    ════════════════════════════════════════════════════════════════════════════ */
 
 * {
@@ -19,8 +18,8 @@ window#waybar.dock {
 
 /* The floating pill */
 .modules-center {
-    background: rgba(12, 19, 33, 0.86);
-    border: 1px solid rgba(122, 216, 248, 0.16);
+    background: rgba(15, 17, 24, 0.88);
+    border: 1px solid rgba(159, 220, 245, 0.12);
     border-radius: 18px;
     padding: 4px 14px;
 }
@@ -32,7 +31,7 @@ window#waybar.dock {
     padding: 6px 13px;
     margin: 3px 1px;
     border-radius: 12px;
-    color: #8fb9cd;
+    color: #8a96a3;
     transition: all 0.15s ease;
 }
 
@@ -41,17 +40,17 @@ window#waybar.dock {
 #custom-mode:hover, #custom-wifi:hover, #custom-volume:hover,
 #custom-settings:hover, #custom-help:hover {
     color: #ffffff;
-    background: rgba(122, 216, 248, 0.14);
+    background: rgba(159, 220, 245, 0.10);
 }
 
 #custom-lock:hover {
-    color: #ff5d6c;
-    background: rgba(255, 93, 108, 0.12);
+    color: #e5606c;
+    background: rgba(229, 96, 108, 0.10);
 }
 
 /* ── Separators ──────────────────────────────────────────────────────────── */
 #custom-sep1, #custom-sep2 {
-    color: rgba(122, 216, 248, 0.14);
+    color: rgba(159, 220, 245, 0.12);
     font-size: 14px;
     padding: 0 6px;
 }
@@ -68,20 +67,20 @@ window#waybar.dock {
     transition: all 0.15s ease;
 }
 #taskbar button:hover {
-    background: rgba(122, 216, 248, 0.14);
+    background: rgba(159, 220, 245, 0.10);
 }
 #taskbar button.active {
-    background: rgba(122, 216, 248, 0.20);
+    background: rgba(159, 220, 245, 0.16);
 }
 
 /* ── Tooltips ────────────────────────────────────────────────────────────── */
 tooltip {
     font-family: "Noto Sans", sans-serif;
     font-size: 11px;
-    background: rgba(16, 25, 42, 0.96);
-    border: 1px solid rgba(122, 216, 248, 0.22);
+    background: rgba(15, 17, 24, 0.97);
+    border: 1px solid rgba(159, 220, 245, 0.18);
     border-radius: 10px;
-    color: #cfe9f5;
+    color: #cdd8e0;
     padding: 8px 12px;
 }
-tooltip label { color: #cfe9f5; }
+tooltip label { color: #cdd8e0; }

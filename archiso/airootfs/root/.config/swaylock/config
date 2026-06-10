@@ -1,7 +1,7 @@
-# Flynn OS — Lock screen
+# Flynn OS — Lock screen · Ice Grid
 image=/root/.config/sway/tron-bg.png
 scaling=fill
-color=0c1422
+color=0a0b10
 
 font=Noto Sans
 font-size=14
@@ -11,36 +11,36 @@ timestr=%H:%M
 datestr=%A, %d %B
 
 indicator
-indicator-radius=90
-indicator-thickness=4
+indicator-radius=86
+indicator-thickness=3
 indicator-idle-visible
 
-# Ring
-ring-color=1d3850
-ring-ver-color=5ad7ff
-ring-wrong-color=ff5d6c
-ring-clear-color=ffc857
+# Ring — thin ice ring, red on wrong
+ring-color=22303d
+ring-ver-color=9fdcf5
+ring-wrong-color=e5606c
+ring-clear-color=d9b96a
 
 # Inside
-inside-color=0c1422cc
-inside-ver-color=0c1422cc
-inside-wrong-color=2a101acc
-inside-clear-color=0c1422cc
+inside-color=0a0b10cc
+inside-ver-color=0a0b10cc
+inside-wrong-color=1d1014cc
+inside-clear-color=0a0b10cc
 
 # Text
-text-color=dcedf7
-text-ver-color=8fe5ff
-text-wrong-color=ff8593
-text-clear-color=ffd98a
+text-color=e2eaf0
+text-ver-color=c4ecfb
+text-wrong-color=f08791
+text-clear-color=e8cd8c
 
 # Key feedback
-key-hl-color=5ad7ff
-bs-hl-color=ff5d6c
+key-hl-color=9fdcf5
+bs-hl-color=e5606c
 separator-color=00000000
 
 # Layout
-layout-bg-color=0c1422cc
-layout-text-color=9ec1d4
+layout-bg-color=0a0b10cc
+layout-text-color=98a4b0
 
 fade-in=0.2
 show-failed-attempts

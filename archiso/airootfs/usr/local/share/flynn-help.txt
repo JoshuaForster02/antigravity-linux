@@ -32,7 +32,10 @@
   Super+A           Open Anki
   Super+S           Steam Big Picture (run flynn-setup first)
   Super+P           Flynn Dashboard
-  Super+W           Wi-Fi quick picker
+  Super+I           Wi-Fi quick picker
+  Super+Y           Clipboard history
+  Cmd+C/V/X/Z/A/S   Copy/Paste/Cut/Undo/Select all/Save (like macOS)
+  Cmd+W / Cmd+T     Close tab / new tab (in apps)
   Super+,           Settings panel
   Super+?           This help page
 
@@ -73,5 +76,8 @@
   flynn-install     Install Flynn OS to disk
   game / study      Switch performance profile
   matrix            TRON matrix rain
+  flynn             ???
 
  Login: root / tron
+
+                                                            END OF LINE_

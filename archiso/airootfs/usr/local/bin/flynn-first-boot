@@ -11,20 +11,20 @@ from gi.repository import Gtk, GLib
 DONE_FLAG = "/etc/flynnos/.first-boot-done"
 
 CSS = b"""
-window    { background: rgba(12, 20, 34, 0.98); border-radius: 16px; }
-.title    { color:#e6f4fb; font-family:"Noto Sans"; font-size:24px; font-weight:bold; }
-.subtitle { color:#5ad7ff; font-family:"Noto Sans"; font-size:12px; }
-.step     { color:#8fe5ff; font-family:"Noto Sans"; font-size:14px; font-weight:bold; }
-.label    { color:#c8dfec; font-family:"Noto Sans"; font-size:13px; }
-.small    { color:#56788c; font-family:"Noto Sans"; font-size:10px; }
-button    { background:rgba(122,216,248,0.10); color:#cfe9f5;
-            border:1px solid rgba(122,216,248,0.22);
+window    { background: rgba(13, 14, 20, 0.98); border-radius: 16px; }
+.title    { color:#e9f0f5; font-family:"Noto Sans"; font-size:24px; font-weight:bold; }
+.subtitle { color:#9fdcf5; font-family:"Noto Sans"; font-size:12px; }
+.step     { color:#c4ecfb; font-family:"Noto Sans"; font-size:14px; font-weight:bold; }
+.label    { color:#c2ccd6; font-family:"Noto Sans"; font-size:13px; }
+.small    { color:#5d6877; font-family:"Noto Sans"; font-size:10px; }
+button    { background:rgba(159,220,245,0.08); color:#cdd8e0;
+            border:1px solid rgba(159,220,245,0.18);
             border-radius:12px; font-family:"Noto Sans"; font-size:13px; padding:10px 22px; }
-button:hover   { background:rgba(122,216,248,0.18); color:#ffffff; }
-button.primary { background:#1d3850; border-color:#5ad7ff; color:#8fe5ff; font-weight:bold; }
-button.primary:hover { background:#24496a; color:#ffffff; }
-button.skip    { color:#56788c; border-color:rgba(122,216,248,0.10); }
-button.selected { background:#5ad7ff; color:#0c1422; border-color:#5ad7ff; font-weight:bold; }
+button:hover   { background:rgba(159,220,245,0.15); color:#ffffff; }
+button.primary { background:#22303d; border-color:#9fdcf5; color:#c4ecfb; font-weight:bold; }
+button.primary:hover { background:#2b3d4d; color:#ffffff; }
+button.skip    { color:#5d6877; border-color:rgba(159,220,245,0.08); }
+button.selected { background:#9fdcf5; color:#0a0b10; border-color:#9fdcf5; font-weight:bold; }
 """
 
 STEPS = ["Welcome", "Keyboard", "Network", "Ready"]
@@ -166,7 +166,8 @@ class SetupWizard(Gtk.ApplicationWindow):
             "",
             "   Super+Return   Terminal            Super+D      App launcher",
             "   Super+Tab      Window switcher     Super+Q      Close window",
-            "   Super+W        Wi-Fi               Super+,      Settings",
+            "   Super+I        Wi-Fi               Super+,      Settings",
+            "   Cmd+C / Cmd+V  Copy & Paste        Cmd+Z        Undo (like macOS)",
             "   Super+F        Fullscreen          Super+?      All shortcuts",
             "   Super+Escape   Power menu",
             "",
