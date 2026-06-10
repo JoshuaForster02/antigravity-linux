@@ -1,41 +1,70 @@
-# Flynn OS Plymouth Theme — TRON boot animation
-# No Arch branding. FLYNN OS + THE GRID text + progress bar.
+# Flynn OS Plymouth Theme — modern minimal boot
+# Deep navy backdrop, soft fade-in wordmark, thin cyan progress line.
 
-Window.SetBackgroundTopColor(0.0, 0.031, 0.055);
-Window.SetBackgroundBottomColor(0.0, 0.016, 0.031);
-
-cx = 0.0; cy = 0.898; cz = 1.0;
-cx_dim = 0.0; cy_dim = 0.25; cz_dim = 0.35;
+Window.SetBackgroundTopColor(0.020, 0.035, 0.067);     # #050911
+Window.SetBackgroundBottomColor(0.047, 0.086, 0.149);  # #0c1626
 
 W = Window.GetWidth();
 H = Window.GetHeight();
 
-logo_img = Image.Text("FLYNN  OS", cx, cy, cz, 1.0);
+# ── Wordmark ──────────────────────────────────────────────────────────────────
+logo_img = Image.Text("FLYNN OS", 0.902, 0.957, 0.984, 1.0);   # near-white
 logo_sprite = Sprite();
 logo_sprite.SetImage(logo_img);
 logo_sprite.SetX((W - logo_img.GetWidth()) / 2);
-logo_sprite.SetY(H / 2 - 80);
+logo_sprite.SetY(H / 2 - 70);
+logo_sprite.SetOpacity(0);
 
-sub_img = Image.Text("THE  GRID", cx_dim, cy_dim, cz_dim, 1.0);
+sub_img = Image.Text("T H E   G R I D", 0.353, 0.843, 1.0, 1.0);  # #5ad7ff
 sub_sprite = Sprite();
 sub_sprite.SetImage(sub_img);
 sub_sprite.SetX((W - sub_img.GetWidth()) / 2);
-sub_sprite.SetY(H / 2 - 45);
+sub_sprite.SetY(H / 2 - 34);
+sub_sprite.SetOpacity(0);
 
-progress_bar = Sprite();
-bar_x = (W - 200) / 2;
-bar_y = H / 2 + 20;
-progress_bar.SetX(bar_x);
-progress_bar.SetY(bar_y);
+# ── Progress line (220px, 2px) ───────────────────────────────────────────────
+bar_w_max = 220;
+bar_x = (W - bar_w_max) / 2;
+bar_y = H / 2 + 26;
 
-fun refresh_callback() {}
+track_sprite = Sprite();
+track_img = Image("track.png");
+track_sprite.SetImage(track_img.Scale(bar_w_max, 2));
+track_sprite.SetX(bar_x);
+track_sprite.SetY(bar_y);
+track_sprite.SetOpacity(0.5);
+
+fill_sprite = Sprite();
+fill_img = Image("bar.png");
+fill_sprite.SetX(bar_x);
+fill_sprite.SetY(bar_y);
+fill_sprite.SetZ(1);
+
+# ── Fade-in animation ────────────────────────────────────────────────────────
+tick = 0;
+fun refresh_callback() {
+    tick++;
+    fade = tick / 40;            # ~0.8s to full
+    if (fade > 1) { fade = 1; }
+    logo_sprite.SetOpacity(fade);
+    sub_sprite.SetOpacity(fade * 0.85);
+}
 Plymouth.SetRefreshFunction(refresh_callback);
 
 fun boot_progress_callback(time, progress) {
-    bar_w = Math.Int(200 * progress);
-    if (bar_w < 1) { bar_w = 1; }
-    bar_img = Image(bar_w, 2);
-    progress_bar.SetImage(bar_img);
-    progress_bar.SetOpacity(0.9);
+    bar_w = Math.Int(bar_w_max * progress);
+    if (bar_w < 2) { bar_w = 2; }
+    fill_sprite.SetImage(fill_img.Scale(bar_w, 2));
+    fill_sprite.SetOpacity(0.95);
 }
 Plymouth.SetBootProgressFunction(boot_progress_callback);
+
+# ── Password prompt (encrypted disks) ────────────────────────────────────────
+fun display_password_callback(prompt, bullets) {
+    msg = Image.Text(prompt, 0.62, 0.76, 0.83, 1.0);
+    msg_sprite = Sprite();
+    msg_sprite.SetImage(msg);
+    msg_sprite.SetX((W - msg.GetWidth()) / 2);
+    msg_sprite.SetY(bar_y + 30);
+}
+Plymouth.SetDisplayPasswordFunction(display_password_callback);

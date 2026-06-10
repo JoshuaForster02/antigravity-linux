@@ -189,3 +189,6 @@ lm_sensors
 wlsunset
 wf-recorder
 gvfs
+
+# Mac-style keyboard shortcuts (Cmd+C/V/X... -> Ctrl) — system-wide remap daemon
+keyd

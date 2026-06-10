@@ -1,29 +1,7 @@
 
-  ███████╗██╗  ██╗   ██╗███╗   ██╗███╗   ██╗     ██████╗ ███████╗
-  ██╔════╝██║  ╚██╗ ██╔╝████╗  ██║████╗  ██║    ██╔═══██╗██╔════╝
-  █████╗  ██║   ╚████╔╝ ██╔██╗ ██║██╔██╗ ██║    ██║   ██║███████╗
-  ╚═╝     ╚══════╝╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═══╝    ╚═════╝ ╚══════╝
+  FLYNN OS  ·  The Grid
 
-  Flynn OS Linux 4.0  ·  Arch  ·  Sway Wayland  ·  The Grid
+  Desktop starts automatically on tty1.   Login: root / tron
+  help → shell commands     Super+? → all shortcuts     flynn-setup → Steam/Anki
+  flynn-update → OTA update              flynn-install → install to disk
 
-  Login: root / tron  ·  Sway starts automatically on tty1
-
-  ── DESKTOP ────────────────────────────────────────────────────────
-   Super+D         App launcher (Fuzzel)
-   Super+?         Keyboard shortcuts help
-   flynn-setup     Install Steam, Anki, Proton-GE
-   startx          X11 fallback (Openbox)
-
-  ── WORKSPACES ─────────────────────────────────────────────────────
-   Super+1..5      GRID · STUDY · ANKI · GAME · SYS
-
-  ── GAMING ─────────────────────────────────────────────────────────
-   Super+G         Game / Study mode toggle
-   Super+S         Steam Big Picture (after flynn-setup)
-   proton-ge       Install latest Proton-GE
-
-  ── SYSTEM ─────────────────────────────────────────────────────────
-   status          Live system dashboard
-   flynn-install   Install Flynn OS to disk
-   flynn-update    OTA update from GitHub
-   help            Full command list

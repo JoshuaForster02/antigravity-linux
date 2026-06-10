@@ -127,33 +127,31 @@ bindsym $mod+Shift+e     exec swaymsg exit
 bindsym $mod+Escape      exec /usr/local/bin/flynn-power
 # wlogout (AUR): install post-boot with `yay -S wlogout` then restore this keybind
 
+# NOTE: keyd remaps Cmd(Super)+C/V/X/Z/A/S/F/W/T to Ctrl equivalents BEFORE
+# Sway sees them (Mac-style copy/paste). Never bind $mod with those letters here.
+
 # Flynn-specific
 bindsym $mod+g           exec /usr/local/bin/game-mode-switch.sh toggle
 bindsym $mod+n           exec /usr/local/bin/flynn-browser https://notion.so
-bindsym $mod+a           exec /usr/local/bin/flynn-browser http://localhost:8765
-bindsym $mod+s           exec bash -c 'command -v steam >/dev/null && steam -bigpicture || foot -e bash -c "Run flynn-setup for Steam"; read'
 bindsym $mod+p           exec /usr/local/bin/flynn-dashboard
 bindsym $mod+u           exec /usr/local/bin/flynn-update
+bindsym $mod+i           exec /usr/local/bin/flynn-wifi
+bindsym $mod+y           exec bash -c 'cliphist list | fuzzel --dmenu -p "  Clipboard  " | cliphist decode | wl-copy'
 
-bindsym $mod+w           exec /usr/local/bin/flynn-wifi
+bindsym $mod+F1          exec /usr/local/bin/flynn-health status
 bindsym $mod+F2          exec /usr/local/bin/flynn-keyboard toggle
 bindsym $mod+F3          exec /usr/local/bin/flynn-display
 bindsym $mod+F4          exec /usr/local/bin/flynn-nightlight
 bindsym $mod+F5          exec /usr/local/bin/flynn-dnd
 bindsym $mod+F6          exec /usr/local/bin/flynn-bg toggle
+bindsym $mod+F7          exec /usr/local/bin/flynn-ambient toggle
+bindsym $mod+F8          exec /usr/local/bin/flynn-colorpick
 bindsym $mod+F9          exec /usr/local/bin/flynn-record
 bindsym $mod+Shift+F9    exec /usr/local/bin/flynn-record --region
-bindsym $mod+Shift+c     exec /usr/local/bin/flynn-colorpick
+bindsym $mod+F10         exec /usr/local/bin/flynn-sunshine --status
 
-bindsym $mod+Shift+s  exec /usr/local/bin/flynn-sunshine --status
-bindsym $mod+Shift+a  exec /usr/local/bin/flynn-ambient toggle
-bindsym $mod+F1       exec /usr/local/bin/flynn-health status
-bindsym $mod+Shift+f  exec sudo /usr/local/bin/flynn-face-id --test
 bindsym $mod+comma    exec /usr/local/bin/flynn-settings
 bindsym $mod+question exec foot --app-id=flynn-help -e bash -c 'cat /usr/local/share/flynn-help.txt; read'
-
-# Clipboard history (cliphist + fuzzel)
-bindsym $mod+Shift+v     exec bash -c 'cliphist list | fuzzel --dmenu -p "CLIPBOARD" | cliphist decode | wl-copy'
 
 # Screenshot — full screen, region, or copy to clipboard
 bindsym Print                  exec bash -c 'F=~/screenshots/$(date +%Y%m%d-%H%M%S).png; mkdir -p ~/screenshots; grim "$F" && /usr/local/bin/flynn-notify screenshot "$F"'
@@ -194,15 +192,19 @@ bindsym $mod+Shift+4  move container to workspace GAME
 bindsym $mod+Shift+5  move container to workspace SYS
 
 # Layout
-bindsym $mod+b  splith
-bindsym $mod+v  splitv
-bindsym $mod+e  layout toggle split
-bindsym $mod+f  fullscreen
+bindsym $mod+b        splith
+bindsym $mod+Shift+b  splitv
+bindsym $mod+e        layout toggle split
+bindsym F11           fullscreen
 bindsym $mod+Shift+space  floating toggle
 bindsym $mod+space        exec /usr/local/bin/flynn-palette
 bindsym $mod+Tab          exec /usr/local/bin/flynn-windows
 bindsym Mod1+Tab          exec /usr/local/bin/flynn-windows
 bindsym $mod+Shift+Tab    layout tabbed
+
+# macOS-style minimize (scratchpad)
+bindsym $mod+m        move scratchpad
+bindsym $mod+Shift+m  scratchpad show
 
 # Resize mode
 mode "resize" {

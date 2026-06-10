@@ -398,6 +398,7 @@ echo "  ✓ Flynn Openbox TRON theme"
 # ── Services ──────────────────────────────────────────────────────────────────
 systemctl enable NetworkManager
 systemctl enable sshd
+systemctl enable keyd 2>/dev/null || true
 systemctl enable bluetooth.service    2>/dev/null || true
 systemctl enable seatd                2>/dev/null || true
 systemctl enable tailscaled           2>/dev/null || true
@@ -425,8 +426,35 @@ Theme=flynnos
 ShowDelay=0
 DeviceTimeout=5
 PLY
+# Generate the 1px progress-bar source images (Plymouth scales them)
+python3 - << 'PY' 2>/dev/null || true
+from PIL import Image
+d = "/usr/share/plymouth/themes/flynnos"
+import os; os.makedirs(d, exist_ok=True)
+Image.new("RGB", (1, 1), (90, 215, 255)).save(f"{d}/bar.png")
+Image.new("RGB", (1, 1), (28, 56, 80)).save(f"{d}/track.png")
+PY
 plymouth-set-default-theme flynnos 2>/dev/null || true
-echo "  ✓ Plymouth: flynnos theme (TRON, no arch branding)"
+echo "  ✓ Plymouth: flynnos theme (modern, no arch branding)"
+
+# ── OS identity: Flynn OS everywhere (login prompt, fastfetch, GRUB os-prober)
+rm -f /etc/os-release
+cat > /etc/os-release << 'OSREL'
+NAME="Flynn OS Linux"
+PRETTY_NAME="Flynn OS Linux"
+ID=flynnos
+ID_LIKE=arch
+BUILD_ID=rolling
+ANSI_COLOR="38;2;90;215;255"
+HOME_URL="https://github.com/JoshuaForster02/antigravity-linux"
+LOGO=distributor-logo
+OSREL
+cat > /etc/issue << 'ISSUE'
+
+  Flynn OS Linux  ·  \l
+
+ISSUE
+echo "  ✓ OS identity: Flynn OS (no Arch branding on login)"
 
 # ── GRUB TRON theme ───────────────────────────────────────────────────────────
 mkdir -p /usr/share/grub/themes/flynn
@@ -478,21 +506,11 @@ echo "  ✓ GRUB TRON theme"
 # ── MOTD ──────────────────────────────────────────────────────────────────────
 cat > /etc/motd << 'MOTD'
 
-  ███████╗██╗  ██╗   ██╗███╗   ██╗███╗   ██╗     ██████╗ ███████╗
-  ██╔════╝██║  ╚██╗ ██╔╝████╗  ██║████╗  ██║    ██╔═══██╗██╔════╝
-  █████╗  ██║   ╚████╔╝ ██╔██╗ ██║██╔██╗ ██║    ██║   ██║███████╗
-  ╚═╝     ╚══════╝╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═══╝    ╚═════╝ ╚══════╝
+  FLYNN OS  ·  The Grid
 
-  Flynn OS Linux 3.0  ·  Arch Linux  ·  linux-zen  ·  The Grid
-
-  Shell commands:  help · status · matrix · scan · wifi · services · disk
-  Desktop:         Sway (Wayland) starts automatically on tty1
-  Shortcuts:       Super+Return=terminal  Super+D=launcher  Super+P=dashboard
-                   Super+G=GameMode  Super+N=Notion  Super+A=Anki
-                   Super+U=update    Super+Q=close    Super+Shift+E=exit
-  OTA update:      flynn-update      (pulls latest from GitHub live)
-  Install to disk: flynn-install     (dual-boot, keeps Windows)
-  Pi control:      pi status|sync|wakepc
+  Desktop starts automatically on tty1.
+  help → shell commands     Super+? → all shortcuts     flynn-setup → Steam/Anki
+  flynn-update → OTA update              flynn-install → install to disk
 
 MOTD
 echo "  ✓ MOTD"
