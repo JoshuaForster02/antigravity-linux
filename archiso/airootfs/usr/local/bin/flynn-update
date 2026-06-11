@@ -72,6 +72,14 @@ else
     info "Update: $CUR_REV → $NEW_REV"
 fi
 
+# ── 1.5 Snapshot safety net (installed systems only) ─────────────────────
+if command -v timeshift >/dev/null && [ ! -d /run/archiso ]; then
+    info "Creating snapshot (rollback: timeshift --restore)…"
+    timeshift --create --comments "flynn-ota pre-$NEW_REV" --scripted >/dev/null 2>&1 \
+        && ok "Snapshot created" \
+        || warn "Snapshot failed — continuing without safety net"
+fi
+
 # ── 2. Apply overlay (scripts, configs, themes) ───────────────────────────────
 SRC="$CACHE/archiso/airootfs"
 info "Applying overlay…"

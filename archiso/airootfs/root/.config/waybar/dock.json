@@ -42,9 +42,9 @@
   },
   "custom/browser": {
     "format": "",
-    "tooltip-format": "Notion  ·  right-click: Amboss",
-    "on-click": "/usr/local/bin/flynn-browser https://notion.so --title Notion",
-    "on-click-right": "/usr/local/bin/flynn-browser https://amboss.com --title Amboss"
+    "tooltip-format": "Firefox  ·  right-click: Notion panel",
+    "on-click": "firefox",
+    "on-click-right": "/usr/local/bin/flynn-browser https://notion.so --title Notion"
   },
   "custom/anki": {
     "format": "",

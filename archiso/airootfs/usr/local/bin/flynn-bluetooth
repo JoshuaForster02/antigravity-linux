@@ -1,0 +1,45 @@
+#!/bin/bash
+# Flynn OS — Bluetooth quick picker (bluetoothctl + fuzzel)
+# Click a device → pair + trust + connect. AirPods-friendly.
+
+command -v bluetoothctl >/dev/null || { /usr/local/bin/flynn-notify error "bluez not available"; exit 1; }
+
+bluetoothctl power on >/dev/null 2>&1
+# brief scan to discover new devices
+bluetoothctl --timeout 5 scan on >/dev/null 2>&1 &
+
+CONNECTED=$(bluetoothctl devices Connected 2>/dev/null | cut -d' ' -f3-)
+HEADER=""
+[ -n "$CONNECTED" ] && HEADER="✓ $(echo "$CONNECTED" | head -2 | tr '\n' ' ')\n──────────────\n"
+
+sleep 2
+LIST=$(bluetoothctl devices 2>/dev/null | while read -r _ mac name; do
+    echo "$name › $mac"
+done | sort -u)
+
+CHOICE=$(printf "${HEADER}${LIST}\nDisconnect all\nBluetooth settings…" \
+         | fuzzel --dmenu -p "  Bluetooth  " --width 46 --lines 10)
+
+case "$CHOICE" in
+    ""|"✓"*|"──"*) exit 0 ;;
+    "Bluetooth settings…") exec blueman-manager ;;
+    "Disconnect all")
+        bluetoothctl devices Connected 2>/dev/null | while read -r _ mac _; do
+            bluetoothctl disconnect "$mac" >/dev/null 2>&1
+        done
+        /usr/local/bin/flynn-notify info "Bluetooth disconnected"
+        exit 0 ;;
+esac
+
+MAC=$(echo "$CHOICE" | awk -F' › ' '{print $2}')
+NAME=$(echo "$CHOICE" | awk -F' › ' '{print $1}')
+[ -z "$MAC" ] && exit 0
+
+/usr/local/bin/flynn-notify info "Connecting ${NAME}…"
+bluetoothctl trust "$MAC"   >/dev/null 2>&1
+bluetoothctl pair  "$MAC"   >/dev/null 2>&1
+if bluetoothctl connect "$MAC" >/dev/null 2>&1; then
+    /usr/local/bin/flynn-notify info "Connected: ${NAME}"
+else
+    /usr/local/bin/flynn-notify error "Could not connect ${NAME} — pairing mode on?"
+fi

@@ -63,6 +63,8 @@
  ──────────────────────────────────────────────────────────────────────────
   Super+O           STUDY HUB — Notion + Amboss side by side, Anki,
                     distraction blocker on, dashboard (also: 'study')
+  Menubar timer     Pomodoro — click: 25min focus, right-click: break
+  Menubar bluetooth Click: quick connect picker (AirPods etc.)
   Super+G           Toggle Game / Study mode
   Super+Shift+S     Sunshine streaming status
   Super+Shift+A     Ambient sound toggle

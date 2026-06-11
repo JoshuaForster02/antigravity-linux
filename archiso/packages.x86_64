@@ -194,3 +194,15 @@ gvfs
 
 # Mac-style keyboard shortcuts (Cmd+C/V/X... -> Ctrl) — system-wide remap daemon
 keyd
+
+# Study daily drivers: real browser + featherweight PDF reader (dark mode)
+firefox
+zathura
+zathura-pdf-mupdf
+
+# System snapshots (rollback safety net for rolling updates)
+timeshift
+
+# AUR builds via flynn-setup (makepkg needs these; runs as builder user)
+fakeroot
+debugedit

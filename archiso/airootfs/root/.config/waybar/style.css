@@ -83,7 +83,7 @@ window#waybar {
 }
 
 /* ── Right modules — quiet pills ─────────────────────────────────────────── */
-#cpu, #memory, #temperature, #battery, #pulseaudio,
+#cpu, #memory, #temperature, #battery, #pulseaudio, #custom-pomodoro,
 #bluetooth, #network, #idle_inhibitor, #tray, #custom-power {
     padding: 0 11px;
     margin: 4px 1px;
@@ -132,3 +132,5 @@ tooltip {
     padding: 8px 12px;
 }
 tooltip label { color: #cdd8e0; }
+
+#custom-pomodoro { color: #d9b96a; font-weight: 600; }

@@ -13,6 +13,7 @@
     "clock"
   ],
   "modules-right": [
+    "custom/pomodoro",
     "idle_inhibitor",
     "cpu",
     "memory",
@@ -45,6 +46,13 @@
     "format-alt": "{:%Y-%m-%d   %H:%M:%S}",
     "tooltip-format": "<tt><small>{calendar}</small></tt>",
     "interval": 1
+  },
+  "custom/pomodoro": {
+    "exec": "/usr/local/bin/flynn-pomodoro status",
+    "interval": 5,
+    "tooltip-format": "Pomodoro — click: start/stop · right-click: break",
+    "on-click": "/usr/local/bin/flynn-pomodoro toggle",
+    "on-click-right": "/usr/local/bin/flynn-pomodoro break"
   },
   "idle_inhibitor": {
     "format": "{icon}",
@@ -103,7 +111,8 @@
     "format-disabled": "",
     "format-off": "",
     "tooltip-format": "{device_alias}",
-    "on-click": "blueman-manager"
+    "on-click": "/usr/local/bin/flynn-bluetooth",
+    "on-click-right": "blueman-manager"
   },
   "network": {
     "format-wifi": " {signalStrength}%",

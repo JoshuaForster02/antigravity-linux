@@ -81,11 +81,40 @@ fi
 echo ""
 
 # ── 4. Proton-GE (optional) ───────────────────────────────────────────────────
-info "Step 4/4 — Proton-GE (better game compatibility, optional)"
+info "Step 4/5 — Proton-GE (better game compatibility, optional)"
 ask "Download latest Proton-GE? [y/N]"; read -r R
 if [[ "${R:-n}" =~ ^[Yy] ]]; then
     /usr/local/bin/proton-ge-install || warn "Proton-GE install failed — retry later with: proton-ge-install"
 fi
+
+# ── 5. AUR extras (yay → SwayFX rounded corners/blur, Sunshine…) ─────────
+info "Step 5/5 — AUR extras (optional)"
+if ! command -v yay >/dev/null; then
+    ask "Install yay (AUR helper — unlocks SwayFX, Sunshine, Discord…)? [y/N]"; read -r R
+    if [[ "${R:-n}" =~ ^[Yy] ]]; then
+        # makepkg refuses root — dedicated build user does the compiling
+        id builder >/dev/null 2>&1 || useradd -r -m -s /bin/bash builder
+        echo 'builder ALL=(ALL) NOPASSWD: /usr/bin/pacman' > /etc/sudoers.d/builder
+        chmod 440 /etc/sudoers.d/builder
+        pacman -S --noconfirm --needed git base-devel 2>/dev/null || true
+        runuser -u builder -- bash -c '
+            set -e
+            cd /tmp && rm -rf yay-bin
+            git clone --depth 1 https://aur.archlinux.org/yay-bin.git
+            cd yay-bin && makepkg -si --noconfirm
+        ' && ok "yay installed" || warn "yay build failed — see output above"
+    fi
+fi
+if command -v yay >/dev/null; then
+    ask "Install SwayFX (real rounded corners + blur)? [y/N]"; read -r R
+    if [[ "${R:-n}" =~ ^[Yy] ]]; then
+        runuser -u builder -- yay -S --noconfirm swayfx \
+            && ok "SwayFX installed — it replaces sway at next login" \
+            || warn "SwayFX build failed"
+    fi
+    info "More AUR ideas:  runuser -u builder -- yay -S sunshine discord spotify"
+fi
+echo ""
 
 # Default Flynn config (only if absent — never overwrite)
 if [ ! -f /etc/flynn/config.json ]; then

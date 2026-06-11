@@ -1,0 +1,44 @@
+#!/bin/bash
+# Flynn OS — Pomodoro timer (lives in the menubar)
+# Usage: flynn-pomodoro [start [min]|break [min]|stop|toggle|status]
+STATE=/tmp/flynn-pomo
+
+now() { date +%s; }
+
+read_state() {
+    MODE=""; END=0
+    [ -f "$STATE" ] && { MODE=$(cut -d' ' -f1 "$STATE"); END=$(cut -d' ' -f2 "$STATE"); }
+}
+
+case "${1:-status}" in
+    start)
+        MIN=${2:-25}
+        echo "focus $(( $(now) + MIN*60 ))" > "$STATE"
+        /usr/local/bin/flynn-notify info "Pomodoro: ${MIN} min focus" ;;
+    break)
+        MIN=${2:-5}
+        echo "break $(( $(now) + MIN*60 ))" > "$STATE"
+        /usr/local/bin/flynn-notify info "Break: ${MIN} min" ;;
+    stop)
+        rm -f "$STATE"
+        /usr/local/bin/flynn-notify info "Pomodoro stopped" ;;
+    toggle)
+        read_state
+        if [ -n "$MODE" ]; then exec "$0" stop; else exec "$0" start; fi ;;
+    status)
+        read_state
+        [ -z "$MODE" ] && { echo ""; exit 0; }
+        LEFT=$(( END - $(now) ))
+        if [ "$LEFT" -le 0 ]; then
+            rm -f "$STATE"
+            if [ "$MODE" = "focus" ]; then
+                /usr/local/bin/flynn-notify info "Focus done — take a break (right-click timer)"
+            else
+                /usr/local/bin/flynn-notify info "Break over — back to it"
+            fi
+            echo ""
+            exit 0
+        fi
+        ICON="󰔛"; [ "$MODE" = "break" ] && ICON="󰭹"
+        printf "%s %02d:%02d\n" "$ICON" $((LEFT/60)) $((LEFT%60)) ;;
+esac
