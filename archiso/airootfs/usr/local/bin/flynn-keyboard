@@ -6,7 +6,7 @@ CONF_DIR=/root/.config/sway/config.d
 CONF=$CONF_DIR/10-keyboard.conf
 mkdir -p "$CONF_DIR"
 
-CUR=us
+CUR=de
 [ -f "$CONF" ] && CUR=$(grep -oE 'xkb_layout [a-z]+' "$CONF" | awk '{print $2}')
 
 case "${1:-toggle}" in

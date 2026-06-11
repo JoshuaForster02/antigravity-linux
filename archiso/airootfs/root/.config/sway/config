@@ -49,7 +49,7 @@ font pango:Noto Sans 10
 
 # ── Input ─────────────────────────────────────────────────────────────────────
 input type:keyboard {
-    xkb_layout  us
+    xkb_layout  de
     xkb_options caps:escape
     repeat_delay 250
     repeat_rate  40

@@ -124,7 +124,7 @@ class SetupWizard(Gtk.ApplicationWindow):
             other.remove_css_class("selected")
         de_btn.connect("clicked", lambda _: choose("de", de_btn, us_btn))
         us_btn.connect("clicked", lambda _: choose("us", us_btn, de_btn))
-        us_btn.add_css_class("selected")   # current default
+        de_btn.add_css_class("selected")   # German is the system default
         box.append(de_btn); box.append(us_btn)
         self._root.append(box)
         hint = Gtk.Label(label="\nSwitch later anytime:  Super+F2  or  Settings (Super+,)")
