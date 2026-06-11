@@ -130,6 +130,8 @@ class SettingsApp(Gtk.Application):
                               lambda: run('/usr/local/bin/flynn-wifi')))
         box.append(self._row('Network Manager', 'Open WiFi/Ethernet config',
                               lambda: run('nm-connection-editor')))
+        box.append(self._row('Sync (Mac <-> PC)', 'Syncthing web UI',
+                              lambda: run('/usr/local/bin/flynn-browser http://localhost:8384 --title Syncthing')))
         ip = run_out("ip route get 1 | awk '{print $7; exit}' 2>/dev/null")
         box.append(self._info_row('Local IP', ip or 'Not connected'))
 

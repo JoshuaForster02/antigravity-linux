@@ -22,6 +22,7 @@
   Super+F9          Screen recording start/stop
   Super+Shift+F9    Record a region
   Super+Shift+C     Color picker (hex to clipboard)
+  Super+Shift+O     OCR — select region, text lands in clipboard
   Super+Shift+V     Clipboard history
   Super+Shift+R     Reload Sway config
   Super+Shift+E     Exit Sway (logout)
@@ -80,6 +81,7 @@
   flynn-install     Install Flynn OS to disk
   game / study      Switch performance profile
   matrix            TRON matrix rain
+  doctor            One-command health report (for debugging)
   flynn             ???
 
  Login: root / tron

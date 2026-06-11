@@ -17,4 +17,9 @@ fi
 
 echo "output * scale $SCALE" > "$CONF"
 swaymsg "output * scale $SCALE" >/dev/null 2>&1 || true
+hyprctl keyword monitor ",preferred,auto,$SCALE" >/dev/null 2>&1 || true
+HCONF=/root/.config/hypr/user.conf
+mkdir -p "$(dirname "$HCONF")"; touch "$HCONF"
+grep -v "^monitor" "$HCONF" 2>/dev/null > "$HCONF.tmp" || true
+echo "monitor = , preferred, auto, $SCALE" >> "$HCONF.tmp" && mv "$HCONF.tmp" "$HCONF"
 /usr/local/bin/flynn-notify display "Scale: ${SCALE}×"

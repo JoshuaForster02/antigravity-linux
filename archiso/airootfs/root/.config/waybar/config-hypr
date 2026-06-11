@@ -6,7 +6,7 @@
   "exclusive": true,
   "modules-left": [
     "custom/logo",
-    "sway/workspaces",
+    "hyprland/workspaces",
     "custom/mode"
   ],
   "modules-center": [
@@ -31,10 +31,11 @@
     "tooltip-format": "App Launcher  (Super+D)",
     "on-click": "fuzzel"
   },
-  "sway/workspaces": {
-    "disable-scroll": true,
+  "hyprland/workspaces": {
     "all-outputs": true,
-    "format": "{name}"
+    "format": "{icon}",
+    "format-icons": { "1": "GRID", "2": "STUDY", "3": "ANKI", "4": "GAME", "5": "SYS" },
+    "persistent-workspaces": { "*": 5 }
   },
   "custom/mode": {
     "exec": "bash -c 'm=$(cat /tmp/flynnos-mode 2>/dev/null||echo study); [ \"$m\" = game ] && echo \" Game\" || echo \" Study\"'",

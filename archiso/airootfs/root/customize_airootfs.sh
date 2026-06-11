@@ -59,22 +59,19 @@ export ELECTRON_OZONE_PLATFORM_HINT=wayland
 mkdir -p "$XDG_RUNTIME_DIR"
 chmod 700 "$XDG_RUNTIME_DIR"
 
-# Auto-start Sway on tty1.
-# Real hardware (RX 6800 etc.): GPU rendering via GLES2 + seatd.
-# VMs (UTM/QEMU/VMware): pixman software rendering + noop seat.
+# Auto-start desktop on tty1.
+# Real hardware (RX 6800 etc.): HYPRLAND — animations, blur, rounded corners.
+# VMs (UTM/QEMU/VMware): Sway with pixman software rendering (Hyprland needs GPU).
 if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
-    if command -v sway &>/dev/null; then
-        if [ "$(systemd-detect-virt 2>/dev/null)" = "none" ] && ls /dev/dri/card* >/dev/null 2>&1; then
-            # Bare metal — let wlroots pick the GPU renderer
-            unset WLR_RENDERER WLR_NO_HARDWARE_CURSORS LIBSEAT_BACKEND
-            exec dbus-run-session sway 2>/tmp/sway.log
-        else
-            # VM — software rendering
-            export WLR_RENDERER=pixman
-            export WLR_NO_HARDWARE_CURSORS=1
-            export LIBSEAT_BACKEND=noop
-            exec dbus-run-session sway --unsupported-gpu 2>/tmp/sway.log
-        fi
+    if [ "$(systemd-detect-virt 2>/dev/null)" = "none" ] && ls /dev/dri/card* >/dev/null 2>&1 \
+       && command -v Hyprland &>/dev/null; then
+        unset WLR_RENDERER WLR_NO_HARDWARE_CURSORS LIBSEAT_BACKEND
+        exec dbus-run-session Hyprland 2>/tmp/hyprland.log
+    elif command -v sway &>/dev/null; then
+        export WLR_RENDERER=pixman
+        export WLR_NO_HARDWARE_CURSORS=1
+        export LIBSEAT_BACKEND=noop
+        exec dbus-run-session sway --unsupported-gpu 2>/tmp/sway.log
     fi
 fi
 exec /usr/local/bin/flynn-ui
@@ -408,6 +405,7 @@ echo "  ✓ Flynn Openbox TRON theme"
 systemctl enable NetworkManager
 systemctl enable sshd
 systemctl enable keyd 2>/dev/null || true
+systemctl enable syncthing@root 2>/dev/null || true
 # Prevent network-manager conflicts: exactly ONE network stack (NetworkManager)
 systemctl disable dhcpcd 2>/dev/null || true
 systemctl disable iwd    2>/dev/null || true

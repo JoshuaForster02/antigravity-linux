@@ -76,7 +76,12 @@ img.save(OUT, "PNG", optimize=False)
 print(f"[wallpaper] saved: {OUT}")
 
 try:
-    subprocess.Popen(["swaymsg", f"output * bg {OUT} fill"],
-                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if os.environ.get("HYPRLAND_INSTANCE_SIGNATURE"):
+        subprocess.run(["pkill", "-x", "swaybg"], capture_output=True)
+        subprocess.Popen(["swaybg", "-i", OUT, "-m", "fill"],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    else:
+        subprocess.Popen(["swaymsg", f"output * bg {OUT} fill"],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 except FileNotFoundError:
     pass   # build chroot / no compositor — wallpaper applied at login instead

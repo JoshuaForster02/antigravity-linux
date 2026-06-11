@@ -1,0 +1,32 @@
+#!/bin/bash
+# Flynn OS — one-command health report (paste the output when asking for help)
+CY='\e[1;36m' GN='\e[1;32m' RD='\e[0;31m' DIM='\e[2;37m' RST='\e[0m'
+ok()   { printf "  ${GN}✓${RST} %-14s %s\n" "$1" "$2"; }
+bad()  { printf "  ${RD}✗${RST} %-14s %s\n" "$1" "$2"; }
+echo ""
+printf "   ${CY}◎${RST}  Flynn OS Doctor   ${DIM}$(cat /etc/flynnos-release 2>/dev/null)${RST}\n\n"
+# Session
+COMP="none"; pgrep -x Hyprland >/dev/null && COMP="Hyprland"; pgrep -x sway >/dev/null && COMP="sway"
+[ "$COMP" != "none" ] && ok "Session" "$COMP" || bad "Session" "no compositor running"
+# GPU
+GPU=$(lspci 2>/dev/null | grep -i 'vga\|3d' | head -1 | cut -d: -f3 | xargs)
+[ -e /dev/dri/card0 ] || [ -e /dev/dri/card1 ] && ok "GPU" "${GPU:-?} (DRM ok)" || bad "GPU" "no /dev/dri — software rendering"
+# Network
+IP=$(ip route get 1.1.1.1 2>/dev/null | awk '/src/{print $7;exit}')
+[ -n "$IP" ] && ok "Network" "$IP" || bad "Network" "no route — check: nmcli device"
+ping -c1 -W2 archlinux.org >/dev/null 2>&1 && ok "Internet" "DNS + WAN ok" || bad "Internet" "ping/DNS failed"
+# Services
+for s in NetworkManager keyd seatd sshd; do
+    systemctl is-active -q "$s" && ok "$s" "active" || bad "$s" "inactive"
+done
+# Disk
+DSK=$(df -h / 2>/dev/null | awk 'NR==2{print $4" free of "$2}')
+ok "Disk /" "$DSK"
+# OTA
+REV=$(cat /etc/flynnos/.ota-rev 2>/dev/null || echo "never updated")
+CH=$(grep -oP 'CHANNEL=\K\w+' /etc/flynnos/update.conf 2>/dev/null || echo stable)
+ok "OTA" "channel $CH · rev $REV"
+# Errors in logs
+ERR=$(journalctl -p err -b --no-pager 2>/dev/null | tail -3)
+[ -n "$ERR" ] && printf "\n  ${DIM}Last errors (journal):${RST}\n%s\n" "$ERR"
+echo ""

@@ -1,0 +1,7 @@
+#!/bin/bash
+# Flynn OS — Anki due-count for the menubar (needs Anki + AnkiConnect running)
+R=$(curl -s -m 2 localhost:8765 -d '{"action":"findCards","version":6,"params":{"query":"is:due"}}' 2>/dev/null)
+N=$(echo "$R" | python3 -c 'import json,sys
+try: print(len(json.load(sys.stdin)["result"]))
+except Exception: print("")' 2>/dev/null)
+[ -n "$N" ] && [ "$N" != "0" ] && echo "󰘸 $N" || echo ""

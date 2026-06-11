@@ -206,3 +206,15 @@ timeshift
 # AUR builds via flynn-setup (makepkg needs these; runs as builder user)
 fakeroot
 debugedit
+
+# Hyprland — the real-hardware session: animations, blur, rounded corners
+hyprland
+xdg-desktop-portal-hyprland
+
+# Screenshot-OCR (Super+Shift+O): region -> text in clipboard
+tesseract
+tesseract-data-eng
+tesseract-data-deu
+
+# Continuity: folder sync between Mac and PC (no cloud)
+syncthing

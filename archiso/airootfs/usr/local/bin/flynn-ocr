@@ -1,0 +1,12 @@
+#!/bin/bash
+# Flynn OS — Screenshot OCR: select a region, text lands in the clipboard.
+# Lecture slide → Anki card in five seconds. (grim + slurp + tesseract)
+GEO=$(slurp 2>/dev/null) || exit 0
+TXT=$(grim -g "$GEO" - 2>/dev/null | tesseract stdin stdout -l deu+eng 2>/dev/null)
+if [ -n "$TXT" ]; then
+    printf '%s' "$TXT" | wl-copy
+    PREVIEW=$(printf '%s' "$TXT" | head -c 80 | tr '\n' ' ')
+    /usr/local/bin/flynn-notify clipboard "OCR: ${PREVIEW}…"
+else
+    /usr/local/bin/flynn-notify error "OCR found no text in that region"
+fi

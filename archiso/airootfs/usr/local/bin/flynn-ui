@@ -376,6 +376,7 @@ while true; do
         ping)          echo ""; ping -c3 $ARG1 2>&1; echo "" ;;
         top)           top ;;
         htop)          htop 2>/dev/null || top ;;
+        doctor)        /usr/local/bin/flynn-doctor ;;
         clear|cls|tron) tron_splash ;;
         flynn)
             FQ=("I fight for the Users." "The Grid. A digital frontier. I tried to picture clusters of information as they moved through the computer." "Greetings, programs!" "It's all in the wrists." "The game has changed, son of Flynn." "Your old man's about to knock on the sky and listen to the sound.")

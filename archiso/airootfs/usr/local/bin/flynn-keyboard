@@ -23,6 +23,12 @@ input type:keyboard {
 EOF
 
 swaymsg "input type:keyboard xkb_layout $NEW" >/dev/null 2>&1 || true
+hyprctl keyword input:kb_layout "$NEW" >/dev/null 2>&1 || true
+# persist for Hyprland too
+HCONF=/root/.config/hypr/user.conf
+mkdir -p "$(dirname "$HCONF")"; touch "$HCONF"
+grep -v "^input:kb_layout" "$HCONF" 2>/dev/null > "$HCONF.tmp" || true
+echo "input:kb_layout = $NEW" >> "$HCONF.tmp" && mv "$HCONF.tmp" "$HCONF"
 
 if [ "$NEW" = "de" ]; then
     /usr/local/bin/flynn-notify keyboard "Layout: German (QWERTZ)"

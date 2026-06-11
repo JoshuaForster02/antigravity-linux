@@ -97,7 +97,9 @@ log "applied $NEW_REV channel=$CHANNEL"
 ok "Overlay applied ($NEW_REV)"
 
 # ── 3. Reload live components ─────────────────────────────────────────────────
-if [ -n "${WAYLAND_DISPLAY:-}" ] || pgrep -x sway >/dev/null; then
+if pgrep -x Hyprland >/dev/null; then
+    hyprctl reload >/dev/null 2>&1 && ok "Desktop reloaded" || true
+elif pgrep -x sway >/dev/null; then
     swaymsg reload >/dev/null 2>&1 && ok "Desktop reloaded" || true
 fi
 systemctl restart keyd 2>/dev/null || true

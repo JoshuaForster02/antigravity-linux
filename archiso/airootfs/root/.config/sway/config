@@ -150,6 +150,7 @@ bindsym $mod+F7          exec /usr/local/bin/flynn-ambient toggle
 bindsym $mod+F8          exec /usr/local/bin/flynn-colorpick
 bindsym $mod+F9          exec /usr/local/bin/flynn-record
 bindsym $mod+Shift+F9    exec /usr/local/bin/flynn-record --region
+bindsym $mod+Shift+o     exec /usr/local/bin/flynn-ocr
 bindsym $mod+F10         exec /usr/local/bin/flynn-sunshine --status
 
 bindsym $mod+comma    exec /usr/local/bin/flynn-settings

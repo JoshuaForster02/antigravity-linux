@@ -3,7 +3,26 @@
 Lists all open windows via fuzzel, focuses the chosen one."""
 import json, subprocess, sys
 
+def get_windows_hypr():
+    try:
+        clients = json.loads(subprocess.check_output(
+            ["hyprctl", "clients", "-j"], text=True))
+    except Exception:
+        return []
+    names = {1: "GRID", 2: "STUDY", 3: "ANKI", 4: "GAME", 5: "SYS"}
+    wins = []
+    for c in clients:
+        if not c.get("mapped") or not c.get("title"):
+            continue
+        ws = c.get("workspace", {}).get("id", 0)
+        wins.append((c["address"], names.get(ws, str(ws)), c["title"],
+                     bool(c.get("focusHistoryID") == 0)))
+    return wins
+
 def get_windows():
+    import os
+    if os.environ.get("HYPRLAND_INSTANCE_SIGNATURE"):
+        return get_windows_hypr()
     try:
         tree = json.loads(subprocess.check_output(
             ["swaymsg", "-t", "get_tree"], text=True))
@@ -44,8 +63,13 @@ def main():
     except Exception:
         return
     if 0 <= idx < len(wins):
-        subprocess.run(["swaymsg", f"[con_id={wins[idx][0]}]", "focus"],
-                       capture_output=True)
+        import os
+        if os.environ.get("HYPRLAND_INSTANCE_SIGNATURE"):
+            subprocess.run(["hyprctl", "dispatch", "focuswindow",
+                            f"address:{wins[idx][0]}"], capture_output=True)
+        else:
+            subprocess.run(["swaymsg", f"[con_id={wins[idx][0]}]", "focus"],
+                           capture_output=True)
 
 if __name__ == "__main__":
     main()
