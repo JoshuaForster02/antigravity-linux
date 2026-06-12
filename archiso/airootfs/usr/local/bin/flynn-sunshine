@@ -18,16 +18,13 @@ install_sunshine() {
     return 0
   fi
 
-  # Try yay/paru
-  if command -v yay &>/dev/null; then
-    yay -S --noconfirm sunshine
-  elif command -v paru &>/dev/null; then
-    paru -S --noconfirm sunshine
-  else
-    printf "  ${YL}Kein AUR-Helper. Installiere yay zuerst:${RST}\n"
-    printf "  git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si\n"
+  # yay via the dedicated builder user (makepkg refuses root)
+  if ! command -v yay &>/dev/null; then
+    printf "  ${YL}yay fehlt — flynn-setup Schritt 5 installiert es. Starte flynn-setup zuerst.${RST}\n"
     return 1
   fi
+  id builder >/dev/null 2>&1 || useradd -r -m -s /bin/bash builder
+  runuser -u builder -- yay -S --noconfirm sunshine
 
   command -v sunshine &>/dev/null && \
     printf "  ${GN}✓ Sunshine installiert${RST}\n" || \

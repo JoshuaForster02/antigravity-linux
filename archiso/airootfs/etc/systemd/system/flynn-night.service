@@ -1,0 +1,5 @@
+[Unit]
+Description=Flynn OS evening mode (warm colors + DND)
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/flynn-night night

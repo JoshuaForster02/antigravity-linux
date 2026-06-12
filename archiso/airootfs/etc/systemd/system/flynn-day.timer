@@ -1,0 +1,7 @@
+[Unit]
+Description=Flynn OS day mode at 07:00
+[Timer]
+OnCalendar=*-*-* 07:00
+Persistent=false
+[Install]
+WantedBy=timers.target

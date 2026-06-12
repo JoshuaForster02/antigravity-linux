@@ -1,0 +1,26 @@
+#!/bin/bash
+# Flynn OS — Evening/Morning routine (driven by flynn-night/day timers)
+# night: warm colors + Do Not Disturb       day: both off
+# Usage: flynn-night [night|day]
+
+# Timers run outside the session — locate the Wayland socket first
+export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/0}
+if [ -z "${WAYLAND_DISPLAY:-}" ]; then
+    SOCK=$(ls "$XDG_RUNTIME_DIR"/wayland-? 2>/dev/null | head -1)
+    [ -n "$SOCK" ] && export WAYLAND_DISPLAY=$(basename "$SOCK")
+fi
+[ -z "${WAYLAND_DISPLAY:-}" ] && exit 0   # no session running — nothing to do
+
+case "${1:-night}" in
+    night)
+        pgrep -x wlsunset >/dev/null || nohup wlsunset -l 52.5 -L 13.4 -t 3700 -T 6500 >/dev/null 2>&1 &
+        /usr/local/bin/flynn-notify info "Evening mode — warm colors, notifications quiet"
+        sleep 1.6
+        makoctl mode -a do-not-disturb >/dev/null 2>&1
+        ;;
+    day)
+        pkill -x wlsunset 2>/dev/null
+        makoctl mode -r do-not-disturb >/dev/null 2>&1
+        /usr/local/bin/flynn-notify info "Good morning — day mode"
+        ;;
+esac

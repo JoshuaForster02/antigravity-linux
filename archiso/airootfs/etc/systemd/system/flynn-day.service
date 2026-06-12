@@ -1,0 +1,5 @@
+[Unit]
+Description=Flynn OS day mode (colors + notifications back to normal)
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/flynn-night day

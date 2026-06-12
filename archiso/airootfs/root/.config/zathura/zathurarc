@@ -1,0 +1,30 @@
+# Flynn OS — zathura (PDF reader) · Ice Grid
+set default-bg              "#0a0b10"
+set default-fg              "#e2eaf0"
+set statusbar-bg            "#0f1118"
+set statusbar-fg            "#98a4b0"
+set inputbar-bg             "#0f1118"
+set inputbar-fg             "#e9f0f5"
+set completion-bg           "#12141c"
+set completion-fg           "#c2ccd6"
+set completion-highlight-bg "#22303d"
+set completion-highlight-fg "#ffffff"
+set notification-bg         "#0f1118"
+set notification-fg         "#9fdcf5"
+set notification-error-bg   "#0f1118"
+set notification-error-fg   "#e5606c"
+set highlight-color         "rgba(159,220,245,0.35)"
+set highlight-active-color  "rgba(159,220,245,0.6)"
+
+# Dark mode for any PDF: 'r' toggles recolor
+set recolor                 true
+set recolor-darkcolor       "#dcedf7"
+set recolor-lightcolor      "#0c0e14"
+set recolor-keephue         true
+map r recolor
+
+set selection-clipboard     clipboard
+set adjust-open             best-fit
+set scroll-step             80
+set guioptions              none
+set statusbar-home-tilde    true
