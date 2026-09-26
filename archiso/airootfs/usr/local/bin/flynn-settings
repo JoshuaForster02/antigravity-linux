@@ -24,7 +24,7 @@ window {
     font-family: "Noto Sans", sans-serif;
     font-size: 11px;
     font-weight: 700;
-    color: #9fdcf5;
+    color: #38e8ff;
     padding: 14px 20px 4px;
 }
 .setting-row {
@@ -54,7 +54,7 @@ button {
 }
 button:hover { background: rgba(159, 220, 245, 0.15); color: #ffffff; }
 scale trough { background: rgba(159, 220, 245, 0.08); min-height: 4px; border-radius: 2px; }
-scale highlight { background: #9fdcf5; border-radius: 2px; }
+scale highlight { background: #38e8ff; border-radius: 2px; }
 scale slider { background: #ffffff; min-width: 16px; min-height: 16px; border-radius: 50%; }
 separator { background: rgba(159, 220, 245, 0.08); min-height: 1px; margin: 4px 16px; }
 """
@@ -178,7 +178,7 @@ class SettingsApp(Gtk.Application):
         root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         tb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         tb.set_margin_top(10); tb.set_margin_start(14)
-        for col, action in [('#FF5F57', win.close), ('#FEBC2E', None), ('#28C840', None)]:
+        for col, action in [('#ff5f57', win.close), ('#febc2e', None), ('#28c840', None)]:
             btn = Gtk.Button()
             btn.set_size_request(12, 12)
             prov2 = Gtk.CssProvider()

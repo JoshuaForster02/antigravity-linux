@@ -15,7 +15,7 @@ logo_sprite.SetX((W - logo_img.GetWidth()) / 2);
 logo_sprite.SetY(H / 2 - 70);
 logo_sprite.SetOpacity(0);
 
-sub_img = Image.Text("T H E   G R I D", 0.624, 0.863, 0.961, 1.0);   // #9fdcf5
+sub_img = Image.Text("T H E   G R I D", 0.22, 0.91, 1.0, 1.0);   // #38e8ff
 sub_sprite = Sprite();
 sub_sprite.SetImage(sub_img);
 sub_sprite.SetX((W - sub_img.GetWidth()) / 2);

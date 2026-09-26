@@ -13,16 +13,16 @@ set $right l
 set $term  foot
 set $menu  fuzzel
 
-# ── Flynn Colors (Ice Grid) ───────────────────────────────────────────────────
-set $bg      #0a0b10
-set $accent  #7fb8d4
-set $muted   #2a2f3c
-set $dborder #1c2230
-set $text    #e2eaf0
-set $urgent  #e5606c
+# ── Flynn Colors (ENCOM Grid) ───────────────────────────────────────────────────
+set $bg      #02060c
+set $accent  #38e8ff
+set $muted   #12303a
+set $dborder #0e2733
+set $text    #dff6ff
+set $urgent  #ff5545
 
 # ── Background — solid graphite until wallpaper applies ──────────────────────
-output * bg #0a0b10 solid_color
+output * bg #02060c solid_color
 
 # ── Window appearance ─────────────────────────────────────────────────────────
 # class                  border   bg       text    indicator child_border
@@ -95,7 +95,7 @@ exec_always sh -c 'pkill -x waybar 2>/dev/null; sleep 0.3; waybar -c /root/.conf
 exec_always sh -c 'pkill -x mako 2>/dev/null; sleep 0.3; mako --config /root/.config/mako/config 2>/dev/null &'
 
 # ── Wallpaper (pre-generated during build; self-heals if missing)
-exec_always bash -c '[ -f /root/.config/sway/tron-bg.png ] || python3 /usr/local/bin/flynn-wallpaper-sway >/tmp/wallpaper.log 2>&1; sleep 0.2; swaymsg "output * bg /root/.config/sway/tron-bg.png fill" 2>/dev/null || swaymsg "output * bg #0a0b10 solid_color"'
+exec_always bash -c '[ -f /root/.config/sway/tron-bg.png ] || python3 /usr/local/bin/flynn-wallpaper-sway >/tmp/wallpaper.log 2>&1; sleep 0.2; swaymsg "output * bg /root/.config/sway/tron-bg.png fill" 2>/dev/null || swaymsg "output * bg #02060c solid_color"'
 
 # ── Flynn daemon (REST API + system monitor)
 exec bash -c 'sleep 1.0 && /usr/local/bin/flynn-daemon 2>/tmp/daemon.log'

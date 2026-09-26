@@ -27,7 +27,7 @@
     "custom/power"
   ],
   "custom/logo": {
-    "format": "◎  Flynn OS",
+    "format": "◎  ENCOM OS",
     "tooltip-format": "App Launcher  (Super+D)",
     "on-click": "fuzzel"
   },

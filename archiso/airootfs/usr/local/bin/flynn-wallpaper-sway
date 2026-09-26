@@ -1,87 +1,116 @@
 #!/usr/bin/env python3
-"""Flynn OS — Wallpaper · Ice Grid
-Graphite gradient, a single ice horizon line, the identity-disc glyph,
-faint reflection lines below the horizon. Minimal. Unmistakable.
+"""Flynn OS — Wallpaper · ENCOM Grid
+Near-black plane, a glowing cyan perspective grid receding to a horizon,
+the ENCOM wordmark and corner brackets. Matches the ENCOM OS look of the
+native kernel and the web edition.
 """
-import subprocess, sys, os
+import subprocess, sys, os, math
 
-OUT = "/root/.config/sway/tron-bg.png"
+OUT = os.environ.get("FLYNN_WALLPAPER_OUT", "/root/.config/sway/tron-bg.png")
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 
 try:
-    from PIL import Image, ImageDraw, ImageFilter, ImageChops
+    from PIL import Image, ImageDraw, ImageFilter, ImageChops, ImageFont
 except ImportError:
     print("[wallpaper] PIL not available — using solid color fallback")
     try:
-        subprocess.Popen(["swaymsg", "output * bg #0a0b10 solid_color"],
+        subprocess.Popen(["swaymsg", "output * bg #02060c solid_color"],
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except FileNotFoundError:
         pass
     sys.exit(0)
 
 W, H = 1920, 1080
-TOP, MID, BOT = (7, 8, 12), (15, 17, 24), (10, 11, 16)
+CYAN = (56, 232, 255)
+CYAN_DIM = (14, 106, 130)
+GRID = (31, 179, 217)
+INK = (223, 246, 255)
 
-# ── 1. Base gradient ──────────────────────────────────────────────────────────
-img = Image.new("RGB", (W, H))
-d = ImageDraw.Draw(img)
-for y in range(H):
-    t = y / H
-    if t < 0.62:
-        f = t / 0.62
-        c = tuple(int(TOP[i] + (MID[i] - TOP[i]) * f) for i in range(3))
-    else:
-        f = (t - 0.62) / 0.38
-        c = tuple(int(MID[i] + (BOT[i] - MID[i]) * f) for i in range(3))
-    d.line([(0, y), (W, y)], fill=c)
-
-# ── 2. Horizon glow ───────────────────────────────────────────────────────────
-hy = int(H * 0.62)
+# ── 1. Base: near-black with two radial glows ────────────────────────────────
+img = Image.new("RGB", (W, H), (2, 6, 12))
 glow = Image.new("RGB", (W, H), (0, 0, 0))
 g = ImageDraw.Draw(glow)
-g.line([(0, hy), (W, hy)], fill=(28, 52, 66), width=2)
-g.ellipse([W * 0.34, hy - 30, W * 0.66, hy + 30], fill=(10, 17, 22))
-glow = glow.filter(ImageFilter.GaussianBlur(90))
+g.ellipse([W * 0.20, -H * 0.5, W * 0.80, H * 0.5], fill=(6, 33, 51))          # top center
+g.ellipse([W * 0.62, H * 0.62, W * 1.15, H * 1.35], fill=(4, 18, 29))          # bottom right
+glow = glow.filter(ImageFilter.GaussianBlur(160))
 img = ImageChops.add(img, glow)
 
-# ── 3. Crisp horizon line + identity disc glyph ──────────────────────────────
-d = ImageDraw.Draw(img)
-d.line([(int(W * 0.08), hy), (int(W * 0.92), hy)], fill=(92, 132, 155), width=1)
-cx, cy, r = W // 2, hy, 40
-d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=(118, 160, 184), width=2)
-r2 = int(r * 0.62)
-d.ellipse([cx - r2, cy - r2, cx + r2, cy + r2], outline=(118, 160, 184), width=2)
-d.line([(cx - int(r * 0.30), cy), (cx + int(r * 0.30), cy)], fill=(118, 160, 184), width=2)
-
-# ── 4. Faint reflection lines below horizon ──────────────────────────────────
+# ── 2. Perspective grid on a transparent overlay (so we can glow it) ─────────
 ov = Image.new("RGBA", (W, H), (0, 0, 0, 0))
 o = ImageDraw.Draw(ov)
-for gx in range(0, W + 1, 160):
-    for sy in range(hy + 8, H, 18):
-        t = (sy - hy) / (H - hy)
-        a = int(8 * (1 - t))
-        if a > 0:
-            o.line([(gx, sy), (gx, sy + 9)], fill=(150, 210, 235, a))
-img = Image.alpha_composite(img.convert("RGBA"), ov).convert("RGB")
+hz = int(H * 0.60)
+cx = W // 2
 
-# ── 5. Vignette ───────────────────────────────────────────────────────────────
-vm = Image.new("L", (W, H), 0)
-vd = ImageDraw.Draw(vm)
-vd.ellipse([-W * 0.25, -H * 0.35, W * 1.25, H * 1.35], fill=255)
-vm = vm.filter(ImageFilter.GaussianBlur(200))
-img = Image.composite(img, Image.new("RGB", (W, H), (3, 4, 7)), vm)
+# receding horizontal lines: denser toward the horizon
+for k in range(1, 34):
+    z = 34 - k
+    yy = hz + (H - hz) * 1.7 / (z + 1.7)
+    if yy <= hz or yy >= H:
+        continue
+    a = int(min(150, (yy - hz) / (H - hz) * 165) + 15)
+    o.line([(0, yy), (W, yy)], fill=(*GRID, a), width=1)
 
-# ── Save + apply ──────────────────────────────────────────────────────────────
-img.save(OUT, "PNG", optimize=False)
-print(f"[wallpaper] saved: {OUT}")
+# converging vertical lines toward the vanishing point at (cx, hz)
+for i in range(-24, 25):
+    bx = cx + i * (W / 13)
+    o.line([(cx + i * 20, hz), (bx, H)], fill=(*GRID, 42), width=1)
 
-try:
-    if os.environ.get("HYPRLAND_INSTANCE_SIGNATURE"):
-        subprocess.run(["pkill", "-x", "swaybg"], capture_output=True)
-        subprocess.Popen(["swaybg", "-i", OUT, "-m", "fill"],
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    else:
+# glow pass
+grid_glow = ov.filter(ImageFilter.GaussianBlur(3))
+img = img.convert("RGBA")
+img = Image.alpha_composite(img, grid_glow)
+img = Image.alpha_composite(img, ov)
+
+# crisp horizon
+d = ImageDraw.Draw(img)
+d.line([(0, hz), (W, hz)], fill=(*CYAN, 200), width=2)
+
+# ── 3. ENCOM wordmark ────────────────────────────────────────────────────────
+def load_font(size):
+    for p in ("/usr/share/fonts/TTF/DejaVuSans.ttf",
+              "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+              "/usr/share/fonts/dejavu/DejaVuSans.ttf"):
+        if os.path.exists(p):
+            return ImageFont.truetype(p, size)
+    return ImageFont.load_default()
+
+font = load_font(150)
+word, gap = "ENCOM", 26
+widths = [d.textlength(c, font=font) for c in word]
+total = sum(widths) + gap * (len(word) - 1)
+x = cx - total / 2
+y = int(H * 0.20)
+for i, c in enumerate(word):
+    col = CYAN if c in ("O", "M") else INK
+    d.text((x, y), c, font=font, fill=col)
+    x += widths[i] + gap
+# underline + subtitle
+d.line([(cx - total / 2, y + 168), (cx + total / 2, y + 168)], fill=(*CYAN_DIM, 255), width=2)
+d.line([(cx - 90, y + 168), (cx + 90, y + 168)], fill=CYAN, width=2)
+sub = load_font(30)
+st = "O S - 1 2"
+d.text((cx - d.textlength(st, font=sub) / 2, y + 184), st, font=sub, fill=CYAN)
+
+# ── 4. Corner brackets ───────────────────────────────────────────────────────
+m, ln = 60, 46
+for (bx, by, sx, sy) in [(m, m, 1, 1), (W - m, m, -1, 1), (m, H - m, 1, -1), (W - m, H - m, -1, -1)]:
+    d.line([(bx, by), (bx + sx * ln, by)], fill=(*CYAN, 180), width=2)
+    d.line([(bx, by), (bx, by + sy * ln)], fill=(*CYAN, 180), width=2)
+
+# ── 5. Vignette ──────────────────────────────────────────────────────────────
+vig = Image.new("L", (W, H), 0)
+ImageDraw.Draw(vig).ellipse([-W * 0.25, -H * 0.25, W * 1.25, H * 1.25], fill=255)
+vig = vig.filter(ImageFilter.GaussianBlur(240))
+dark = Image.new("RGBA", (W, H), (0, 0, 0, 255))
+dark.putalpha(ImageChops.invert(vig).point(lambda p: int(p * 0.6)))
+img = Image.alpha_composite(img, dark)
+
+img.convert("RGB").save(OUT)
+print(f"[wallpaper] ENCOM grid → {OUT}")
+
+if os.environ.get("FLYNN_WALLPAPER_OUT") is None:
+    try:
         subprocess.Popen(["swaymsg", f"output * bg {OUT} fill"],
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-except FileNotFoundError:
-    pass   # build chroot / no compositor — wallpaper applied at login instead
+    except FileNotFoundError:
+        pass

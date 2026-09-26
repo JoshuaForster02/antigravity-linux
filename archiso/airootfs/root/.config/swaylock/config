@@ -1,9 +1,9 @@
-# Flynn OS — Lock screen · Ice Grid
+# Flynn OS — Lock screen · ENCOM Grid
 # NOTE: vanilla swaylock only — no swaylock-effects options (clock, fade-in,
 # indicator, font-size are NOT supported and abort the locker).
 image=/root/.config/sway/tron-bg.png
 scaling=fill
-color=0a0b10
+color=02060c
 
 font=Noto Sans
 
@@ -11,31 +11,31 @@ indicator-radius=86
 indicator-thickness=3
 
 # Ring — thin ice ring, red on wrong
-ring-color=22303d
-ring-ver-color=9fdcf5
-ring-wrong-color=e5606c
-ring-clear-color=d9b96a
+ring-color=0e2b38
+ring-ver-color=38e8ff
+ring-wrong-color=ff5545
+ring-clear-color=ff9d29
 
 # Inside
-inside-color=0a0b10cc
-inside-ver-color=0a0b10cc
+inside-color=02060ccc
+inside-ver-color=02060ccc
 inside-wrong-color=1d1014cc
-inside-clear-color=0a0b10cc
+inside-clear-color=02060ccc
 
 # Text
-text-color=e2eaf0
-text-ver-color=c4ecfb
-text-wrong-color=f08791
-text-clear-color=e8cd8c
+text-color=dff6ff
+text-ver-color=7ff0ff
+text-wrong-color=ff8a7f
+text-clear-color=ffb85c
 
 # Key feedback
-key-hl-color=9fdcf5
-bs-hl-color=e5606c
+key-hl-color=38e8ff
+bs-hl-color=ff5545
 separator-color=00000000
 
 # Layout
-layout-bg-color=0a0b10cc
-layout-text-color=98a4b0
+layout-bg-color=02060ccc
+layout-text-color=6f8f9c
 
 show-failed-attempts
 ignore-empty-password
