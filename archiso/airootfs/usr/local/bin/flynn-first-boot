@@ -13,18 +13,18 @@ DONE_FLAG = "/etc/flynnos/.first-boot-done"
 CSS = b"""
 window    { background: rgba(13, 14, 20, 0.98); border-radius: 16px; }
 .title    { color:#e9f0f5; font-family:"Noto Sans"; font-size:24px; font-weight:bold; }
-.subtitle { color:#9fdcf5; font-family:"Noto Sans"; font-size:12px; }
-.step     { color:#c4ecfb; font-family:"Noto Sans"; font-size:14px; font-weight:bold; }
+.subtitle { color:#38e8ff; font-family:"Noto Sans"; font-size:12px; }
+.step     { color:#7ff0ff; font-family:"Noto Sans"; font-size:14px; font-weight:bold; }
 .label    { color:#c2ccd6; font-family:"Noto Sans"; font-size:13px; }
 .small    { color:#5d6877; font-family:"Noto Sans"; font-size:10px; }
 button    { background:rgba(159,220,245,0.08); color:#cdd8e0;
             border:1px solid rgba(159,220,245,0.18);
             border-radius:12px; font-family:"Noto Sans"; font-size:13px; padding:10px 22px; }
 button:hover   { background:rgba(159,220,245,0.15); color:#ffffff; }
-button.primary { background:#22303d; border-color:#9fdcf5; color:#c4ecfb; font-weight:bold; }
+button.primary { background:#0e2b38; border-color:#38e8ff; color:#7ff0ff; font-weight:bold; }
 button.primary:hover { background:#2b3d4d; color:#ffffff; }
 button.skip    { color:#5d6877; border-color:rgba(159,220,245,0.08); }
-button.selected { background:#9fdcf5; color:#0a0b10; border-color:#9fdcf5; font-weight:bold; }
+button.selected { background:#38e8ff; color:#02060c; border-color:#38e8ff; font-weight:bold; }
 """
 
 STEPS = ["Welcome", "Keyboard", "Network", "Ready"]

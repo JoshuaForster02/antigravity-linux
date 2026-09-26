@@ -1,6 +1,6 @@
 /* ════════════════════════════════════════════════════════════════════════════
-   Flynn OS — Menubar · Ice Grid
-   Graphite glass, near-monochrome. Ice (#9fdcf5) only on active states.
+   Flynn OS — Menubar · ENCOM Grid
+   Graphite glass, near-monochrome. ENCOM cyan (#38e8ff) only on active states.
    ════════════════════════════════════════════════════════════════════════════ */
 
 * {
@@ -15,21 +15,21 @@
 }
 
 window#waybar {
-    background: rgba(10, 11, 16, 0.82);
-    border-bottom: 1px solid rgba(159, 220, 245, 0.08);
-    color: #98a4b0;
+    background: rgba(2, 6, 12, 0.82);
+    border-bottom: 1px solid rgba(56, 232, 255, 0.08);
+    color: #6f8f9c;
 }
 
 /* ── Logo / launcher ─────────────────────────────────────────────────────── */
 #custom-logo {
-    color: #e9f0f5;
+    color: #dff6ff;
     font-weight: 500;
     font-size: 12px;
     padding: 0 16px 0 18px;
 }
 #custom-logo:hover {
     color: #ffffff;
-    background: rgba(159, 220, 245, 0.07);
+    background: rgba(56, 232, 255, 0.07);
 }
 
 /* ── Workspaces ──────────────────────────────────────────────────────────── */
@@ -40,46 +40,46 @@ window#waybar {
     padding: 0 12px;
     margin: 4px 2px;
     border-radius: 8px;
-    color: #5d6877;
+    color: #46606b;
     background: transparent;
     font-size: 11px;
     transition: all 0.15s ease;
 }
 #workspaces button:hover {
-    color: #cdd8e0;
-    background: rgba(159, 220, 245, 0.08);
+    color: #b9d5e0;
+    background: rgba(56, 232, 255, 0.08);
 }
 #workspaces button.focused {
-    color: #0a0b10;
-    background: #9fdcf5;
+    color: #02060c;
+    background: #38e8ff;
     font-weight: 700;
 }
 #workspaces button.urgent {
-    color: #e5606c;
-    background: rgba(229, 96, 108, 0.12);
+    color: #ff5545;
+    background: rgba(255, 85, 69, 0.12);
 }
 
 #custom-mode {
     padding: 0 12px;
     margin: 4px 4px;
     border-radius: 8px;
-    color: #707d8a;
+    color: #55707c;
     font-size: 11px;
 }
 #custom-mode:hover {
-    background: rgba(159, 220, 245, 0.08);
-    color: #cdd8e0;
+    background: rgba(56, 232, 255, 0.08);
+    color: #b9d5e0;
 }
 
 /* ── Clock (center, macOS style) ─────────────────────────────────────────── */
 #clock {
-    color: #e9f0f5;
+    color: #dff6ff;
     font-size: 12px;
     font-weight: 600;
     padding: 0 20px;
 }
 #clock:hover {
-    background: rgba(159, 220, 245, 0.07);
+    background: rgba(56, 232, 255, 0.07);
 }
 
 /* ── Right modules — quiet pills ─────────────────────────────────────────── */
@@ -89,31 +89,31 @@ window#waybar {
     margin: 4px 1px;
     border-radius: 8px;
     font-size: 11px;
-    color: #707d8a;
+    color: #55707c;
     transition: all 0.15s ease;
 }
 #cpu:hover, #memory:hover, #temperature:hover, #battery:hover,
 #pulseaudio:hover, #bluetooth:hover, #network:hover,
 #idle_inhibitor:hover, #custom-power:hover {
-    color: #e9f0f5;
-    background: rgba(159, 220, 245, 0.08);
+    color: #dff6ff;
+    background: rgba(56, 232, 255, 0.08);
 }
 
-#cpu.warning, #battery.warning      { color: #d9b96a; }
-#cpu.critical, #temperature.critical { color: #e5606c; }
-#battery.critical                    { color: #e5606c; }
-#battery.charging                    { color: #6ad9a8; }
-#pulseaudio.muted                    { color: #4a525e; }
-#network.disconnected                { color: #e5606c; }
-#idle_inhibitor.activated            { color: #d9b96a; }
+#cpu.warning, #battery.warning      { color: #ff9d29; }
+#cpu.critical, #temperature.critical { color: #ff5545; }
+#battery.critical                    { color: #ff5545; }
+#battery.charging                    { color: #43f5b0; }
+#pulseaudio.muted                    { color: #3a5560; }
+#network.disconnected                { color: #ff5545; }
+#idle_inhibitor.activated            { color: #ff9d29; }
 
 #custom-power {
-    color: #98a4b0;
+    color: #6f8f9c;
     padding: 0 16px 0 12px;
 }
 #custom-power:hover {
-    color: #e5606c;
-    background: rgba(229, 96, 108, 0.10);
+    color: #ff5545;
+    background: rgba(255, 85, 69, 0.10);
 }
 
 #tray {
@@ -125,14 +125,14 @@ window#waybar {
 tooltip {
     font-family: "Noto Sans", sans-serif;
     font-size: 11px;
-    background: rgba(15, 17, 24, 0.97);
-    border: 1px solid rgba(159, 220, 245, 0.18);
+    background: rgba(6, 19, 30, 0.97);
+    border: 1px solid rgba(56, 232, 255, 0.18);
     border-radius: 10px;
-    color: #cdd8e0;
+    color: #b9d5e0;
     padding: 8px 12px;
 }
-tooltip label { color: #cdd8e0; }
+tooltip label { color: #b9d5e0; }
 
-#custom-pomodoro { color: #d9b96a; font-weight: 600; }
+#custom-pomodoro { color: #ff9d29; font-weight: 600; }
 
-#custom-anki { color: #9fdcf5; font-weight: 600; }
+#custom-anki { color: #38e8ff; font-weight: 600; }
